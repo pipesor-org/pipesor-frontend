@@ -5,12 +5,7 @@ import { MoonIcon, SunIcon } from "../icons";
 
 import styles from "./ThemeToggle.module.css";
 
-export interface ThemeToggleProps {
-  collapsed?: boolean;
-  size?: "sm" | "md";
-}
-
-export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
+export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation("common");
 
@@ -19,7 +14,7 @@ export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
   return (
     <button
       type="button"
-      className={`${styles.toggle}${collapsed ? ` ${styles.toggleCollapsed}` : ""}`}
+      className={styles.toggle}
       onClick={toggleTheme}
       aria-label={label}
       title={label}
