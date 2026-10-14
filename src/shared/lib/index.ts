@@ -3,5 +3,6 @@ export { readStoredValue, writeStoredValue } from "./storage";
 export { useMediaQuery } from "./useMediaQuery";
 export { applyTheme, getPreferredTheme, readStoredTheme, writeStoredTheme } from "./theme";
 export type { Theme } from "./theme";
-export { ThemeProvider, useTheme } from "./ThemeProvider";
-export type { ThemeContextValue } from "./ThemeProvider";
+export { useTheme } from "./themeContext";
+export type { ThemeContextValue } from "./themeContext";
+export { ThemeProvider } from "./ThemeProvider";

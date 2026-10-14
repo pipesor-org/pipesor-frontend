@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import { useTheme } from "../../lib/useTheme";
+import { useTheme } from "../../lib";
 import { MoonIcon, SunIcon } from "../icons";
 
 import styles from "./ThemeToggle.module.css";

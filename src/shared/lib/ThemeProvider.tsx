@@ -1,21 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
-import { applyTheme, getPreferredTheme, type Theme, writeStoredTheme } from "./theme";
-
-export interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+import { applyTheme, getPreferredTheme, readStoredTheme, type Theme, writeStoredTheme } from "./theme";
+import { ThemeContext } from "./themeContext";
 
 function ThemeProviderComponent({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => getPreferredTheme());
@@ -30,13 +16,8 @@ function ThemeProviderComponent({ children }: { children: ReactNode }) {
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
-      try {
-        const stored = window.localStorage.getItem("pipesor.theme");
-        if (stored === "light" || stored === "dark") {
-          return;
-        }
-      } catch {
-        // ignore
+      if (readStoredTheme()) {
+        return;
       }
       setThemeState(mediaQuery.matches ? "dark" : "light");
     };
@@ -61,11 +42,3 @@ function ThemeProviderComponent({ children }: { children: ReactNode }) {
 }
 
 export const ThemeProvider = ThemeProviderComponent;
-
-export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-}

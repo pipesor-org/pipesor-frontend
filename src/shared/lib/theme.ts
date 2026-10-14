@@ -1,3 +1,5 @@
+import { readStoredValue, writeStoredValue } from "./storage";
+
 const THEME_STORAGE_KEY = "pipesor.theme";
 
 export type Theme = "light" | "dark";
@@ -11,8 +13,8 @@ export function getPreferredTheme(): Theme {
     return "light";
   }
 
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (isTheme(stored)) {
+  const stored = readStoredTheme();
+  if (stored) {
     return stored;
   }
 
@@ -26,22 +28,10 @@ export function applyTheme(theme: Theme): void {
 }
 
 export function readStoredTheme(): Theme | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return isTheme(stored) ? stored : null;
-  } catch {
-    return null;
-  }
+  const stored = readStoredValue(THEME_STORAGE_KEY);
+  return isTheme(stored) ? stored : null;
 }
 
 export function writeStoredTheme(theme: Theme): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // Non-fatal
-  }
+  writeStoredValue(THEME_STORAGE_KEY, theme);
 }
