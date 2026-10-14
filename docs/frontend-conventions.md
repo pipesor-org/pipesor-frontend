@@ -19,6 +19,8 @@ Follow the dependency direction `app → pages → widgets → features → enti
 
 Create only slices needed for the current task. Do not create placeholder directories for future features or a general-purpose component library in anticipation of reuse.
 
+The [frontend functional architecture map](architecture/frontend-functional-map.md) explains current functional boundaries, candidate decomposition and open domain decisions; this guide remains authoritative for implementation conventions.
+
 ## 2. Visual source of truth and design handoff
 
 The approved **Pipesor** designs in Paper are the visual reference **when accessible**. The codebase remains usable without a paid Paper account. For handoffs to another developer, provide only the information relevant to the task:
