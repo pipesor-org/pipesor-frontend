@@ -79,7 +79,7 @@ The project follows **Feature-Sliced Design (FSD)**. Its `features/` layer is in
 
 ## Design, navigation and localization
 
-- **Design:** CSS Modules and semantic values in `src/app/styles/tokens.css`; the current design implements a light theme. New UI should reuse established patterns and approved specifications rather than reinterpret them.
+- **Design:** CSS Modules and semantic values in `src/app/styles/tokens.css`. The UI supports light and dark themes (preference `system`/`light`/`dark`, persisted in `localStorage` under `pipesor.theme`; theme toggle in the profile menu). New UI should reuse established patterns and approved specifications rather than reinterpret them.
 - **Sidebar:** collapsible navigation on desktop, with a narrow-screen overlay. The profile popover contains the language selector.
 - **Responsive tables:** queue tables preserve usable column widths and scroll within their containers when horizontal space is limited.
 - **Branding:** provided Pipesor SVG assets are stored in `src/shared/assets/branding/`; the favicon and tab title are configured in `index.html`.

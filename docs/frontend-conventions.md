@@ -34,8 +34,8 @@ A Paper frame describes a visual state; it does **not**, by itself, approve back
 ## 3. Tokens, theming and assets
 
 - Inspect `src/app/styles/tokens.css` before defining styles. Reuse existing semantic CSS custom properties for colors, typography, borders, radii and general layout values.
-- The current visual theme is **light**. The presence of dark-logo asset variants does not mean that a dark application theme exists.
-- Do not paste new arbitrary hex colors or recreate brand assets. Design-system extensions require a clear approved visual use case; a component-specific technical dimension is not automatically a new token.
+- The UI supports **light and dark** themes. Theme preference follows `system`, `light`, or `dark` and is persisted in `localStorage` under `pipesor.theme` (applied before initial render; `system` tracks `prefers-color-scheme` while active). The theme toggle lives in the profile menu. Semantic tokens live in `src/app/styles/tokens.css` and should be maintained per theme (`[data-theme='dark']`); see also `src/shared/lib/theme.ts` and `src/shared/lib/ThemeProvider.tsx` for the initialization/transition logic.
+- Do not paste new arbitrary hex colors or recreate brand assets. New visual themes and design-system extensions require explicit approval and a clear visual use case; a component-specific technical dimension is not automatically a new token.
 - Use supplied SVGs from `src/shared/assets/branding/` directly. Keep product name **Pipesor** unchanged across locales. Browser favicon comes from `public/favicon.png` through `index.html`.
 - Sora and JetBrains Mono are the existing font families. Respect established weights, spacing rhythm, density and hierarchy; avoid per-screen typography systems.
 
