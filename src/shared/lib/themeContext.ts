@@ -1,10 +1,13 @@
 import { createContext, useContext } from "react";
 
-import type { Theme } from "./theme";
+import type { Theme, ThemePreference } from "./theme";
 
 export interface ThemeContextValue {
+  /** The theme currently applied to the document. */
   theme: Theme;
-  setTheme: (theme: Theme) => void;
+  /** Sets and persists an explicit preference. */
+  setTheme: (preference: ThemePreference) => void;
+  /** Switches to the opposite of the applied theme and persists it. */
   toggleTheme: () => void;
 }
 
