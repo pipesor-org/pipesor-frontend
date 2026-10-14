@@ -29,6 +29,11 @@ const common = {
   language: {
     label: "Language",
   },
+  theme: {
+    label: "Theme",
+    switchToDark: "Switch to dark mode",
+    switchToLight: "Switch to light mode",
+  },
   filters: {
     scope: "Scope",
     scopeMine: "Mine",

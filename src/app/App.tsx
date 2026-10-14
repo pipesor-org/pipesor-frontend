@@ -4,6 +4,7 @@ import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { operationsQueuePath, routes } from "../shared/config";
 
+
 /**
  * Route table for the app.
  *

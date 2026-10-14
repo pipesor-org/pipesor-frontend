@@ -35,7 +35,7 @@ Search, sorting, scopes, tabs, navigation, and other presentational interactions
 - Reuse existing components and patterns before adding new ones: `shared/ui`, the Operations widgets, and incident UI in `entities/incident`.
 - Use CSS Modules for component styles. Keep global CSS limited to its existing application-level responsibilities.
 - Prefer semantic values from `src/app/styles/tokens.css`. Do not introduce arbitrary palette values, duplicate styling, or a parallel theming system. Specific CSS layout measurements are acceptable when needed for an approved responsive design; extend tokens only for justified design-system needs.
-- Preserve Pipesor SVG assets and branding; do not redraw or recolor logos. The current UI uses a light theme; do not implement dark mode without approval.
+- Preserve Pipesor SVG assets and branding; do not redraw or recolor logos. The UI supports light and dark themes via the theme toggle in the profile menu. The preference model is `system`, `light`, or `dark`, persisted in `localStorage` under `pipesor.theme`. Theme resolution (`system` follows the OS color scheme) is applied before initial render and synchronized with OS changes while following `system`. New visual themes and design changes require explicit approval.
 - Preserve the collapsible desktop sidebar and narrow-screen overlay. Keep the CSS breakpoint and the corresponding media-query logic consistent.
 - Tables should remain legible at 100% browser zoom; retain internal horizontal scrolling when columns cannot fit. Never solve overflow solely by shrinking text.
 - Provide visible keyboard focus, correct semantic controls, accessible labels, and expected popover/dialog/overlay dismissal and focus behavior.
