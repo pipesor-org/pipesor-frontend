@@ -30,6 +30,8 @@ Follow Feature-Sliced Design (FSD): `app → pages → widgets → features → 
 
 Search, sorting, scopes, tabs, navigation, and other presentational interactions **do not automatically require** feature slices. You may create a well-scoped page, widget, or entity slice for approved work. Seek approval before introducing a new architectural layer or implementing an unapproved business capability.
 
+See the [frontend functional architecture map](docs/architecture/frontend-functional-map.md) for verified functional boundaries, candidate mappings and open domain decisions. Its proposals are not implementation authorization.
+
 ## Visual design, components, and responsiveness
 
 - Reuse existing components and patterns before adding new ones: `shared/ui`, the Operations widgets, and incident UI in `entities/incident`.
