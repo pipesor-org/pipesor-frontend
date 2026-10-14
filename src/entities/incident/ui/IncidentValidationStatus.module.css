@@ -1,0 +1,6 @@
+.root {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 20px;
+}

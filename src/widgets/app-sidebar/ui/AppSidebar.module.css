@@ -1,0 +1,306 @@
+.sidebar {
+  position: sticky;
+  top: 0;
+  /*
+   * The rail is `position: sticky`, so it forms a stacking context. Give it a
+   * positive level so the profile popover (anchored inside it and opening into
+   * the content column when collapsed) paints above later positioned content
+   * such as the table rows. The narrow-screen overlay sets a higher level below.
+   */
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  padding: 28px 16px 20px;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  /*
+   * Width and the horizontal (collapsed) padding animate together. Because the
+   * collapsible *content* rules below only clip/reveal (they no longer rely on
+   * layout snapping), the rail's geometry and its content stay in step.
+   */
+  transition: width 160ms ease, padding 160ms ease;
+}
+
+.sidebarCollapsed {
+  width: var(--sidebar-width-collapsed);
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  /* Left inset aligns the logo with the nav icons below; the toggle sits flush
+   * with the inner right edge. */
+  padding: 0 0 24px 12px;
+}
+
+.sidebarCollapsed .header {
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 0 20px;
+}
+
+.brandWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.sidebarCollapsed .brandWrapper {
+  justify-content: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brandIconContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.brandIcon {
+  display: block;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.brandExpandButton {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.brandExpandButton:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.brandExpandButton:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.brand:focus-within .brandExpandButton,
+.brandIconContainer:hover .brandExpandButton,
+.brandIconContainer:focus-visible .brandExpandButton {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.brandIconContainer:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-radius: var(--radius-md);
+}
+
+.brandName {
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+  /*
+   * The label is clipped to the space the rail actually has at each frame, so
+   * it reveals in step with the width transition instead of momentarily
+   * overlapping the content column. In the expanded rail it fits, so nothing is
+   * clipped at rest.
+   */
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text-primary);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  /* Matches the rail width transition so the icon slides between its centred
+   * (collapsed) and aligned (expanded) positions. */
+  transition: padding 160ms ease;
+}
+
+.navItem:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.navItemActive,
+.navItemActive:hover {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-accent);
+}
+
+.navItemDisabled,
+.navItemDisabled:hover {
+  background-color: transparent;
+  cursor: default;
+}
+
+/* Collapsed rail: icons only, centred via the item's own inset (animatable,
+ * unlike `justify-content`). */
+.sidebarCollapsed .navItem {
+  padding: 0 8px;
+}
+
+.navIcon {
+  flex-shrink: 0;
+}
+
+.navLabel {
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  line-height: 20px;
+  /* Clipped to the rail's live width so the label reveals with it rather than
+   * spilling over the content column mid-transition. */
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Visually hidden but exposed to assistive technology. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1 1 0%;
+}
+
+/* Floating trigger and backdrop exist only in the narrow-viewport overlay. */
+.mobileTrigger {
+  display: none;
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: transform 160ms ease;
+  }
+
+  .sidebarMobileOpen {
+    transform: translateX(0);
+    box-shadow: 0 8px 32px rgba(16, 24, 40, 0.18);
+  }
+
+  .mobileTrigger {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+
+  .mobileTrigger:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background-color: rgba(16, 24, 40, 0.32);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .navItem,
+  .brandExpandButton {
+    transition: none;
+  }
+}

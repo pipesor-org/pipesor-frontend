@@ -1,0 +1,59 @@
+.summary {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 48px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  width: 286px;
+}
+
+.cellDivided {
+  padding-left: 24px;
+  border-left: 1px solid var(--color-border);
+}
+
+.severityGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.value {
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.valueMono {
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: var(--font-weight-medium);
+  line-height: 26px;
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.snapshot {
+  display: flex;
+  flex: 1 1 0%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: right;
+}

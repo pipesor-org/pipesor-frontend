@@ -1,0 +1,39 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg-app);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--content-padding);
+}
+
+/*
+ * Below the sidebar's overlay breakpoint the sidebar is out of flow, so the
+ * content reclaims the full width. The extra top padding clears the floating
+ * sidebar trigger that sits over the content in this mode.
+ */
+@media (max-width: 900px) {
+  .main {
+    padding-top: 64px;
+  }
+}
+
+.hintRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  height: 28px;
+  padding-top: 10px;
+}
+
+.hintText {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}

@@ -1,0 +1,44 @@
+/**
+ * Design tokens derived from the Paper source file "Pipesor".
+ * Values are copied verbatim from the selected frame's computed styles.
+ */
+:root {
+  /* Surfaces */
+  --color-bg-app: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f1f3f5;
+  --color-surface-tint: #edeff2;
+
+  /* Borders */
+  --color-border: #e4e7ec;
+
+  /* Text */
+  --color-text-primary: #17191c;
+  --color-text-secondary: #667085;
+
+  /* Accent */
+  --color-accent: #3157d5;
+
+  /* Severity */
+  --color-critical: #d92d20;
+  --color-warning: #d97706;
+
+  /* Typography */
+  --font-sans: 'Sora', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', system-ui, sans-serif;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 5px;
+  --radius-lg: 6px;
+
+  /* Layout */
+  --sidebar-width: 200px;
+  /* Icon-only rail width when the sidebar is collapsed on desktop. */
+  --sidebar-width-collapsed: 64px;
+  --content-padding: 32px;
+}
