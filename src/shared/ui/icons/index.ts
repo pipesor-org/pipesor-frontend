@@ -8,3 +8,4 @@ export {
   PipelinesIcon,
   SearchIcon,
 } from "./Icons";
+export { MoonIcon, SunIcon } from "./ThemeIcon";

@@ -134,6 +134,20 @@
   line-height: 18px;
 }
 
+.themeToggleWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.themeLabel {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .trigger {
     transition: none;

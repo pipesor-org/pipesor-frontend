@@ -8,6 +8,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { LanguageSelector } from "../../../shared/i18n";
+import { ThemeToggle } from "../../../shared/ui/theme-toggle";
 
 import styles from "./UserMenu.module.css";
 
@@ -140,6 +141,10 @@ export function UserMenu({ collapsed }: UserMenuProps) {
           <div className={styles.identity}>
             <span className={styles.identityName}>{USER.name}</span>
             <span className={styles.identityRole}>{USER.role}</span>
+          </div>
+          <div className={styles.themeToggleWrapper}>
+            <span className={styles.themeLabel}>{t("theme.label")}</span>
+            <ThemeToggle />
           </div>
           <LanguageSelector />
         </div>

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { operationsQueuePath, routes } from "../shared/config";
+import { useTheme } from "../shared/lib";
 
 /**
  * Route table for the app.
@@ -14,6 +15,7 @@ import { operationsQueuePath, routes } from "../shared/config";
  * renders NotFound instead of silently redirecting.
  */
 export function App() {
+  useTheme();
   return (
     <Routes>
       <Route

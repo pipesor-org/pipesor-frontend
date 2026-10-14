@@ -23,6 +23,11 @@ const common = {
   language: {
     label: "Idioma",
   },
+  theme: {
+    label: "Tema",
+    switchToDark: "Cambiar a modo oscuro",
+    switchToLight: "Cambiar a modo claro",
+  },
   filters: {
     scope: "Ámbito",
     scopeMine: "Míos",

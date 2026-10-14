@@ -18,10 +18,13 @@
 
   /* Accent */
   --color-accent: #3157d5;
+  --color-accent-hover: #2747b6;
 
   /* Severity */
-  --color-critical: #d92d20;
+  --color-info: #2684ff;
+  --color-success: #16875b;
   --color-warning: #d97706;
+  --color-critical: #d92d20;
 
   /* Typography */
   --font-sans: 'Sora', system-ui, sans-serif;
@@ -41,4 +44,55 @@
   /* Icon-only rail width when the sidebar is collapsed on desktop. */
   --sidebar-width-collapsed: 64px;
   --content-padding: 32px;
+}
+
+[data-theme='dark'],
+:root[data-theme='dark'] {
+  /* Surfaces */
+  --color-bg-app: #0e1116;
+  --color-surface: #151a21;
+  --color-surface-subtle: #1b222b;
+  --color-surface-tint: #1b222b;
+  --color-surface-elevated: #1b222b;
+
+  /* Borders */
+  --color-border: #29313d;
+
+  /* Text */
+  --color-text-primary: #f4f6f8;
+  --color-text-secondary: #98a2b3;
+
+  /* Accent */
+  --color-accent: #6c8cff;
+
+  /* Severity */
+  --color-success: #32b67a;
+  --color-warning: #f4a340;
+  --color-critical: #f97066;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    /* Surfaces */
+    --color-bg-app: #0e1116;
+    --color-surface: #151a21;
+    --color-surface-subtle: #1b222b;
+    --color-surface-tint: #1b222b;
+    --color-surface-elevated: #1b222b;
+
+    /* Borders */
+    --color-border: #29313d;
+
+    /* Text */
+    --color-text-primary: #f4f6f8;
+    --color-text-secondary: #98a2b3;
+
+    /* Accent */
+    --color-accent: #6c8cff;
+
+    /* Severity */
+    --color-success: #32b67a;
+    --color-warning: #f4a340;
+    --color-critical: #f97066;
+  }
 }

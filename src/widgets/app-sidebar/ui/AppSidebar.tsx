@@ -2,9 +2,9 @@ import { useEffect, useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
-import { pipesorSymbolLight } from "../../../shared/assets";
+import { pipesorSymbolDark, pipesorSymbolLight } from "../../../shared/assets";
 import { appDestinations } from "../../../shared/config";
-import { useMediaQuery } from "../../../shared/lib";
+import { useMediaQuery, useTheme } from "../../../shared/lib";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -42,6 +42,7 @@ export function AppSidebar() {
   const { t } = useTranslation("common");
   const { collapsed, toggleCollapsed, mobileOpen, openMobile, closeMobile } =
     useSidebarLayout();
+  const { theme } = useTheme();
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
   const sidebarId = useId();
 
@@ -120,7 +121,7 @@ export function AppSidebar() {
               >
                 <img
                   className={styles.brandIcon}
-                  src={pipesorSymbolLight}
+                  src={theme === "dark" ? pipesorSymbolDark : pipesorSymbolLight}
                   alt=""
                   width={24}
                   height={24}
