@@ -38,6 +38,8 @@ const common = {
     daysHours: "{{days}} d {{hours}} h",
     hoursMinutes: "{{hours}} h {{minutes}} min",
     minutes: "{{minutes}} min",
+    /** Sub-hour durations keep seconds, zero-padded (`1 min 42 s`, `3 min 05 s`). */
+    minutesSeconds: "{{minutes}} min {{seconds}} s",
   },
   notFound: {
     title: "Página no encontrada",

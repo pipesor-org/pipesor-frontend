@@ -1,7 +1,12 @@
 import { useTranslation } from "react-i18next";
 
 import { DEFAULT_LANGUAGE, matchSupportedLanguage } from "../config";
-import { durationParts, formatDate, formatNumber } from "./format";
+import {
+  durationParts,
+  formatDate,
+  formatNumber,
+  formatPaddedNumber,
+} from "./format";
 
 export interface Formatters {
   /** Active supported language code. */
@@ -12,6 +17,12 @@ export interface Formatters {
   formatNumber: (value: number) => string;
   /** Localized compact duration, e.g. `2d 1h`, `19h 30m`, `25m`. */
   formatDuration: (ms: number) => string;
+  /**
+   * Compact duration that keeps seconds precision below one hour, e.g.
+   * `1m 42s`. Above an hour it falls back to the two most significant units
+   * (`1h 12m`, `2d 1h`) like {@link Formatters.formatDuration}.
+   */
+  formatPreciseDuration: (ms: number) => string;
 }
 
 /**
@@ -37,6 +48,16 @@ export function useFormatters(): Formatters {
       if (days > 0) return t("duration.daysHours", { days, hours });
       if (hours > 0) return t("duration.hoursMinutes", { hours, minutes });
       return t("duration.minutes", { minutes });
+    },
+    formatPreciseDuration: (ms) => {
+      const { days, hours, minutes, seconds } = durationParts(ms);
+
+      if (days > 0) return t("duration.daysHours", { days, hours });
+      if (hours > 0) return t("duration.hoursMinutes", { hours, minutes });
+      return t("duration.minutesSeconds", {
+        minutes,
+        seconds: formatPaddedNumber(seconds, language),
+      });
     },
   };
 }
