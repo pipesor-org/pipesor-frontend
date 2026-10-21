@@ -36,19 +36,36 @@ export interface DurationParts {
   days: number;
   hours: number;
   minutes: number;
+  /** Additive: existing callers may keep using day/hour/minute granularity. */
+  seconds: number;
 }
 
 /**
- * Decomposes a millisecond duration into whole days/hours/minutes.
+ * Decomposes a millisecond duration into whole days/hours/minutes/seconds.
  *
  * The values are canonical numbers; the caller localizes the unit labels.
  */
 export function durationParts(ms: number): DurationParts {
-  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
+  const totalSeconds = Math.max(0, Math.floor(ms / 1_000));
 
   return {
-    days: Math.floor(totalMinutes / 1_440),
-    hours: Math.floor((totalMinutes % 1_440) / 60),
-    minutes: totalMinutes % 60,
+    days: Math.floor(totalSeconds / 86_400),
+    hours: Math.floor((totalSeconds % 86_400) / 3_600),
+    minutes: Math.floor((totalSeconds % 3_600) / 60),
+    seconds: totalSeconds % 60,
   };
+}
+
+/**
+ * Formats an integer with at least two digits (e.g. `5` -> `05`).
+ *
+ * Used for the seconds component of a duration, which the History frames
+ * present zero-padded (`1m 42s`, `3m 05s`). Locale-aware so the digits follow
+ * the active language's numbering system.
+ */
+export function formatPaddedNumber(value: number, language: string): string {
+  return new Intl.NumberFormat(intlLocaleFor(language), {
+    minimumIntegerDigits: 2,
+    useGrouping: false,
+  }).format(value);
 }
