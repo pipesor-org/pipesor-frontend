@@ -73,6 +73,18 @@ export const resolvedIncidentSchema = z.strictObject({
     DiagnosisValidationStatus.Rejected,
   ] as const),
   resolvedAt: z.iso.datetime(),
+  /*
+   * Demo-only durations for the History — Incidents columns "Diagnosis time"
+   * and "Resolution time", in whole seconds.
+   *
+   * The approved frame supplies only formatted durations (`1m 42s`), with no
+   * underlying instants, so these are stored as durations rather than
+   * synthesizing timestamps. Optional because earlier resolved fixtures predate
+   * the History frame and because diagnosis-time/MTTR semantics are not
+   * defined. This is presentation demo data, not a backend contract.
+   */
+  diagnosisDurationSeconds: z.number().int().nonnegative().optional(),
+  resolutionDurationSeconds: z.number().int().nonnegative().optional(),
 });
 
 /**
