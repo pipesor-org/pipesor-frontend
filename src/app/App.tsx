@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
+import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { operationsQueuePath, routes } from "../shared/config";
@@ -8,11 +9,12 @@ import { operationsQueuePath, routes } from "../shared/config";
 /**
  * Route table for the app.
  *
- * The Operations workspace is a single route: both queues are read projections
- * of the same domain and are selected with the `queue` query parameter
+ * `/operations` is a single route: both queues are read projections of the same
+ * domain and are selected with the `queue` query parameter
  * (`/operations?queue=active|validation`). The former per-queue URLs are kept as
- * redirects so existing links and bookmarks keep working, and an unknown path
- * renders NotFound instead of silently redirecting.
+ * redirects so existing links and bookmarks keep working. `/history` has no
+ * query-parameter contract yet. An unknown path renders NotFound instead of
+ * silently redirecting.
  */
 export function App() {
   return (
@@ -30,6 +32,7 @@ export function App() {
         path={routes.operationsNeedsValidationLegacy}
         element={<Navigate to={operationsQueuePath("validation")} replace />}
       />
+      <Route path={routes.history} element={<HistoryPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

@@ -88,7 +88,7 @@ export const appDestinations: AppDestination[] = [
     key: "history",
     labelKey: "nav.history",
     path: routes.history,
-    implemented: false,
+    implemented: true,
   },
   {
     key: "pipelines",

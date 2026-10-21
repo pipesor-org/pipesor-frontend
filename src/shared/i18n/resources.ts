@@ -1,6 +1,8 @@
 import enCommon from "./locales/en/common";
+import enHistory from "./locales/en/history";
 import enOperations from "./locales/en/operations";
 import esCommon from "./locales/es/common";
+import esHistory from "./locales/es/history";
 import esOperations from "./locales/es/operations";
 
 /**
@@ -17,9 +19,11 @@ export const resources = {
   en: {
     common: enCommon,
     operations: enOperations,
+    history: enHistory,
   },
   es: {
     common: esCommon,
     operations: esOperations,
+    history: esHistory,
   },
 } as const;
