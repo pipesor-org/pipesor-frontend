@@ -3,6 +3,7 @@ export {
   isOperationallyResolved,
   selectActiveIncidents,
   selectActiveIncidentSummary,
+  selectHistoryIncidents,
   selectNeedsValidationIncidents,
   selectNeedsValidationSummary,
 } from "./model/selectors";
