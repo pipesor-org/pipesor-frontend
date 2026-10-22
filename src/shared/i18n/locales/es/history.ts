@@ -23,7 +23,7 @@ const history = {
   searchPlaceholder: "Buscar incidentes",
 
   filters: {
-    dateRange: "Rango de fechas",
+    dateRange: "Periodo",
     repository: "Repositorio",
     stage: "Etapa",
     validation: "Validación",
