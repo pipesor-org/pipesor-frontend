@@ -14,6 +14,39 @@ const history = {
     insights: "Insights",
     insightsUnavailable: "aún no disponible",
   },
+
+  section: {
+    title: "Incidentes resueltos",
+    sort: "Ordenado por resolución ↓",
+  },
+
+  searchPlaceholder: "Buscar incidentes",
+
+  filters: {
+    dateRange: "Rango de fechas",
+    repository: "Repositorio",
+    stage: "Etapa",
+    validation: "Validación",
+    assignee: "Responsable",
+  },
+
+  columns: {
+    incidentWorkflow: "Incidente / Pipeline",
+    stage: "Etapa",
+    diagnosis: "Diagnóstico",
+    validation: "Validación",
+    assignee: "Responsable",
+    diagnosisTime: "Tiempo de\ndiagnóstico",
+    resolutionTime: "Tiempo de\nresolución",
+    resolved: "Resuelto",
+  },
+
+  hint:
+    "Seleccione una fila para abrir su espacio de trabajo del incidente en la vista histórica.",
+
+  unassigned: "Sin asignar",
+
+  empty: "No hay incidentes resueltos.",
 } as const;
 
 export default history;
