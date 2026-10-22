@@ -1,38 +1,49 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
-import { routes } from "../../../shared/config";
+import {
+  HISTORY_VIEW_PARAM,
+  historyViewPath,
+  parseHistoryView,
+} from "../../../shared/config";
 
 import styles from "./HistoryTabs.module.css";
 
 /**
  * History view switcher.
  *
- * `/history` deliberately has no query-parameter contract: the Incidents view is
- * the canonical URL. Insights has a design but no screen yet, so it is rendered
- * as plain text rather than a misleading disabled link, matching how the sidebar
- * treats destinations that are not implemented. Its unavailability is announced
- * to assistive technology through a visually hidden note.
+ * Both views live on one route, so each tab is a link to its canonical
+ * `?view=` URL and the active tab is derived from the URL rather than local
+ * state. `NavLink` cannot distinguish two links that share a pathname, so the
+ * active state is computed from the query value and exposed with
+ * `aria-current`.
  */
 export function HistoryTabs() {
   const { t } = useTranslation("history");
+  const [searchParams] = useSearchParams();
+  const activeView = parseHistoryView(searchParams.get(HISTORY_VIEW_PARAM));
+
+  const tabs = [
+    { view: "incidents", label: t("tabs.incidents") },
+    { view: "insights", label: t("tabs.insights") },
+  ] as const;
 
   return (
     <nav className={styles.tabs} aria-label={t("tabs.ariaLabel")}>
-      <Link
-        to={routes.history}
-        className={`${styles.tab} ${styles.tabActive}`}
-        aria-current="page"
-      >
-        <span className={styles.tabLabel}>{t("tabs.incidents")}</span>
-      </Link>
-      <span
-        className={`${styles.tab} ${styles.tabDisabled}`}
-        aria-disabled="true"
-      >
-        <span className={styles.tabLabel}>{t("tabs.insights")}</span>
-        <span className={styles.srOnly}>{t("tabs.insightsUnavailable")}</span>
-      </span>
+      {tabs.map(({ view, label }) => {
+        const isActive = view === activeView;
+
+        return (
+          <Link
+            key={view}
+            to={historyViewPath(view)}
+            className={`${styles.tab}${isActive ? ` ${styles.tabActive}` : ""}`}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <span className={styles.tabLabel}>{label}</span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

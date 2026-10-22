@@ -12,9 +12,9 @@ import { operationsQueuePath, routes } from "../shared/config";
  * `/operations` is a single route: both queues are read projections of the same
  * domain and are selected with the `queue` query parameter
  * (`/operations?queue=active|validation`). The former per-queue URLs are kept as
- * redirects so existing links and bookmarks keep working. `/history` has no
- * query-parameter contract yet. An unknown path renders NotFound instead of
- * silently redirecting.
+ * redirects so existing links and bookmarks keep working. `/history` follows the
+ * same pattern with `?view=incidents|insights`. An unknown path renders NotFound
+ * instead of silently redirecting.
  */
 export function App() {
   return (

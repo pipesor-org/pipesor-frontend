@@ -34,7 +34,8 @@
   align-items: center;
   justify-content: flex-end;
   flex-shrink: 0;
-  height: 28px;
+  /* One line keeps the frame's 28px row; narrow screens grow instead of clipping. */
+  min-height: 28px;
   padding-top: 10px;
 }
 
@@ -42,4 +43,5 @@
   color: var(--color-text-secondary);
   font-size: 12px;
   line-height: 18px;
+  text-align: right;
 }

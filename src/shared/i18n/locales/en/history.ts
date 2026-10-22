@@ -1,8 +1,9 @@
 /**
  * `history` namespace — English.
  *
- * History workspace copy: header and view switcher. Values preserve the copy
- * authored in the Paper source ("History v1 — Resolved incidents").
+ * History workspace copy: header, view switcher, both views' filters and the
+ * Insights summary. Values preserve the copy authored in the Paper source
+ * ("History v1 — Resolved incidents", "History — Insights v1").
  */
 const history = {
   title: "History",
@@ -13,8 +14,6 @@ const history = {
     ariaLabel: "History views",
     incidents: "Incidents",
     insights: "Insights",
-    /** Announced for the Insights view, which has no screen yet. */
-    insightsUnavailable: "not available yet",
   },
 
   section: {
@@ -26,10 +25,46 @@ const history = {
 
   filters: {
     dateRange: "Date range",
+    dateRangeValue: "Date range: {{range}}",
     repository: "Repository",
+    pipeline: "Pipeline",
     stage: "Stage",
     validation: "Validation",
     assignee: "Assignee",
+    severity: "Severity",
+  },
+
+  insights: {
+    summary: {
+      meanDiagnosis: "Mean diagnosis time",
+      meanResolution: "Mean time to resolution (MTTR)",
+      confirmationRate: "Diagnosis confirmation rate",
+      resolvedIncidents: "Resolved incidents",
+      noData: "No data",
+    },
+    trend: {
+      title: "Mean diagnosis time over time",
+      caption: "{{range}} · Weekly means",
+      bucket: "{{date}}: {{value}}",
+    },
+    stage: {
+      title: "Incidents by stage",
+      caption: "Incidents",
+    },
+    outcome: {
+      title: "Diagnosis outcome",
+      validated_one: "{{countFormatted}} validated diagnosis",
+      validated_other: "{{countFormatted}} validated diagnoses",
+      value: "{{incidents}} · {{percent}}",
+      note: "Confirmation rate reflects diagnoses marked Confirmed by operators. Percentages are rounded.",
+    },
+    recurring: {
+      title: "Incident concentration by pipeline",
+      caption: "Grouped by pipeline and stage",
+      captionTruncated:
+        "Grouped by pipeline and stage · Showing {{shown}} of {{total}}",
+    },
+    hint: "Select a group to filter Incidents by pipeline and stage.",
   },
 
   columns: {

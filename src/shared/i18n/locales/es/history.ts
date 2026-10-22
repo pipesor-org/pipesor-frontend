@@ -12,7 +12,6 @@ const history = {
     ariaLabel: "Vistas del historial",
     incidents: "Incidentes",
     insights: "Insights",
-    insightsUnavailable: "aún no disponible",
   },
 
   section: {
@@ -24,10 +23,46 @@ const history = {
 
   filters: {
     dateRange: "Periodo",
+    dateRangeValue: "Periodo: {{range}}",
     repository: "Repositorio",
+    pipeline: "Pipeline",
     stage: "Etapa",
     validation: "Validación",
     assignee: "Responsable",
+    severity: "Severidad",
+  },
+
+  insights: {
+    summary: {
+      meanDiagnosis: "Tiempo medio de diagnóstico",
+      meanResolution: "Tiempo medio de resolución (MTTR)",
+      confirmationRate: "Tasa de confirmación de diagnósticos",
+      resolvedIncidents: "Incidentes resueltos",
+      noData: "Sin datos",
+    },
+    trend: {
+      title: "Evolución del tiempo medio de diagnóstico",
+      caption: "{{range}} · Medias semanales",
+      bucket: "{{date}}: {{value}}",
+    },
+    stage: {
+      title: "Incidentes por etapa",
+      caption: "Incidentes",
+    },
+    outcome: {
+      title: "Resultado del diagnóstico",
+      validated_one: "{{countFormatted}} diagnóstico validado",
+      validated_other: "{{countFormatted}} diagnósticos validados",
+      value: "{{incidents}} · {{percent}}",
+      note: "La tasa de confirmación refleja los diagnósticos marcados como confirmados por los operadores. Los porcentajes están redondeados.",
+    },
+    recurring: {
+      title: "Concentración de incidentes por pipeline",
+      caption: "Agrupado por pipeline y etapa",
+      captionTruncated:
+        "Agrupado por pipeline y etapa · Mostrando {{shown}} de {{total}}",
+    },
+    hint: "Seleccione un grupo para filtrar Incidentes por pipeline y etapa.",
   },
 
   columns: {
