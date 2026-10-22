@@ -40,6 +40,11 @@ const history = {
       resolvedIncidents: "Incidentes resueltos",
       noData: "Sin datos",
     },
+    trend: {
+      title: "Evolución del tiempo medio de diagnóstico",
+      caption: "{{range}} · Medias semanales",
+      bucket: "{{date}}: {{value}}",
+    },
   },
 
   columns: {

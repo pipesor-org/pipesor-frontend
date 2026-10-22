@@ -42,6 +42,11 @@ const history = {
       resolvedIncidents: "Resolved incidents",
       noData: "No data",
     },
+    trend: {
+      title: "Mean diagnosis time over time",
+      caption: "{{range}} · Weekly means",
+      bucket: "{{date}}: {{value}}",
+    },
   },
 
   columns: {
