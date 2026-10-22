@@ -43,85 +43,111 @@ export function NeedsValidationTable() {
 
   return (
     <div className={styles.card}>
-      <div className={styles.headerRow}>
-        {HEADER_CELLS.map((cell) => (
-          <span
-            key={cell.key}
-            className={`${styles.headerCell} ${styles[cell.column]}`}
-          >
-            {t(cell.labelKey)}
-          </span>
-        ))}
-      </div>
+      <table className={styles.table} aria-label={t("tabs.needsValidation")}>
+        <colgroup>
+          {HEADER_CELLS.map((cell) => (
+            <col key={cell.key} className={styles[cell.column]} />
+          ))}
+        </colgroup>
+        <thead>
+          <tr className={styles.headerRow}>
+            {HEADER_CELLS.map((cell) => (
+              <th key={cell.key} scope="col" className={styles.headerCell}>
+                {t(cell.labelKey)}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
-      {incidents.length === 0 ? (
-        <div className={styles.empty}>
-          <span className={styles.emptyTitle}>
-            {t("validation.empty.title")}
-          </span>
-          <span className={styles.emptyText}>
-            {t("validation.empty.text")}
-          </span>
-        </div>
-      ) : (
-        incidents.map((incident) => (
-          <div key={incident.id} className={styles.row}>
-            <div className={`${styles.cell} ${styles.colSeverity}`}>
-              <IncidentSeverity severity={incident.severity} />
-            </div>
+        <tbody>
+          {incidents.length === 0 ? (
+            <tr>
+              <td colSpan={HEADER_CELLS.length} className={styles.emptyCell}>
+                <div className={styles.empty}>
+                  <span className={styles.emptyTitle}>
+                    {t("validation.empty.title")}
+                  </span>
+                  <span className={styles.emptyText}>
+                    {t("validation.empty.text")}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            incidents.map((incident) => (
+              <tr key={incident.id} className={styles.row}>
+                <td>
+                  <div className={styles.cell}>
+                    <IncidentSeverity severity={incident.severity} />
+                  </div>
+                </td>
 
-            <div className={`${styles.cell} ${styles.colIncident}`}>
-              <span className={styles.incidentId}>{incident.id}</span>
-              <span className={styles.incidentRepository}>
-                {incident.repository}
-              </span>
-              <span className={styles.incidentWorkflow}>
-                {incident.workflow}
-              </span>
-            </div>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.incidentId}>{incident.id}</span>
+                    <span className={styles.incidentRepository}>
+                      {incident.repository}
+                    </span>
+                    <span className={styles.incidentWorkflow}>
+                      {incident.workflow}
+                    </span>
+                  </div>
+                </td>
 
-            <div className={`${styles.cell} ${styles.colStage}`}>
-              <span className={styles.stage}>
-                {t(STAGE_LABEL_KEY[incident.stage])}
-              </span>
-            </div>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.stage}>
+                      {t(STAGE_LABEL_KEY[incident.stage])}
+                    </span>
+                  </div>
+                </td>
 
-            <div className={`${styles.cell} ${styles.colDiagnosis}`}>
-              <span className={styles.diagnosisTitle}>
-                {incident.diagnosis}
-              </span>
-            </div>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.diagnosisTitle}>
+                      {incident.diagnosis}
+                    </span>
+                  </div>
+                </td>
 
-            <div className={`${styles.cell} ${styles.colResolved}`}>
-              <span className={styles.resolvedAt}>
-                {formatTimestamp(incident.resolvedAt)}
-              </span>
-              <span className={styles.pendingFor}>
-                {t("validation.pendingFor", {
-                  duration: formatDuration(
-                    durationMs(incident.resolvedAt, INCIDENT_SNAPSHOT_AT),
-                  ),
-                })}
-              </span>
-            </div>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.resolvedAt}>
+                      {formatTimestamp(incident.resolvedAt)}
+                    </span>
+                    <span className={styles.pendingFor}>
+                      {t("validation.pendingFor", {
+                        duration: formatDuration(
+                          durationMs(incident.resolvedAt, INCIDENT_SNAPSHOT_AT),
+                        ),
+                      })}
+                    </span>
+                  </div>
+                </td>
 
-            <div className={`${styles.cell} ${styles.colAssignee}`}>
-              {incident.assignee ? (
-                <span className={styles.assignee}>{incident.assignee}</span>
-              ) : (
-                <span className={styles.assigneeUnassigned}>
-                  {t("table.unassigned")}
-                </span>
-              )}
-            </div>
+                <td>
+                  <div className={styles.cell}>
+                    {incident.assignee ? (
+                      <span className={styles.assignee}>{incident.assignee}</span>
+                    ) : (
+                      <span className={styles.assigneeUnassigned}>
+                        {t("table.unassigned")}
+                      </span>
+                    )}
+                  </div>
+                </td>
 
-            <div className={`${styles.cell} ${styles.colValidation}`}>
-              <IncidentValidationStatus status={incident.validationStatus} />
-              <ChevronRightIcon className={styles.validationChevron} />
-            </div>
-          </div>
-        ))
-      )}
+                <td>
+                  <div className={`${styles.cell} ${styles.validationCell}`}>
+                    <IncidentValidationStatus status={incident.validationStatus} />
+                    <ChevronRightIcon className={styles.validationChevron} />
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
