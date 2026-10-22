@@ -42,6 +42,28 @@ export function formatShortDate(iso: string, language: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * Formats an inclusive ISO-8601 UTC interval as one localized range
+ * (`Sep 1 – 30`, `1–30 sept`).
+ *
+ * `formatRange` collapses the parts the two ends share, so the Insights period
+ * control fits its fixed width without hand-joining two labels or assuming
+ * month-day order.
+ */
+export function formatShortDateRange(
+  startIso: string,
+  endIso: string,
+  language: string,
+): string {
+  const formatter = new Intl.DateTimeFormat(intlLocaleFor(language), {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
+  return formatter.formatRange(new Date(startIso), new Date(endIso));
+}
+
 /** Formats an integer with the locale's grouping rules. */
 export function formatNumber(value: number, language: string): string {
   return new Intl.NumberFormat(intlLocaleFor(language)).format(value);

@@ -12,7 +12,6 @@ const history = {
     ariaLabel: "Vistas del historial",
     incidents: "Incidentes",
     insights: "Insights",
-    insightsUnavailable: "aún no disponible",
   },
 
   section: {
@@ -24,10 +23,23 @@ const history = {
 
   filters: {
     dateRange: "Periodo",
+    dateRangeValue: "Periodo: {{range}}",
     repository: "Repositorio",
+    pipeline: "Pipeline",
     stage: "Etapa",
     validation: "Validación",
     assignee: "Responsable",
+    severity: "Severidad",
+  },
+
+  insights: {
+    summary: {
+      meanDiagnosis: "Tiempo medio de diagnóstico",
+      meanResolution: "Tiempo medio de resolución (MTTR)",
+      confirmationRate: "Tasa de confirmación de diagnósticos",
+      resolvedIncidents: "Incidentes resueltos",
+      noData: "Sin datos",
+    },
   },
 
   columns: {
