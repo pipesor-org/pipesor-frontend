@@ -45,6 +45,17 @@ const history = {
       caption: "{{range}} · Medias semanales",
       bucket: "{{date}}: {{value}}",
     },
+    stage: {
+      title: "Incidentes por etapa",
+      caption: "Incidentes",
+    },
+    outcome: {
+      title: "Resultado del diagnóstico",
+      validated_one: "{{countFormatted}} diagnóstico validado",
+      validated_other: "{{countFormatted}} diagnósticos validados",
+      value: "{{incidents}} · {{percent}}",
+      note: "La tasa de confirmación refleja los diagnósticos marcados como confirmados por los operadores. Los porcentajes están redondeados.",
+    },
   },
 
   columns: {

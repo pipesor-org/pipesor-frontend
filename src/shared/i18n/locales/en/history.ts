@@ -47,6 +47,17 @@ const history = {
       caption: "{{range}} · Weekly means",
       bucket: "{{date}}: {{value}}",
     },
+    stage: {
+      title: "Incidents by stage",
+      caption: "Incidents",
+    },
+    outcome: {
+      title: "Diagnosis outcome",
+      validated_one: "{{countFormatted}} validated diagnosis",
+      validated_other: "{{countFormatted}} validated diagnoses",
+      value: "{{incidents}} · {{percent}}",
+      note: "Confirmation rate reflects diagnoses marked Confirmed by operators. Percentages are rounded.",
+    },
   },
 
   columns: {
