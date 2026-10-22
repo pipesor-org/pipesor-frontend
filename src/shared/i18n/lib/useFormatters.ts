@@ -6,6 +6,8 @@ import {
   formatDate,
   formatNumber,
   formatPaddedNumber,
+  formatPercent,
+  formatShortDate,
 } from "./format";
 
 export interface Formatters {
@@ -13,8 +15,12 @@ export interface Formatters {
   language: string;
   /** Localized `Sep 30, 10:30` rendering of an ISO-8601 UTC instant. */
   formatTimestamp: (iso: string) => string;
+  /** Localized day-only rendering of an ISO-8601 UTC instant (`Sep 1`). */
+  formatShortDate: (iso: string) => string;
   /** Localized integer rendering (grouping separators). */
   formatNumber: (value: number) => string;
+  /** Localized ratio rendering (`0.625` -> `62.5%`). */
+  formatPercent: (value: number) => string;
   /** Localized compact duration, e.g. `2d 1h`, `19h 30m`, `25m`. */
   formatDuration: (ms: number) => string;
   /**
@@ -41,7 +47,9 @@ export function useFormatters(): Formatters {
   return {
     language,
     formatTimestamp: (iso) => formatDate(iso, language),
+    formatShortDate: (iso) => formatShortDate(iso, language),
     formatNumber: (value) => formatNumber(value, language),
+    formatPercent: (value) => formatPercent(value, language),
     formatDuration: (ms) => {
       const { days, hours, minutes } = durationParts(ms);
 

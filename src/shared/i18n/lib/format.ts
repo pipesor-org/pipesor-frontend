@@ -27,9 +27,40 @@ export function formatDate(iso: string, language: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * Formats an ISO-8601 UTC instant as a day only (`Sep 1`, `1 sept`).
+ *
+ * Used where a period boundary is displayed without a time of day, such as the
+ * History — Insights weekly axis. Time zone handling matches {@link formatDate}:
+ * the demo instants are authored in UTC and must not shift.
+ */
+export function formatShortDate(iso: string, language: string): string {
+  return new Intl.DateTimeFormat(intlLocaleFor(language), {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
 /** Formats an integer with the locale's grouping rules. */
 export function formatNumber(value: number, language: string): string {
   return new Intl.NumberFormat(intlLocaleFor(language)).format(value);
+}
+
+/**
+ * Formats a ratio (`0.625`) as a localized percentage (`62.5%`).
+ *
+ * At most one fraction digit is kept, so whole percentages stay short (`84%`)
+ * while small denominators are not rounded into a misleading total: the
+ * Insights demo has eight validated diagnoses, where integer rounding would
+ * render `63%` and `38%` (101%). Callers pass a canonical ratio, never a
+ * display string.
+ */
+export function formatPercent(value: number, language: string): string {
+  return new Intl.NumberFormat(intlLocaleFor(language), {
+    style: "percent",
+    maximumFractionDigits: 1,
+  }).format(value);
 }
 
 export interface DurationParts {
