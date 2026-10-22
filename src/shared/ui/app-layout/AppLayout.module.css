@@ -10,6 +10,12 @@
   flex: 1 1 auto;
   min-width: 0;
   padding: var(--content-padding);
+  /*
+   * The workspace frames are 900px tall and leave ~14px below the hint. The
+   * 32px shared padding overflows that frame once a screen reaches eight
+   * rows, so the bottom keeps the frame's breathing room instead.
+   */
+  padding-bottom: 13px;
 }
 
 /*
