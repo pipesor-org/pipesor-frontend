@@ -20,43 +20,55 @@ interface IncidentFiltersProps {
   searchPlaceholder: string;
   /** Labels for the filter dropdowns, in display order. */
   filterLabels: readonly string[];
-  /** Current sort description shown at the end of the filter block. */
-  sortLabel: string;
+  /**
+   * Current sort description shown at the end of the filter block. Omit it when
+   * the screen presents ordering next to its own section heading.
+   */
+  sortLabel?: string;
+  /**
+   * Whether the Operations scope row is shown. Screens without assignment
+   * scopes, such as History, hide it.
+   */
+  showScope?: boolean;
 }
 
 /**
- * Scope, search, filter and sort controls. The visual structure is shared by
- * every Operations queue; the queue-specific copy is passed in by the page.
- * The controls are presentational only — filtering is out of scope for now.
+ * Scope, search, filter and sort controls. The visual structure is shared by the
+ * Operations queues and History; queue- and screen-specific copy is passed in by
+ * the page, and the scope and sort groups are optional. The controls are
+ * presentational only — filtering is out of scope for now.
  */
 export function IncidentFilters({
   searchPlaceholder,
   filterLabels,
   sortLabel,
+  showScope = true,
 }: IncidentFiltersProps) {
   const { t } = useTranslation("common");
 
   return (
     <div className={styles.filters}>
-      <div className={styles.scopeRow}>
-        <span className={styles.scopeLabel}>{t("filters.scope")}</span>
-        <div
-          className={styles.segmented}
-          role="group"
-          aria-label={t("filters.scope")}
-        >
-          {SCOPE_OPTIONS.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              className={`${styles.segment}${option.key === ACTIVE_SCOPE ? ` ${styles.segmentActive}` : ""}`}
-              aria-pressed={option.key === ACTIVE_SCOPE}
-            >
-              {t(option.labelKey)}
-            </button>
-          ))}
+      {showScope ? (
+        <div className={styles.scopeRow}>
+          <span className={styles.scopeLabel}>{t("filters.scope")}</span>
+          <div
+            className={styles.segmented}
+            role="group"
+            aria-label={t("filters.scope")}
+          >
+            {SCOPE_OPTIONS.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                className={`${styles.segment}${option.key === ACTIVE_SCOPE ? ` ${styles.segmentActive}` : ""}`}
+                aria-pressed={option.key === ACTIVE_SCOPE}
+              >
+                {t(option.labelKey)}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className={styles.queryRow}>
         <label className={styles.searchField}>
@@ -82,9 +94,11 @@ export function IncidentFilters({
         ))}
       </div>
 
-      <div className={styles.sortRow}>
-        <span className={styles.sortLabel}>{sortLabel}</span>
-      </div>
+      {sortLabel ? (
+        <div className={styles.sortRow}>
+          <span className={styles.sortLabel}>{sortLabel}</span>
+        </div>
+      ) : null}
     </div>
   );
 }

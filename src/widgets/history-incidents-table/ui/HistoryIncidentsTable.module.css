@@ -1,0 +1,231 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  /* Matches the frame: 12px between the heading and the table header. */
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  height: 50px;
+  padding-top: 24px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.sectionSort {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.tableWrapper {
+  flex-shrink: 0;
+  width: 100%;
+  /* Keep horizontal overflow inside the table container, never on the page. */
+  overflow-x: auto;
+  background-color: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  /*
+   * The table stops at the frame's 1144px content width instead of squeezing
+   * its columns; narrower viewports scroll inside `.tableWrapper`.
+   */
+  min-width: 1144px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.headerRow {
+  height: 48px;
+  background-color: var(--color-surface-subtle);
+}
+
+.headerCell {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+  text-align: left;
+  vertical-align: middle;
+  /* Two-line headers such as "Diagnosis\ntime" preserve their explicit break. */
+  white-space: pre-line;
+}
+
+.headerCell:first-child {
+  padding-left: 16px;
+}
+
+.headerCell:last-child {
+  padding-right: 16px;
+}
+
+.row td {
+  height: 68px;
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+/* The frame gives every cell a 10px gutter so long copy cannot touch the next column. */
+.row td:not(:last-child) {
+  padding-right: 10px;
+}
+
+.row td:first-child {
+  padding-left: 16px;
+}
+
+.row td:last-child {
+  /* The frame reserves the row's 16px trailing edge inside the last cell. */
+  padding-right: 16px;
+}
+
+.row:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.row:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.incidentId {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.incidentRepository {
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.incidentWorkflow {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.stage {
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.diagnosis {
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  line-height: 20px;
+}
+
+.assignee {
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.assigneeUnassigned {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.duration {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.resolvedCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* At the table minimum the date and chevron sit flush; wider layouts space them. */
+  gap: 0;
+}
+
+.resolvedAt {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 20px;
+  /* The date and time share a single line, as in the approved frame. */
+  white-space: nowrap;
+}
+
+.chevron {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  color: var(--color-text-secondary);
+}
+
+.empty {
+  height: 320px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/*
+ * Column proportions reproduce the approved frame's 1176px table: the frame
+ * lays out 16px edge padding around columns of
+ * 210 / 112 / 274 / 110 / 100 / 104 / 108 / 126. The first and last entries
+ * below therefore include that edge padding so content starts and ends at the
+ * same lanes as the frame.
+ */
+.colIncident {
+  width: 19.2177%;
+}
+
+.colStage {
+  width: 9.5238%;
+}
+
+.colDiagnosis {
+  width: 23.2993%;
+}
+
+.colValidation {
+  width: 9.3537%;
+}
+
+.colAssignee {
+  width: 8.5034%;
+}
+
+.colDiagnosisTime {
+  width: 8.8435%;
+}
+
+.colResolutionTime {
+  width: 9.1837%;
+}
+
+.colResolved {
+  width: 12.0748%;
+}

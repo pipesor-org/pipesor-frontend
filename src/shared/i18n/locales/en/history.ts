@@ -16,6 +16,38 @@ const history = {
     /** Announced for the Insights view, which has no screen yet. */
     insightsUnavailable: "not available yet",
   },
+
+  section: {
+    title: "Resolved incidents",
+    sort: "Sorted by Resolved ↓",
+  },
+
+  searchPlaceholder: "Search incidents",
+
+  filters: {
+    dateRange: "Date range",
+    repository: "Repository",
+    stage: "Stage",
+    validation: "Validation",
+    assignee: "Assignee",
+  },
+
+  columns: {
+    incidentWorkflow: "Incident / Pipeline",
+    stage: "Stage",
+    diagnosis: "Diagnosis",
+    validation: "Validation",
+    assignee: "Assignee",
+    diagnosisTime: "Diagnosis\ntime",
+    resolutionTime: "Resolution\ntime",
+    resolved: "Resolved",
+  },
+
+  hint: "Select a row to open its Incident Workspace in historical view.",
+
+  unassigned: "Unassigned",
+
+  empty: "No resolved incidents.",
 } as const;
 
 export default history;

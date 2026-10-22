@@ -9,6 +9,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  /* History's frame sets the status line to 18px, unlike the text-only variant. */
+  line-height: 18px;
 }
 
 .dot {
