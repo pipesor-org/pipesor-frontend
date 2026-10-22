@@ -173,3 +173,22 @@
 .colAction {
   width: 5.10204%;
 }
+
+/*
+ * The Spanish title and the group-count caption together need about 700px.
+ * Below that width the caption moves under the title instead of squeezing the
+ * title into a narrow column (and, on the narrowest screens, overflowing the
+ * page).
+ */
+@media (max-width: 800px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .caption {
+    max-width: 100%;
+    text-align: left;
+  }
+}

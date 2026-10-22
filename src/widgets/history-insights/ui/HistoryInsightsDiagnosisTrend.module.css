@@ -130,3 +130,22 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/*
+ * At narrow widths the range caption would take the room the title needs,
+ * breaking "Mean diagnosis time over time" into four short lines. Stacking the
+ * caption below keeps the title readable; the chart itself still scrolls inside
+ * its own body.
+ */
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .caption {
+    max-width: 100%;
+    text-align: left;
+  }
+}

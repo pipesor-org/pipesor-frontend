@@ -2,7 +2,7 @@
 
 Pipesor is an AIOps interface for **monitoring CI/CD workflows, managing incidents, and reviewing operational history and AI-assisted diagnoses**. This repository contains its React frontend.
 
-**Current implementation:** the **Operations** workspace (Active Incidents and Needs Validation) and the **History — Incidents** read view, a responsive application sidebar, English/Spanish localization, Pipesor branding, and an accessible Not Found page. Incident information currently comes from **local, Zod-validated demo fixtures**; there is no backend integration.
+**Current implementation:** the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), a responsive application sidebar, English/Spanish localization, Pipesor branding, and an accessible Not Found page. Incident information currently comes from **local, Zod-validated demo fixtures**; there is no backend integration.
 
 The approved interface designs are maintained in Paper (file **Pipesor**). Paper access is optional: contributors can work from approved design handoffs and existing components without Paper credentials.
 
@@ -47,15 +47,15 @@ Exact resolved dependency versions are defined by `package.json` and `bun.lock`.
 | --- | --- | --- |
 | Operations — Active Incidents | `/operations?queue=active` | Implemented with demo data |
 | Operations — Needs Validation | `/operations?queue=validation` | Implemented with demo data |
-| History — Incidents | `/history` | Implemented with demo data |
-| History — Insights | Shown as unavailable inside `/history` | Planned |
+| History — Incidents | `/history?view=incidents` (bare `/history` also renders Incidents) | Implemented with demo data |
+| History — Insights | `/history?view=insights` | Implemented with demo data and provisional metrics |
 | Unknown route | Any unmatched path | Not Found page |
 | Pipelines and pipeline details | Not registered | Planned |
 | Incident Workspace states | Not registered | Planned |
 
-`/` and the legacy paths `/operations/active-incidents` and `/operations/needs-validation` redirect to the canonical Operations URLs. `/history` renders the History — Incidents view; it has no query-parameter tab contract, and Insights is not a destination yet. The routing implementation is in `src/app/App.tsx`, with navigation destinations defined in `src/shared/config/navigation.ts`.
+`/` and the legacy paths `/operations/active-incidents` and `/operations/needs-validation` redirect to the canonical Operations URLs. History uses `?view=incidents|insights`; bare `/history` renders Incidents and any other `view` value canonicalizes to `?view=incidents`. The routing implementation is in `src/app/App.tsx`, with the history view contract in `src/shared/config/navigation.ts`.
 
-Existing search, scope, filter, sort, row actions, and incident assignment affordances are **presentational unless their behavior has been explicitly implemented and verified**. Do not assume they call an API or persist state.
+Existing search, scope, filter, sort, row actions, incident assignment, and Insights period/filter affordances are **presentational unless their behavior has been explicitly implemented and verified**. Do not assume they call an API, recompute the fixture aggregations, or persist state.
 
 ## Project structure
 
@@ -63,7 +63,7 @@ Existing search, scope, filter, sort, row actions, and incident assignment affor
 src/
 ├── app/                  # Root routing, global CSS and design tokens
 ├── pages/                # Operations, History and Not Found screen compositions
-├── widgets/              # Sidebar, Operations sections, filters and History table
+├── widgets/              # Sidebar, Operations sections, filters, History table and Insights
 ├── entities/
 │   └── incident/         # Zod schemas, mock fixtures, selectors and entity UI
 ├── shared/
@@ -89,11 +89,13 @@ The project follows **Feature-Sliced Design (FSD)**. Its `features/` layer is in
 
 ## Domain model and current limitations
 
-`src/entities/incident/model/` contains the current incident contract and demo data. Zod validates incident fixtures; selectors derive queue membership and counts. Incident resolution and diagnosis validation are distinct states.
+`src/entities/incident/model/` contains the current incident contract and demo data. Zod validates incident fixtures; selectors derive queue membership, History membership, counts and the fixed-window Insights aggregations. Incident resolution and diagnosis validation are distinct states.
 
 The frontend does **not** currently implement real persistence, API pagination, authentication, authorization, remote data fetching, or incident lifecycle commands. The following remain proposed business features, subject to approved requirements and contracts:
 
 `onboard-monitored-workflow`, `configure-monitored-pipeline`, `assign-incident`, `manage-incident-lifecycle`, `validate-diagnosis`.
+
+History — Insights derives its metrics from the same demo incidents through entity selectors. Its fixed window and definitions are **provisional**: the diagnosis-confirmation rate is not an accuracy metric, missing periods are never interpolated, and the presentational filters do not recompute results. Recurring-group rows and chevrons do not filter or open Incidents.
 
 ## Working on the project
 

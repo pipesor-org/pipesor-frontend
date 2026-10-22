@@ -76,7 +76,7 @@ Use semantic links for navigation and buttons for actions. Keep visible `:focus-
 
 - React Router routes and redirects are managed in `src/app/App.tsx`; destinations and URLs are centralized under `src/shared/config/`.
 - Operations uses `/operations?queue=active` and `/operations?queue=validation`. Preserve the URL's selected queue so browser back/forward and reload behave coherently.
-- History — Incidents uses `/history` as its canonical URL. It has no tab query contract; keep unimplemented History views non-links rather than adding speculative parameters.
+- History uses `/history?view=incidents` and `/history?view=insights`; bare `/history` renders Incidents and invalid values canonicalize to it. Keep unimplemented destinations non-links rather than adding speculative parameters.
 - Do not create working navigation links to unimplemented screens. Unknown URLs should retain an accessible Not Found experience.
 - Sidebar toggles should expose their expanded/collapsed state appropriately. In collapsed mode, the branding/expand control must remain keyboard discoverable, not hover-only.
 - The profile popover (currently `widgets/app-sidebar/ui/UserMenu.tsx`) contains the language selector and provides a useful interaction reference: keep it within the viewport, avoid clipping in either sidebar mode, and preserve Escape/outside-click dismissal and sensible focus return.

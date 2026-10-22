@@ -1,6 +1,6 @@
 # Pipesor frontend functional architecture map
 
-This is the maintained functional architecture reference for Pipesor. It reconciles the original Paper-based FSD proposal with the implemented frontend, preserving its domain analysis without turning future screens or controls into approved requirements. The functional areas are workflow monitoring, incident management, and historical analysis; the Operations workspace and the History — Incidents read view are currently implemented.
+This is the maintained functional architecture reference for Pipesor. It reconciles the original Paper-based FSD proposal with the implemented frontend, preserving its domain analysis without turning future screens or controls into approved requirements. The functional areas are workflow monitoring, incident management, and historical analysis; the Operations workspace and the History — Incidents and History — Insights read views are currently implemented.
 
 ## How to read this map
 
@@ -27,12 +27,12 @@ When approved work changes a functional boundary or resolves an open decision, u
 
 | Area | Verified implementation | Evidence |
 | --- | --- | --- |
-| Screens and routing | Operations is one page with Active Incidents and Needs Validation read projections, selected by `/operations?queue=active` or `?queue=validation`. Missing/invalid queue values canonicalize to Active. History — Incidents is the registered read view at `/history`; it deliberately has no query-parameter tab contract. `/` and the two legacy queue paths redirect; unmatched paths render Not Found. | [Route table](../../src/app/App.tsx), [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [History page](../../src/pages/history/ui/HistoryPage.tsx), [navigation public API](../../src/shared/config/index.ts), [navigation registry](../../src/shared/config/navigation.ts) |
-| Page composition | `OperationsPage` composes `AppLayout`, `AppSidebar`, `OperationsHeader`, `OperationsTabs`, `OperationsSummary`, `IncidentFilters`, and the selected queue table. `HistoryPage` composes `AppLayout`, `AppSidebar`, `HistoryHeader`, `HistoryTabs`, the shared `IncidentFilters` (assignment scope and second sort row hidden), and `history-incidents-table`. The layout/sidebar remain outside each screen's content switch. | [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [History page](../../src/pages/history/ui/HistoryPage.tsx) |
+| Screens and routing | Operations is one page with Active Incidents and Needs Validation read projections, selected by `/operations?queue=active` or `?queue=validation`. Missing/invalid queue values canonicalize to Active. History has two read views selected by `/history?view=incidents` or `?view=insights`; bare `/history` renders Incidents and an invalid `view` value redirects to `?view=incidents`. `/` and the two legacy queue paths redirect; unmatched paths render Not Found. | [Route table](../../src/app/App.tsx), [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [History page](../../src/pages/history/ui/HistoryPage.tsx), [navigation public API](../../src/shared/config/index.ts), [navigation registry](../../src/shared/config/navigation.ts) |
+| Page composition | `OperationsPage` composes `AppLayout`, `AppSidebar`, `OperationsHeader`, `OperationsTabs`, `OperationsSummary`, `IncidentFilters`, and the selected queue table. `HistoryPage` composes `AppLayout`, `AppSidebar`, `HistoryHeader`, `HistoryTabs`, and either the shared `IncidentFilters` (assignment scope and second sort row hidden) with `history-incidents-table`, or the page-local `HistoryInsightsFilters` with `history-insights`. The layout/sidebar remain outside each screen's content switch. | [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [History page](../../src/pages/history/ui/HistoryPage.tsx) |
 | Shell boundaries | Generic slotted `AppLayout` lives in `shared/ui/app-layout`; navigation and the profile menu live in `widgets/app-sidebar`. There is no `application-shell` slice or authenticated-user integration. | [Layout public API](../../src/shared/ui/app-layout/index.ts), [layout](../../src/shared/ui/app-layout/AppLayout.tsx), [sidebar public API](../../src/widgets/app-sidebar/index.ts), [sidebar](../../src/widgets/app-sidebar/ui/AppSidebar.tsx) |
-| Layers and domain | Current slices are Operations/History/Not Found pages, smaller Operations/history/sidebar widgets, and a single `entities/incident` slice. There is no `features/` layer or separate diagnosis, pipeline, GitHub-resource or organization entity slice. | [Pages](../../src/pages), [widgets](../../src/widgets), [entities](../../src/entities), [incident public API](../../src/entities/incident/index.ts) |
-| Data and summaries | Local incidents are parsed with Zod at module load. Selectors derive queues, History membership, tab counts and summary metrics; pending durations use the fixed `INCIDENT_SNAPSHOT_AT`, not a live feed. No backend fetching or domain mutations are integrated. | [Fixtures](../../src/entities/incident/model/incidents.ts), [selectors](../../src/entities/incident/model/selectors.ts), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [summary](../../src/widgets/operations-summary/ui/OperationsSummary.tsx) |
-| Presentation versus behavior | Queue tabs and sidebar destinations navigate; History — Incidents is registered at `/history`. Search, Mine/Unassigned/All, filter and sort affordances do not filter or query incidents on either screen, and History rows/chevrons do not open a detail route. “Assign to me” is presentation, not an assignment command. The History Insights tab is visible but unavailable; Pipelines remains an unavailable sidebar destination. | [Filters](../../src/widgets/incident-filters/ui/IncidentFilters.tsx), [active table](../../src/widgets/incidents-table/ui/IncidentsTable.tsx), [validation table](../../src/widgets/needs-validation-table/ui/NeedsValidationTable.tsx), [history table](../../src/widgets/history-incidents-table/ui/HistoryIncidentsTable.tsx), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [sidebar](../../src/widgets/app-sidebar/ui/AppSidebar.tsx), [route table](../../src/app/App.tsx) |
+| Layers and domain | Current slices are Operations/History/Not Found pages, smaller Operations/history/insights/sidebar widgets, and a single `entities/incident` slice. There is no `features/` layer or separate diagnosis, pipeline, GitHub-resource or organization entity slice. | [Pages](../../src/pages), [widgets](../../src/widgets), [entities](../../src/entities), [incident public API](../../src/entities/incident/index.ts) |
+| Data and summaries | Local incidents are parsed with Zod at module load. Selectors derive queues, History membership, tab counts, summary metrics and the Insights aggregations; pending durations use the fixed `INCIDENT_SNAPSHOT_AT`, not a live feed. No backend fetching or domain mutations are integrated. | [Fixtures](../../src/entities/incident/model/incidents.ts), [selectors](../../src/entities/incident/model/selectors.ts), [insights selectors](../../src/entities/incident/model/insights.ts), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [summary](../../src/widgets/operations-summary/ui/OperationsSummary.tsx) |
+| Presentation versus behavior | Queue tabs, History view tabs and sidebar destinations navigate; History — Incidents and Insights are registered at `/history?view=...`. Search, Mine/Unassigned/All, filter and sort affordances do not filter or query incidents on either screen, History rows/chevrons do not open a detail route, and the Insights filters do not recompute the fixed-window aggregations. “Assign to me” is presentation, not an assignment command. Pipelines remains an unavailable sidebar destination. | [Filters](../../src/widgets/incident-filters/ui/IncidentFilters.tsx), [active table](../../src/widgets/incidents-table/ui/IncidentsTable.tsx), [validation table](../../src/widgets/needs-validation-table/ui/NeedsValidationTable.tsx), [history table](../../src/widgets/history-incidents-table/ui/HistoryIncidentsTable.tsx), [insights filters](../../src/pages/history/ui/HistoryInsightsFilters.tsx), [insights widget](../../src/widgets/history-insights/ui/HistoryInsights.tsx), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [sidebar](../../src/widgets/app-sidebar/ui/AppSidebar.tsx), [route table](../../src/app/App.tsx) |
 | Formatting ownership | `shared/i18n` exports `useFormatters` for locale-aware timestamps, numbers and durations. `shared/lib` exports `durationMs` for arithmetic on structured timestamps, not locale formatting. | [i18n public API](../../src/shared/i18n/index.ts), [formatters](../../src/shared/i18n/lib/useFormatters.ts), [lib public API](../../src/shared/lib/index.ts), [time utility](../../src/shared/lib/time.ts) |
 
 ### Current incident contract — Implemented
@@ -126,7 +126,7 @@ One candidate `validate-diagnosis` capability can cover both outcomes rather tha
 
 ### 4.6. History — Incidents — Implemented
 
-`/history` is the canonical History — Incidents screen. It has no query-parameter tab contract; the visible Insights tab is unavailable rather than a link. The page composes the shared layout, sidebar and filters (assignment scope and second sort row hidden) with the dedicated `history-incidents-table` widget.
+`/history?view=incidents` (and bare `/history`) is the canonical History — Incidents view. Incidents and Insights share the History page, header and view switcher; the selected view comes from the `view` query parameter. This view composes the shared layout, sidebar and filters (assignment scope and second sort row hidden) with the dedicated `history-incidents-table` widget.
 
 **Implemented:** a read-only, fixture-backed projection of resolved incidents whose diagnosis validation has reached a terminal outcome (`CONFIRMED` or `REJECTED`), ordered by `resolvedAt` newest first. It presents incident/workflow identity, stage, diagnosis, validation outcome, assignee, diagnosis duration, resolution duration and resolved date. Durations are read from the optional structured seconds fields and formatted through `shared/i18n`; the resolved date is formatted from `resolvedAt`. A coded empty state covers an empty queue.
 
@@ -140,11 +140,21 @@ One candidate `validate-diagnosis` capability can cover both outcomes rather tha
 
 See [HistoryPage](../../src/pages/history/ui/HistoryPage.tsx), [table](../../src/widgets/history-incidents-table/ui/HistoryIncidentsTable.tsx), [selector](../../src/entities/incident/model/selectors.ts).
 
-### 4.7. History — Insights — Proposed — Not Approved
+### 4.7. History — Insights — Implemented
 
-An analytical composition would use incident/validation read models and pipeline references for mean diagnosis time, MTTR, diagnosis-confirmation rate, resolved-incident counts, stage distribution and recurring contexts. Candidate visuals include KPI cards, a time series, stage/validation distributions and a context table, with period/analytical filters if approved. Loading, loaded, empty and error are candidate query states.
+`/history?view=insights` is the History — Insights view. It shares the History page shell, header and view switcher, and composes the page-local `HistoryInsightsFilters` with the `history-insights` widget. All values are derived through `entities/incident` selectors from the same eight terminal-validation incidents as History — Incidents; no synthetic incidents, analytics backend, chart dependency or separate feature slice is added.
 
-Do not create a feature per KPI or chart. Diagnosis-confirmation rate is distinct from experimental system-accuracy metrics; Paper demonstration values are not empirical thesis results. Formulas, periods and denominators remain open.
+**Implemented:** a fixed-window KPI strip (mean diagnosis time, mean time to resolution/MTTR, diagnosis-confirmation rate and resolved-incident count), a weekly mean diagnosis-time trend with explicit no-data periods, stage and diagnosis-outcome distributions, and the top recurring pipeline/stage contexts. Empty populations and missing periods render explicit no-data states; the trend never interpolates across a gap. The chart's visual plot is hidden from assistive technology and its weekly values are also exposed as text.
+
+**Provisional demo definitions, not an approved analytical contract:**
+
+- The window is `2026-09-01T00:00:00.000Z` through the demo snapshot `2026-09-30T10:30:00.000Z`; weekly buckets are anchored at the window start.
+- Membership is the terminal-validation population used by History — Incidents. Mean diagnosis and resolution times use the optional structured seconds fields. The confirmation rate is `confirmed / validated` and is not an accuracy metric; percentages keep one fraction digit.
+- Recurring groups count `repository + workflow + stage` combinations; they are not a root-cause taxonomy. The view shows the top three groups and states the total when groups are omitted.
+- The period, repository, stage and validation controls are presentational: changing them does not recompute the view. Filter semantics, alternate periods and real aggregations remain future work.
+- No resolution actor, verification result, audit record or incident drill-down is implemented. Recurring-group rows, chevrons and the filtering hint are presentation only.
+
+See [HistoryPage](../../src/pages/history/ui/HistoryPage.tsx), [Insights filters](../../src/pages/history/ui/HistoryInsightsFilters.tsx), [widget](../../src/widgets/history-insights/ui/HistoryInsights.tsx), [insights selectors](../../src/entities/incident/model/insights.ts).
 
 ### 4.8. Pipelines — Monitored Workflows — Proposed — Not Approved
 
@@ -212,7 +222,7 @@ The five candidate capabilities in section 5 could be consumed by onboarding, Pi
 | `monitored-pipeline-list` | Inventory controls and monitored-workflow table. |
 | `pipeline-configuration` | Identity, policy, ownership, access presentation and change history. |
 | `incident-history` | Historical table and query controls. Implemented as the `history-incidents-table` widget composed with the shared `IncidentFilters`; the controls remain presentational. |
-| `incident-insights` | Metrics, charts, distributions and recurring-context table. |
+| `incident-insights` | Metrics, charts, distributions and recurring-context table. Implemented as the `history-insights` widget with page-local presentational filters and entity selectors; no feature slice or chart dependency. |
 
 Inference, evidence and timeline sections can remain internal components or entity representations until reuse justifies promotion. Onboarding may compose its feature UI directly; an `add-workflow-form` widget is not obligatory.
 
@@ -222,12 +232,12 @@ Inference, evidence and timeline sections can remain internal components or enti
 | --- | --- | --- |
 | `operations` | `/operations?queue=active` / `?queue=validation` | Existing page and smaller widgets; **Implemented** as described in section 1. |
 | `incident-detail` | `/incidents/:incidentId` | One Workspace representing incident states from data. |
-| `history` | `/history` | **Implemented** for Incidents: `HistoryPage` with shared filters and `history-incidents-table`. Insights is visible but unavailable. |
+| `history` | `/history?view=incidents` / `?view=insights` | **Implemented** for both views: `HistoryPage` with shared filters and `history-incidents-table`, or page-local filters and `history-insights`. |
 | `pipelines` | `/pipelines` | Monitored workflow inventory. |
 | `pipeline-detail` | `/pipelines/:pipelineId` | Pipeline configuration. |
 | `add-monitored-workflow` | `/pipelines/new` | Workflow onboarding. |
 
-Except for Operations and History, these are **Proposed — Not Approved** frontend routes, not registered screens, navigation contracts or REST endpoints. History has no tab query contract today; a future Insights view would need its own route or approved query contract. Return context from details needs a decision. The original six-page/seven-widget/five-feature/five-entity sketch is illustrative, not a minimum, quota or implementation target; it does not describe today's pages (which also include Not Found).
+Except for Operations and History, these are **Proposed — Not Approved** frontend routes, not registered screens, navigation contracts or REST endpoints. History uses `?view=incidents|insights`; bare `/history` renders Incidents and invalid values canonicalize to it. Filter semantics, alternate periods and any future query contract remain open. Return context from details needs a decision. The original six-page/seven-widget/five-feature/five-entity sketch is illustrative, not a minimum, quota or implementation target; it does not describe today's pages (which also include Not Found).
 
 ### Cross-view reuse
 
@@ -263,9 +273,8 @@ These uppercase lifecycle/analysis labels are conceptual, not the current runtim
 | Diagnosis review | Pending, rejection form open, invalid input, submitting and decision recorded. |
 | Onboarding | No repository, workflow pending, editable/invalid form, submitting, duplicate or added. |
 | Pipeline configuration | Viewing, editing, dirty, submitting, saved/error. |
-| Insights | Loading, loaded, empty/error. |
 
-Not all these technical states were represented in Paper. The original handoff described timestamp hovers and the rejection form as designed but non-executable prototype states; this is historical proposal context, not a fresh Paper/browser verification or approved interaction contract. Current Operations and History use synchronous fixture reads; History adds a coded empty state. Future asynchronous states are not already implemented by that fact.
+Not all these technical states were represented in Paper. The original handoff described timestamp hovers and the rejection form as designed but non-executable prototype states; this is historical proposal context, not a fresh Paper/browser verification or approved interaction contract. Current Operations and History use synchronous fixture reads; History adds a coded empty state, and Insights renders explicit no-data states for empty periods and populations. Future asynchronous loading/error states are not already implemented by that fact.
 
 ## 8. Prototype-to-application gaps — Proposed — Not Approved
 
@@ -274,6 +283,7 @@ Not all these technical states were represented in Paper. The original handoff d
 | Separate tab/navigation frames | Real navigation and preserved context; Operations queue URLs already cover this limited case. |
 | Search/filter controls | Local filtering or queries over actual data. |
 | History row hint/chevron | Historical Incident Workspace routing and preserved return context. |
+| Insights group rows/hint | Filtering Incidents by pipeline and stage from a recurring group, with preserved view context. |
 | Expanded `View context` | Read/display of authorized, sanitized context. |
 | Timestamp hover | Precision-to-seconds tooltip and accessible equivalent. |
 | Simulated Start remediation | Persistent record of human intervention and actor. |
@@ -282,7 +292,7 @@ Not all these technical states were represented in Paper. The original handoff d
 | Confirm/Reject controls and form | Auditable human-review record and approved validation rules. |
 | Pipeline configuration values/editors | Reading/saving Pipesor operational configuration. |
 | Add Workflow fixture form | Authorized resource discovery and persistent monitoring enrollment. |
-| Insights demonstration metrics | Real aggregations with agreed definitions and evidence. |
+| Insights metrics | Current fixed-window aggregations are provisional demo definitions; real analytical contracts, alternate periods and filter semantics require approval. |
 
 For future integration, typed domain-facing contracts can keep widgets independent of external DTOs; boundary adapters can translate approved integration data. Keep queries conceptually separate from commands so submission errors, validation and eventual authorization are not scattered through presentation. Centralize mock data/operation simulation at data boundaries rather than distributing mock-only branches through components. These are integration recommendations, not approval for API clients, transport abstractions or new providers today. Current fixture validation already supplies a data boundary; see [domain/data conventions](../frontend-conventions.md#8-incident-domain-and-demo-data).
 
@@ -311,7 +321,7 @@ Every row is an **Open Decision**. The design context explains why it matters, n
 | Environment | Design treats environment as operational classification. | Relationship, if any, to GitHub Environment. | Pipeline policy |
 | Criticality → severity | They remain independent dimensions. | Classification rules and any mapping. | Domain/backend / presentation |
 | Return navigation | Design includes `Back to Operations`; current queues have canonical URLs. | Contextual return to Active, Needs Validation or History; future route/selection contracts. | Routing / detail navigation |
-| Insights | Candidate metrics and visuals exist, not empirical results. | Formulas, periods, denominators and metric interpretation. | Analytical read contracts |
+| Insights | The demo view uses fixed-window, provisional definitions over terminal-validation fixtures; filters are presentational. | Formulas, periods, denominators, filter/drill-down semantics and metric interpretation. | Analytical read contracts |
 
 Do not resolve these questions by inventing frontend rules. They do not all block unrelated approved visual work. Before implementing the respective operations, prioritize workflow identity/scope, incident-transition rules and the human-validation contract. Existing approval gates remain in [AGENTS.md](../../AGENTS.md#scope-permissions-and-escalation).
 
