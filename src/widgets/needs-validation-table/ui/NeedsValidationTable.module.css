@@ -1,9 +1,10 @@
 .card {
   /*
-   * Sum of the column minimum widths below plus the row's 16px horizontal
-   * padding. When the viewport is narrower than this, the table scrolls
+   * Preserve the queue's minimum column widths and 16px row edges.
+   * When the viewport is narrower than this, the table scrolls
    * horizontally inside the card instead of crushing its columns.
    */
+  container-type: inline-size;
   --table-min-width: 988px;
 
   display: flex;
@@ -16,55 +17,56 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.headerRow {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+.table {
+  width: 100%;
   min-width: var(--table-min-width);
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.headerRow {
   height: 40px;
-  padding: 0 16px;
   background-color: var(--color-surface-subtle);
-  border-bottom: 1px solid var(--color-border);
 }
 
 .headerCell {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: var(--font-weight-medium);
   line-height: 18px;
+  text-align: left;
+  vertical-align: middle;
   white-space: nowrap;
 }
 
-.row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  /*
-   * Rows grow with wrapped content instead of clipping it. The 12px vertical
-   * padding keeps text clear of the borders; combined with min-height it stays
-   * pixel-identical to the 64px Paper row for one- and two-line cells.
-   */
-  min-height: 64px;
-  min-width: var(--table-min-width);
-  padding: 12px 16px;
-  background-color: var(--color-surface);
+.row td {
+  height: 64px;
+  padding: 0;
   border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  vertical-align: middle;
+  transition: background-color 120ms ease, box-shadow 120ms ease;
 }
 
-.row::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-left: 3px solid var(--color-accent);
+.headerCell:first-child,
+.row td:first-child {
+  padding-left: 16px;
+}
+
+.headerCell:last-child,
+.row td:last-child {
+  padding-right: 16px;
+}
+
+.row:hover td {
   background-color: var(--color-surface-subtle);
-  opacity: 0;
-  transition: opacity 120ms ease;
-  pointer-events: none;
 }
 
-.row:hover::before {
-  opacity: 1;
+.row:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-accent);
 }
 
 .cell {
@@ -137,7 +139,12 @@
   color: var(--color-text-secondary);
 }
 
+.emptyCell {
+  padding: 0;
+}
+
 .empty {
+  max-width: 100cqw;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -162,47 +169,40 @@
 }
 
 /*
- * Responsive column sizing.
- *
- * The flex-basis values reproduce the Paper frame exactly at its 1440px design
- * width. The compact columns may shrink to a sensible minimum so their
- * neighbours can keep enough room, while Incident / Workflow and Proposed
- * diagnosis — which carry the most text — keep the larger minimums. Once every
- * column reaches its floor the card scrolls.
+ * Preserve the original flex bases at 1176px, shrinking toward the same floors.
+ * Diagnosis takes the remaining space; edge columns include the 16px row padding.
+ * shortcut: intermediate widths approximate flex redistribution after a column
+ * hits its floor; revisit only if an approved viewport needs exact parity.
  */
 .colSeverity {
-  flex: 0 0 90px;
-  width: 90px;
+  width: 106px;
 }
 
 .colIncident {
-  flex: 0 1 222px;
-  min-width: 192px;
+  width: clamp(192px, calc(21.062619cqw - 25.696395px), 222px);
 }
 
 .colStage {
-  flex: 0 1 116px;
-  min-width: 98px;
+  width: clamp(98px, calc(11.005693cqw - 13.426945px), 116px);
 }
 
 .colDiagnosis {
-  flex: 1 1 306px;
-  min-width: 232px;
+  width: auto;
 }
 
 .colResolved {
-  flex: 0 1 130px;
-  min-width: 112px;
+  width: clamp(112px, calc(12.333966cqw - 15.047438px), 130px);
 }
 
 .colAssignee {
-  flex: 0 1 148px;
-  min-width: 120px;
+  width: clamp(120px, calc(14.041746cqw - 17.13093px), 148px);
 }
 
 .colValidation {
-  flex: 0 1 132px;
-  min-width: 112px;
+  width: clamp(128px, calc(12.523719cqw + 0.721063px), 148px);
+}
+
+.validationCell {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
