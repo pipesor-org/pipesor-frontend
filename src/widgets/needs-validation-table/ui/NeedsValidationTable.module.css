@@ -44,7 +44,7 @@
 
 .row td {
   height: 64px;
-  padding: 12px 0;
+  padding: 0;
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
   vertical-align: middle;
