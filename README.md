@@ -2,7 +2,7 @@
 
 Pipesor is an AIOps interface for **monitoring CI/CD workflows, managing incidents, and reviewing operational history and AI-assisted diagnoses**. This repository contains its React frontend.
 
-**Current implementation:** the **Operations** workspace (Active Incidents and Needs Validation), a responsive application sidebar, English/Spanish localization, Pipesor branding, and an accessible Not Found page. Incident information currently comes from **local, Zod-validated demo fixtures**; there is no backend integration.
+**Current implementation:** the **Operations** workspace (Active Incidents and Needs Validation) and the **History — Incidents** read view, a responsive application sidebar, English/Spanish localization, Pipesor branding, and an accessible Not Found page. Incident information currently comes from **local, Zod-validated demo fixtures**; there is no backend integration.
 
 The approved interface designs are maintained in Paper (file **Pipesor**). Paper access is optional: contributors can work from approved design handoffs and existing components without Paper credentials.
 
@@ -47,12 +47,13 @@ Exact resolved dependency versions are defined by `package.json` and `bun.lock`.
 | --- | --- | --- |
 | Operations — Active Incidents | `/operations?queue=active` | Implemented with demo data |
 | Operations — Needs Validation | `/operations?queue=validation` | Implemented with demo data |
+| History — Incidents | `/history` | Implemented with demo data |
+| History — Insights | Shown as unavailable inside `/history` | Planned |
 | Unknown route | Any unmatched path | Not Found page |
-| History — Incidents / Insights | Not registered | Planned |
 | Pipelines and pipeline details | Not registered | Planned |
 | Incident Workspace states | Not registered | Planned |
 
-`/` and the legacy paths `/operations/active-incidents` and `/operations/needs-validation` redirect to the canonical Operations URLs. The routing implementation is in `src/app/App.tsx`, with navigation destinations defined in `src/shared/config/navigation.ts`.
+`/` and the legacy paths `/operations/active-incidents` and `/operations/needs-validation` redirect to the canonical Operations URLs. `/history` renders the History — Incidents view; it has no query-parameter tab contract, and Insights is not a destination yet. The routing implementation is in `src/app/App.tsx`, with navigation destinations defined in `src/shared/config/navigation.ts`.
 
 Existing search, scope, filter, sort, row actions, and incident assignment affordances are **presentational unless their behavior has been explicitly implemented and verified**. Do not assume they call an API or persist state.
 
@@ -61,8 +62,8 @@ Existing search, scope, filter, sort, row actions, and incident assignment affor
 ```text
 src/
 ├── app/                  # Root routing, global CSS and design tokens
-├── pages/                # Operations and Not Found screen compositions
-├── widgets/              # Sidebar, Operations sections and queue tables
+├── pages/                # Operations, History and Not Found screen compositions
+├── widgets/              # Sidebar, Operations sections, filters and History table
 ├── entities/
 │   └── incident/         # Zod schemas, mock fixtures, selectors and entity UI
 ├── shared/
