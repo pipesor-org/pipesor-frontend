@@ -1,6 +1,6 @@
 # Pipesor frontend functional architecture map
 
-This is the maintained functional architecture reference for Pipesor. It reconciles the original Paper-based FSD proposal with the implemented frontend, preserving its domain analysis without turning future screens or controls into approved requirements. The functional areas are workflow monitoring, incident management, and historical analysis; only the Operations read workspace is currently implemented.
+This is the maintained functional architecture reference for Pipesor. It reconciles the original Paper-based FSD proposal with the implemented frontend, preserving its domain analysis without turning future screens or controls into approved requirements. The functional areas are workflow monitoring, incident management, and historical analysis; the Operations workspace and the History — Incidents read view are currently implemented.
 
 ## How to read this map
 
@@ -27,12 +27,12 @@ When approved work changes a functional boundary or resolves an open decision, u
 
 | Area | Verified implementation | Evidence |
 | --- | --- | --- |
-| Screens and routing | Operations is one page with Active Incidents and Needs Validation read projections, selected by `/operations?queue=active` or `?queue=validation`. Missing/invalid queue values canonicalize to Active. `/` and the two legacy queue paths redirect; unmatched paths render Not Found. | [Route table](../../src/app/App.tsx), [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [navigation public API](../../src/shared/config/index.ts), [navigation registry](../../src/shared/config/navigation.ts) |
-| Page composition | `OperationsPage` composes `AppLayout`, `AppSidebar`, `OperationsHeader`, `OperationsTabs`, `OperationsSummary`, `IncidentFilters`, and the selected queue table. The layout/sidebar remain outside the queue switch. | [Operations page](../../src/pages/operations/ui/OperationsPage.tsx) |
+| Screens and routing | Operations is one page with Active Incidents and Needs Validation read projections, selected by `/operations?queue=active` or `?queue=validation`. Missing/invalid queue values canonicalize to Active. History — Incidents is the registered read view at `/history`; it deliberately has no query-parameter tab contract. `/` and the two legacy queue paths redirect; unmatched paths render Not Found. | [Route table](../../src/app/App.tsx), [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [History page](../../src/pages/history/ui/HistoryPage.tsx), [navigation public API](../../src/shared/config/index.ts), [navigation registry](../../src/shared/config/navigation.ts) |
+| Page composition | `OperationsPage` composes `AppLayout`, `AppSidebar`, `OperationsHeader`, `OperationsTabs`, `OperationsSummary`, `IncidentFilters`, and the selected queue table. `HistoryPage` composes `AppLayout`, `AppSidebar`, `HistoryHeader`, `HistoryTabs`, the shared `IncidentFilters` (assignment scope and second sort row hidden), and `history-incidents-table`. The layout/sidebar remain outside each screen's content switch. | [Operations page](../../src/pages/operations/ui/OperationsPage.tsx), [History page](../../src/pages/history/ui/HistoryPage.tsx) |
 | Shell boundaries | Generic slotted `AppLayout` lives in `shared/ui/app-layout`; navigation and the profile menu live in `widgets/app-sidebar`. There is no `application-shell` slice or authenticated-user integration. | [Layout public API](../../src/shared/ui/app-layout/index.ts), [layout](../../src/shared/ui/app-layout/AppLayout.tsx), [sidebar public API](../../src/widgets/app-sidebar/index.ts), [sidebar](../../src/widgets/app-sidebar/ui/AppSidebar.tsx) |
-| Layers and domain | Current slices are Operations/Not Found pages, smaller Operations/sidebar widgets, and a single `entities/incident` slice. There is no `features/` layer or separate diagnosis, pipeline, GitHub-resource or organization entity slice. | [Pages](../../src/pages), [widgets](../../src/widgets), [entities](../../src/entities), [incident public API](../../src/entities/incident/index.ts) |
-| Data and summaries | Local incidents are parsed with Zod at module load. Selectors derive queues, tab counts and summary metrics; pending durations use the fixed `INCIDENT_SNAPSHOT_AT`, not a live feed. No backend fetching or domain mutations are integrated. | [Fixtures](../../src/entities/incident/model/incidents.ts), [selectors](../../src/entities/incident/model/selectors.ts), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [summary](../../src/widgets/operations-summary/ui/OperationsSummary.tsx) |
-| Presentation versus behavior | Queue tabs navigate. Search, Mine/Unassigned/All, filter and sort affordances do not filter or query incidents. Table chevrons do not open a detail route; “Assign to me” is presentation, not an assignment command. History and Pipelines are unavailable sidebar destinations, not registered screens. | [Filters](../../src/widgets/incident-filters/ui/IncidentFilters.tsx), [active table](../../src/widgets/incidents-table/ui/IncidentsTable.tsx), [validation table](../../src/widgets/needs-validation-table/ui/NeedsValidationTable.tsx), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [sidebar](../../src/widgets/app-sidebar/ui/AppSidebar.tsx), [route table](../../src/app/App.tsx) |
+| Layers and domain | Current slices are Operations/History/Not Found pages, smaller Operations/history/sidebar widgets, and a single `entities/incident` slice. There is no `features/` layer or separate diagnosis, pipeline, GitHub-resource or organization entity slice. | [Pages](../../src/pages), [widgets](../../src/widgets), [entities](../../src/entities), [incident public API](../../src/entities/incident/index.ts) |
+| Data and summaries | Local incidents are parsed with Zod at module load. Selectors derive queues, History membership, tab counts and summary metrics; pending durations use the fixed `INCIDENT_SNAPSHOT_AT`, not a live feed. No backend fetching or domain mutations are integrated. | [Fixtures](../../src/entities/incident/model/incidents.ts), [selectors](../../src/entities/incident/model/selectors.ts), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [summary](../../src/widgets/operations-summary/ui/OperationsSummary.tsx) |
+| Presentation versus behavior | Queue tabs and sidebar destinations navigate; History — Incidents is registered at `/history`. Search, Mine/Unassigned/All, filter and sort affordances do not filter or query incidents on either screen, and History rows/chevrons do not open a detail route. “Assign to me” is presentation, not an assignment command. The History Insights tab is visible but unavailable; Pipelines remains an unavailable sidebar destination. | [Filters](../../src/widgets/incident-filters/ui/IncidentFilters.tsx), [active table](../../src/widgets/incidents-table/ui/IncidentsTable.tsx), [validation table](../../src/widgets/needs-validation-table/ui/NeedsValidationTable.tsx), [history table](../../src/widgets/history-incidents-table/ui/HistoryIncidentsTable.tsx), [tabs](../../src/widgets/operations-tabs/ui/OperationsTabs.tsx), [sidebar](../../src/widgets/app-sidebar/ui/AppSidebar.tsx), [route table](../../src/app/App.tsx) |
 | Formatting ownership | `shared/i18n` exports `useFormatters` for locale-aware timestamps, numbers and durations. `shared/lib` exports `durationMs` for arithmetic on structured timestamps, not locale formatting. | [i18n public API](../../src/shared/i18n/index.ts), [formatters](../../src/shared/i18n/lib/useFormatters.ts), [lib public API](../../src/shared/lib/index.ts), [time utility](../../src/shared/lib/time.ts) |
 
 ### Current incident contract — Implemented
@@ -43,8 +43,8 @@ The [vocabulary](../../src/entities/incident/model/types.ts) and [Zod schemas](.
 | --- | --- |
 | Shared fields | `id`, repository/workflow display strings, severity, stage, diagnosis text, optional diagnosis note, and nullable incident assignee. These are not stable GitHub resource models. |
 | Unresolved branch | `status` is `Open`, `In remediation` or `Verification`; `validationStatus` must be `NOT_APPLICABLE`; nonnegative integer `elapsedMinutes` is required. Strict objects reject resolution-only fields. |
-| Resolved branch | `status` is `Resolved`; ISO timestamp `resolvedAt` is required; `validationStatus` is `PENDING`, `CONFIRMED` or `REJECTED`. Strict objects reject `elapsedMinutes`. |
-| Queue membership | Active selects operationally unresolved incidents. Needs Validation selects resolved incidents with `PENDING` diagnosis validation; it is not the validation operation. |
+| Resolved branch | `status` is `Resolved`; ISO timestamp `resolvedAt` is required; `validationStatus` is `PENDING`, `CONFIRMED` or `REJECTED`. Optional nonnegative integer `diagnosisDurationSeconds` and `resolutionDurationSeconds` supply History's demo durations. Strict objects reject `elapsedMinutes`. |
+| Queue membership | Active selects operationally unresolved incidents. Needs Validation selects resolved incidents with `PENDING` diagnosis validation; it is not the validation operation. History selects resolved incidents with `CONFIRMED` or `REJECTED` validation, newest `resolvedAt` first; that membership rule is provisional demo presentation. |
 | Diagnosis | Diagnosis and confidence/context notes are strings, not structured hypothesis, evidence, recommendation, confidence or analysis-state contracts. The analyzing summary recognizes the fixture text `Analyzing evidence…`; this is not an analysis-state enum. |
 
 These schemas describe legal record shapes, not approved lifecycle commands, validation permissions or backend transition rules. Resolution does not imply confirmation of a diagnosis. The current unresolved `NOT_APPLICABLE` rule must not silently become a universal future validation policy.
@@ -124,11 +124,21 @@ The resolved Workspace would retain historical diagnosis/evidence and add resolu
 
 One candidate `validate-diagnosis` capability can cover both outcomes rather than separate confirm/reject features. The proposed confirmation records outcome, actor and time; rejection records the actual cause and optional comments without altering the original hypothesis, evidence or confidence. Opening/editing/canceling a rejection form is local UI behavior; recording the decision is a domain operation. Actor eligibility, validation scope, required fields and later revisions are unresolved, not implied by grouping both outcomes together.
 
-### 4.6. History — Incidents — Proposed — Not Approved
+### 4.6. History — Incidents — Implemented
 
-A read view would combine Incident, Diagnosis, Diagnosis Validation, Monitored Pipeline and User information: diagnosis, validation outcome, diagnosis/resolution durations and closure date. It would offer date/query controls and navigation to historical Workspaces, not domain operations from the table.
+`/history` is the canonical History — Incidents screen. It has no query-parameter tab contract; the visible Insights tab is unavailable rather than a link. The page composes the shared layout, sidebar and filters (assignment scope and second sort row hidden) with the dedicated `history-incidents-table` widget.
 
-It can reuse incident models without copying the Active queue's full table: historical questions require different columns and presentation. `view-history` and `search-history` are not automatically features.
+**Implemented:** a read-only, fixture-backed projection of resolved incidents whose diagnosis validation has reached a terminal outcome (`CONFIRMED` or `REJECTED`), ordered by `resolvedAt` newest first. It presents incident/workflow identity, stage, diagnosis, validation outcome, assignee, diagnosis duration, resolution duration and resolved date. Durations are read from the optional structured seconds fields and formatted through `shared/i18n`; the resolved date is formatted from `resolvedAt`. A coded empty state covers an empty queue.
+
+**Provisional demo presentation, not an approved backend contract:**
+
+- The terminal-validation membership rule and newest-first ordering are demo presentation; whether a resolved incident with `PENDING` validation belongs in History remains open.
+- Diagnosis-time and resolution-time/MTTR semantics are not defined beyond the frame labels; no timestamps are synthesized from display durations.
+- There is no resolution actor, verification result, audit record or historical Workspace route. The table hint and chevrons are presentation only.
+
+**Presentation boundaries:** search and the four filter controls do not query; “Sorted by Resolved ↓” is descriptive. The screen exposes no incident-lifecycle or diagnosis-validation command and is not the `validate-diagnosis` operation. Operations and History share the incident model, filter controls, formatters and validation-status UI while keeping separate table compositions; `view-history` and `search-history` are not features.
+
+See [HistoryPage](../../src/pages/history/ui/HistoryPage.tsx), [table](../../src/widgets/history-incidents-table/ui/HistoryIncidentsTable.tsx), [selector](../../src/entities/incident/model/selectors.ts).
 
 ### 4.7. History — Insights — Proposed — Not Approved
 
@@ -201,7 +211,7 @@ The five candidate capabilities in section 5 could be consumed by onboarding, Pi
 | `incident-workspace` | Header, diagnosis, evidence, recommendation, verification, validation and detail panel; one data-driven composition is preferable to three state-named workspaces. |
 | `monitored-pipeline-list` | Inventory controls and monitored-workflow table. |
 | `pipeline-configuration` | Identity, policy, ownership, access presentation and change history. |
-| `incident-history` | Historical table and query controls. |
+| `incident-history` | Historical table and query controls. Implemented as the `history-incidents-table` widget composed with the shared `IncidentFilters`; the controls remain presentational. |
 | `incident-insights` | Metrics, charts, distributions and recurring-context table. |
 
 Inference, evidence and timeline sections can remain internal components or entity representations until reuse justifies promotion. Onboarding may compose its feature UI directly; an `add-workflow-form` widget is not obligatory.
@@ -212,18 +222,18 @@ Inference, evidence and timeline sections can remain internal components or enti
 | --- | --- | --- |
 | `operations` | `/operations?queue=active` / `?queue=validation` | Existing page and smaller widgets; **Implemented** as described in section 1. |
 | `incident-detail` | `/incidents/:incidentId` | One Workspace representing incident states from data. |
-| `history` | `/history` | Incident History or Insights. |
+| `history` | `/history` | **Implemented** for Incidents: `HistoryPage` with shared filters and `history-incidents-table`. Insights is visible but unavailable. |
 | `pipelines` | `/pipelines` | Monitored workflow inventory. |
 | `pipeline-detail` | `/pipelines/:pipelineId` | Pipeline configuration. |
 | `add-monitored-workflow` | `/pipelines/new` | Workflow onboarding. |
 
-Except for Operations, these are **Proposed — Not Approved** frontend routes, not registered screens, navigation contracts or REST endpoints. History tabs could preserve selection via query parameters; return context from details needs a decision. The original six-page/seven-widget/five-feature/five-entity sketch is illustrative, not a minimum, quota or implementation target; it does not describe today's pages (which also include Not Found).
+Except for Operations and History, these are **Proposed — Not Approved** frontend routes, not registered screens, navigation contracts or REST endpoints. History has no tab query contract today; a future Insights view would need its own route or approved query contract. Return context from details needs a decision. The original six-page/seven-widget/five-feature/five-entity sketch is illustrative, not a minimum, quota or implementation target; it does not describe today's pages (which also include Not Found).
 
 ### Cross-view reuse
 
 **Implemented:** severity/validation representations come from the [incident public API](../../src/entities/incident/index.ts); locale presentation from [shared/i18n](../../src/shared/i18n/index.ts); timestamp arithmetic from [shared/lib](../../src/shared/lib/index.ts); generic badges/icons/layout from [shared/ui](../../src/shared/ui); sidebar navigation from [app-sidebar](../../src/widgets/app-sidebar/index.ts).
 
-**Proposed — Not Approved:** structured diagnosis, workflow identity, users/teams and external GitHub references could gain reusable representations when their contracts and consumers justify them. Future review, assignment and configuration operations belong with their approved capabilities, not generic shared UI. Operations and History may share incident models without sharing an entire business table; column/content ownership stays with the relevant composition. See [component reuse conventions](../frontend-conventions.md#4-component-reuse-and-presentation) rather than building a universal domain table.
+**Proposed — Not Approved:** structured diagnosis, workflow identity, users/teams and external GitHub references could gain reusable representations when their contracts and consumers justify them. Future review, assignment and configuration operations belong with their approved capabilities, not generic shared UI. Operations and History currently share the incident model, `IncidentFilters`, formatters and validation-status UI while keeping separate table compositions; column/content ownership stays with the relevant composition. See [component reuse conventions](../frontend-conventions.md#4-component-reuse-and-presentation) rather than building a universal domain table.
 
 ## 7. Domain state versus frontend state
 
@@ -255,7 +265,7 @@ These uppercase lifecycle/analysis labels are conceptual, not the current runtim
 | Pipeline configuration | Viewing, editing, dirty, submitting, saved/error. |
 | Insights | Loading, loaded, empty/error. |
 
-Not all these technical states were represented in Paper. The original handoff described timestamp hovers and the rejection form as designed but non-executable prototype states; this is historical proposal context, not a fresh Paper/browser verification or approved interaction contract. Current Operations uses synchronous fixtures; future asynchronous states are not already implemented by that fact.
+Not all these technical states were represented in Paper. The original handoff described timestamp hovers and the rejection form as designed but non-executable prototype states; this is historical proposal context, not a fresh Paper/browser verification or approved interaction contract. Current Operations and History use synchronous fixture reads; History adds a coded empty state. Future asynchronous states are not already implemented by that fact.
 
 ## 8. Prototype-to-application gaps — Proposed — Not Approved
 
@@ -263,6 +273,7 @@ Not all these technical states were represented in Paper. The original handoff d
 | --- | --- |
 | Separate tab/navigation frames | Real navigation and preserved context; Operations queue URLs already cover this limited case. |
 | Search/filter controls | Local filtering or queries over actual data. |
+| History row hint/chevron | Historical Incident Workspace routing and preserved return context. |
 | Expanded `View context` | Read/display of authorized, sanitized context. |
 | Timestamp hover | Precision-to-seconds tooltip and accessible equivalent. |
 | Simulated Start remediation | Persistent record of human intervention and actor. |
@@ -292,6 +303,7 @@ Every row is an **Open Decision**. The design context explains why it matters, n
 | Resolution | Human closure is distinct from run success. | Preconditions, completion evidence and exceptions after failed verification. | Lifecycle commands |
 | Inconclusive diagnosis | Current fixtures display insufficient-evidence text. | Available actions and review eligibility when no reliable hypothesis exists. | Workspace / analysis |
 | Diagnosis-validation scope | Review is independent of closure. Preserving the original hypothesis, evidence and confidence is proposed review behavior, not approved policy. Current unresolved records carry `NOT_APPLICABLE`. | Which incident/diagnosis/version can be reviewed and when; eligible actors, required cause/comment fields, audit contract, preservation policy and later revisions. | Human-review capability |
+| History membership | Current demo lists only resolved incidents with `CONFIRMED` or `REJECTED` validation, newest first. | Whether pending-validation resolved incidents belong, date/filter semantics, pagination or query contract, and historical Workspace navigation. | History read model |
 | Assignment | Incident assignee differs from pipeline owner. | Who may assign/reassign; whether assignee and reviewer responsibilities are related. | Assignment / authorization |
 | Mine scope | Original proposal interprets Mine by incident assignee; current controls do not filter. | Confirm that meaning and whether validation needs a distinct responsible reviewer. | Operations queues |
 | View / Operate / Configure | Capabilities appear conceptually in the design. | Authorization matrix, inheritance/scope and final editor interaction. | Pipeline access |

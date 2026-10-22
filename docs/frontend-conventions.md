@@ -9,8 +9,8 @@ Follow the dependency direction `app → pages → widgets → features → enti
 | Layer | Owns | Examples in this repository |
 | --- | --- | --- |
 | `app` | Bootstrap, route definitions, global theme assets | `src/app/App.tsx`, `src/app/styles/` |
-| `pages` | Navigable views and screen composition | Operations, Not Found |
-| `widgets` | Meaningful UI compositions and local query/presentation state | Operations tabs, summaries, tables, sidebar |
+| `pages` | Navigable views and screen composition | Operations, History, Not Found |
+| `widgets` | Meaningful UI compositions and local query/presentation state | Operations tabs, summaries, tables, filters, History table, sidebar |
 | `features` | Cohesive business actions with their UI and interaction model | Deferred; no feature slices implemented yet |
 | `entities` | Reusable domain data, schema, selectors and representations | `src/entities/incident/` |
 | `shared` | Domain-agnostic building blocks and cross-cutting services | `ui`, `i18n`, `config`, `lib`, `assets` |
@@ -76,6 +76,7 @@ Use semantic links for navigation and buttons for actions. Keep visible `:focus-
 
 - React Router routes and redirects are managed in `src/app/App.tsx`; destinations and URLs are centralized under `src/shared/config/`.
 - Operations uses `/operations?queue=active` and `/operations?queue=validation`. Preserve the URL's selected queue so browser back/forward and reload behave coherently.
+- History — Incidents uses `/history` as its canonical URL. It has no tab query contract; keep unimplemented History views non-links rather than adding speculative parameters.
 - Do not create working navigation links to unimplemented screens. Unknown URLs should retain an accessible Not Found experience.
 - Sidebar toggles should expose their expanded/collapsed state appropriately. In collapsed mode, the branding/expand control must remain keyboard discoverable, not hover-only.
 - The profile popover (currently `widgets/app-sidebar/ui/UserMenu.tsx`) contains the language selector and provides a useful interaction reference: keep it within the viewport, avoid clipping in either sidebar mode, and preserve Escape/outside-click dismissal and sensible focus return.
@@ -85,7 +86,7 @@ ARIA choices should describe the component's actual semantics: use `aria-expande
 
 ## 7. Localization
 
-The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs live under `src/shared/i18n/locales/`. Existing namespaces are `common` and `operations`. The module initializes bundled resources synchronously (no translation HTTP backend), and the repository's i18next declaration derives typed translation keys from the English resources.
+The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs live under `src/shared/i18n/locales/`. Existing namespaces are `common`, `operations` and `history`. The module initializes bundled resources synchronously (no translation HTTP backend), and the repository's i18next declaration derives typed translation keys from the English resources.
 
 - Use `useTranslation("<namespace>")` and semantic translation keys for UI strings, including labels, placeholders, tooltips, accessibility text and empty states. Use the public i18n helpers rather than introducing another translation singleton.
 - Add or update keys in **both** `en` and `es`; English resources define the typed key surface. Keep catalog structure and keys aligned. Check `resources.ts`, `i18next.d.ts`, and `config.ts` before altering initialization, namespaces or locale resolution.

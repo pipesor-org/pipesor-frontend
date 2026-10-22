@@ -4,7 +4,7 @@ Shared, version-controlled instructions for developers and AI coding agents. Rea
 
 ## Product and scope
 
-Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend is the **Operations** workspace (Active Incidents and Needs Validation) plus a Not Found screen. **No backend is integrated**: displayed incidents are local demonstration fixtures.
+Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend is the **Operations** workspace (Active Incidents and Needs Validation), the **History — Incidents** read view, plus a Not Found screen. **No backend is integrated**: displayed incidents are local demonstration fixtures.
 
 - Preserve approved product behavior and visual design. Paper is a design reference **when accessible**, not a prerequisite for working on this repository.
 - Without Paper access, work from approved screenshots, specifications, and existing components. Ask when essential behavior or design details are missing; do not invent them.
