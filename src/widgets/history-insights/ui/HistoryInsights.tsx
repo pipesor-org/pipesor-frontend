@@ -1,4 +1,5 @@
 import { HistoryInsightsDiagnosisTrend } from "./HistoryInsightsDiagnosisTrend";
+import { HistoryInsightsRecurringContexts } from "./HistoryInsightsRecurringContexts";
 import { HistoryInsightsStageOutcome } from "./HistoryInsightsStageOutcome";
 import { HistoryInsightsSummary } from "./HistoryInsightsSummary";
 
@@ -8,8 +9,8 @@ import { HistoryInsightsSummary } from "./HistoryInsightsSummary";
  * A single widget owns the analytical surface because every section reads the
  * same resolved-incident population over the same fixed window. The KPI strip
  * sets the vertical rhythm (24px above each section); the diagnosis trend and
- * the stage/outcome distributions follow it. Later phases add the recurring
- * contexts here.
+ * the stage/outcome distributions follow it, and the recurring groups close the
+ * view above the page hint.
  */
 export function HistoryInsights() {
   return (
@@ -17,6 +18,7 @@ export function HistoryInsights() {
       <HistoryInsightsSummary />
       <HistoryInsightsDiagnosisTrend />
       <HistoryInsightsStageOutcome />
+      <HistoryInsightsRecurringContexts />
     </>
   );
 }

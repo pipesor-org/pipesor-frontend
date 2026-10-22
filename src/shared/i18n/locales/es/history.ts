@@ -56,6 +56,13 @@ const history = {
       value: "{{incidents}} · {{percent}}",
       note: "La tasa de confirmación refleja los diagnósticos marcados como confirmados por los operadores. Los porcentajes están redondeados.",
     },
+    recurring: {
+      title: "Concentración de incidentes por pipeline",
+      caption: "Agrupado por pipeline y etapa",
+      captionTruncated:
+        "Agrupado por pipeline y etapa · Mostrando {{shown}} de {{total}}",
+    },
+    hint: "Seleccione un grupo para filtrar Incidentes por pipeline y etapa.",
   },
 
   columns: {

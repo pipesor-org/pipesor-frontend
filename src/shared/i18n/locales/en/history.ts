@@ -58,6 +58,13 @@ const history = {
       value: "{{incidents}} · {{percent}}",
       note: "Confirmation rate reflects diagnoses marked Confirmed by operators. Percentages are rounded.",
     },
+    recurring: {
+      title: "Incident concentration by pipeline",
+      caption: "Grouped by pipeline and stage",
+      captionTruncated:
+        "Grouped by pipeline and stage · Showing {{shown}} of {{total}}",
+    },
+    hint: "Select a group to filter Incidents by pipeline and stage.",
   },
 
   columns: {

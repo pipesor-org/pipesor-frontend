@@ -1,0 +1,175 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-top: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.caption {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: right;
+}
+
+.tableWrapper {
+  flex-shrink: 0;
+  width: 100%;
+  /* Horizontal overflow stays inside the table, never on the page. */
+  overflow-x: auto;
+  background-color: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  /*
+   * The frame's four lanes need 1176px. Narrower viewports scroll the table
+   * instead of squeezing the repository/workflow stack or the stage labels.
+   */
+  min-width: 1176px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.headerRow {
+  height: 36px;
+  background-color: var(--color-surface-subtle);
+}
+
+.headerCell {
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.headerCell:first-child {
+  padding-left: 16px;
+}
+
+.headerCell:last-child {
+  padding-right: 16px;
+}
+
+.row td {
+  height: 56px;
+  padding: 0;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.row td:first-child {
+  padding-left: 16px;
+}
+
+.row td:last-child {
+  padding-right: 16px;
+}
+
+.row:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.row:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.repository {
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stage {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.count {
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.actionCell {
+  text-align: right;
+}
+
+.chevron {
+  color: var(--color-text-secondary);
+  vertical-align: middle;
+}
+
+.empty {
+  height: 56px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/*
+ * Column widths reproduce the frame's 16px edge padding plus
+ * 600 / 320 / 180 / 44px lanes on the 1176px table.
+ */
+.colPipeline {
+  width: 52.38095%;
+}
+
+.colStage {
+  width: 27.21088%;
+}
+
+.colIncidents {
+  width: 15.30612%;
+}
+
+.colAction {
+  width: 5.10204%;
+}

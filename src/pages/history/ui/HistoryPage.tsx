@@ -57,7 +57,7 @@ export function HistoryPage() {
   return (
     <AppLayout
       sidebar={<AppSidebar />}
-      hint={isInsights ? undefined : t("hint")}
+      hint={isInsights ? t("insights.hint") : t("hint")}
     >
       <HistoryHeader />
       <HistoryTabs />
