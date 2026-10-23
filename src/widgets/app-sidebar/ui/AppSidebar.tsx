@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, type FocusEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
@@ -48,20 +48,47 @@ export function AppSidebar() {
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const expandRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const focusedControlRef = useRef<HTMLElement | null>(null);
+  const wasMobile = useRef(isMobile);
   const wasMobileOpen = useRef(false);
+
+  // Inert or removed controls can lose focus to body without a new focus target.
+  const rememberFocus = (event: FocusEvent<HTMLElement>) => {
+    focusedControlRef.current = event.target;
+  };
+  const forgetFocus = (event: FocusEvent<HTMLElement>) => {
+    if (event.relatedTarget) focusedControlRef.current = null;
+  };
 
   // The icon-only rail is a desktop affordance; on narrow viewports the sidebar
   // is always shown expanded inside the overlay.
   const isCollapsed = collapsed && !isMobile;
 
-  // Move focus into the overlay when it opens and back to the trigger when it
-  // closes, so the sidebar is usable by keyboard alone.
-  useEffect(() => {
+  // Restore focus only to controls available in the current viewport.
+  useLayoutEffect(() => {
+    const activeElement = document.activeElement;
+    const lostControlFocus =
+      activeElement === document.body && focusedControlRef.current !== null;
+
     if (isMobile && mobileOpen) {
       toggleRef.current?.focus();
-    } else if (wasMobileOpen.current) {
+    } else if (
+      isMobile &&
+      (wasMobileOpen.current ||
+        sidebarRef.current?.contains(activeElement) ||
+        lostControlFocus)
+    ) {
       triggerRef.current?.focus();
+    } else if (
+      !isMobile &&
+      wasMobile.current &&
+      (activeElement === triggerRef.current || lostControlFocus)
+    ) {
+      (toggleRef.current ?? expandRef.current)?.focus();
     }
+    wasMobile.current = isMobile;
     wasMobileOpen.current = isMobile && mobileOpen;
   }, [isMobile, mobileOpen]);
 
@@ -80,6 +107,8 @@ export function AppSidebar() {
     <>
       <button
         ref={triggerRef}
+        onFocusCapture={rememberFocus}
+        onBlurCapture={forgetFocus}
         type="button"
         className={styles.mobileTrigger}
         aria-label={t("sidebar.open")}
@@ -99,6 +128,10 @@ export function AppSidebar() {
       ) : null}
 
       <aside
+        ref={sidebarRef}
+        inert={isMobile && !mobileOpen}
+        onFocusCapture={rememberFocus}
+        onBlurCapture={forgetFocus}
         id={sidebarId}
         className={`${styles.sidebar}${isCollapsed ? ` ${styles.sidebarCollapsed}` : ""}${mobileOpen ? ` ${styles.sidebarMobileOpen}` : ""}`}
       >
@@ -128,6 +161,7 @@ export function AppSidebar() {
                 />
                 {!isMobile && isCollapsed ? (
                   <button
+                    ref={expandRef}
                     type="button"
                     className={styles.brandExpandButton}
                     aria-label={t("sidebar.expand")}
