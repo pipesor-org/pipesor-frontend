@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import type { MonitoredPipeline } from "../../../entities/monitored-pipeline";
 import { AppLayout } from "../../../shared/ui/app-layout";
@@ -14,9 +15,11 @@ function DetailFields({ fields }: { fields: readonly (readonly [string, ReactNod
   ))}</dl>;
 }
 
-export function PipelineDetailPage({ pipeline }: { pipeline: MonitoredPipeline }) {
+export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPipeline; backTo: string }) {
   const { t } = useTranslation("pipelines");
   const { github, policy, ownership } = pipeline;
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { headingRef.current?.focus(); }, [pipeline.id]);
   const capabilityExamples = [
     ["Platform Engineering", t("access.operate"), t("access.operateDescription")],
     ["QA Team", t("access.view"), t("access.viewDescription")],
@@ -27,11 +30,11 @@ export function PipelineDetailPage({ pipeline }: { pipeline: MonitoredPipeline }
   return (
     <AppLayout sidebar={<AppSidebar />}>
       <div className={styles.context}>
-        <p className={styles.unavailable}>{t("backUnavailable")}</p>
+        <Link className={styles.backLink} to={backTo}>{t("backToPipelines")}</Link>
         <Badge variant="outline">{t("demoBadge")}</Badge>
       </div>
       <header className={styles.header}>
-        <h1>{pipeline.slug}</h1>
+        <h1 ref={headingRef} tabIndex={-1}>{pipeline.slug}</h1>
         <p className={styles.metadata}><span>{github.repository}</span><span>GitHub Actions</span></p>
         <p className={styles.note}>{t("demoContext")}</p>
       </header>

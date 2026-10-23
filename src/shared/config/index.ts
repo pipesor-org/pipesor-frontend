@@ -10,6 +10,7 @@ export {
   operationsQueuePath,
   parseHistoryView,
   parseOperationsQueue,
+  pipelineDetailPath,
   routes,
 } from "./navigation";
 export type {

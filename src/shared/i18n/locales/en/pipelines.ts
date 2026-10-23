@@ -1,6 +1,16 @@
 const pipelines = {
   demoBadge: "Prototype · Demo data",
-  backUnavailable: "← Back to Pipelines — inventory not available yet",
+  backToPipelines: "← Back to Pipelines",
+  inventory: {
+    title: "Pipelines", subtitle: "Monitored GitHub Actions workflows and operational policies.",
+    heading: "Monitored workflows", add: "Add monitored workflow",
+    addUnavailable: "Adding workflows is not available yet.",
+    search: "Search pipelines", criticality: "Criticality", team: "Responsible team", monitoring: "Monitoring",
+    workflow: "Pipeline / Workflow", repository: "Repository", environment: "Environment",
+    empty: "No monitored workflows match your search and filters.", reset: "Reset filters",
+    results_one: "{{count}} monitored workflow shown.", results_other: "{{count}} monitored workflows shown.",
+    hint: "Select a workflow to view its operational context.",
+  },
   demoContext: "Read-only demonstration · Synthetic workflow catalog, not a live GitHub connection.",
   identity: {
     title: "Identity",

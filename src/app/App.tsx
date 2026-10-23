@@ -1,16 +1,18 @@
-import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
 import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
 import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { PipelineDetailPage } from "../pages/pipeline-detail";
+import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
 import { operationsQueuePath, routes } from "../shared/config";
 
 function PipelineDetailRoute() {
   const { pipelineId } = useParams<"pipelineId">();
+  const { state } = useLocation();
   const pipeline = selectMonitoredPipelineById(pipelineId);
-  return pipeline ? <PipelineDetailPage pipeline={pipeline} /> : <NotFoundPage />;
+  return pipeline ? <PipelineDetailPage pipeline={pipeline} backTo={pipelineInventoryReturnPath(state)} /> : <NotFoundPage />;
 }
 
 /**
@@ -40,6 +42,7 @@ export function App() {
         element={<Navigate to={operationsQueuePath("validation")} replace />}
       />
       <Route path={routes.history} element={<HistoryPage />} />
+      <Route path={routes.pipelines} element={<PipelinesPage />} />
       <Route path={routes.pipelineDetail} element={<PipelineDetailRoute />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

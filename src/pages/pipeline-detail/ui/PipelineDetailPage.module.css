@@ -7,8 +7,10 @@
   min-height: 32px;
 }
 
-.unavailable, .note, .empty { margin: 0; }
-.unavailable { color: var(--color-text-secondary); font-size: 12px; line-height: 20px; }
+.note, .empty { margin: 0; }
+.backLink { color: var(--color-text-secondary); font-size: 12px; line-height: 20px; text-decoration: none; }
+.backLink:hover { color: var(--color-text-primary); text-decoration: underline; }
+.backLink:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 .header { padding: 24px 0; border-bottom: 1px solid var(--color-border); }
 .header h1 {
   margin: 0 0 8px;
