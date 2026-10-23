@@ -17,7 +17,13 @@ export const routes = {
   operationsNeedsValidationLegacy: "/operations/needs-validation",
   history: "/history",
   pipelines: "/pipelines",
+  addMonitoredWorkflow: "/pipelines/new",
+  pipelineDetail: "/pipelines/:pipelineId",
 } as const;
+
+export function pipelineDetailPath(pipelineId: string): string {
+  return `${routes.pipelines}/${encodeURIComponent(pipelineId)}`;
+}
 
 /**
  * Operations queue identity.
@@ -131,6 +137,6 @@ export const appDestinations: AppDestination[] = [
     key: "pipelines",
     labelKey: "nav.pipelines",
     path: routes.pipelines,
-    implemented: false,
+    implemented: true,
   },
 ];

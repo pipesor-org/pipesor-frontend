@@ -1,10 +1,25 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
+import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
+import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
 import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
+import { PipelineDetailPage } from "../pages/pipeline-detail";
+import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
 import { operationsQueuePath, routes } from "../shared/config";
 
+function PipelineDetailRoute() {
+  const { pipelineId } = useParams<"pipelineId">();
+  const { state } = useLocation();
+  const pipeline = selectMonitoredPipelineById(pipelineId);
+  return pipeline ? <PipelineDetailPage pipeline={pipeline} backTo={pipelineInventoryReturnPath(state)} /> : <NotFoundPage />;
+}
+
+function AddMonitoredWorkflowRoute() {
+  const { state } = useLocation();
+  return <AddMonitoredWorkflowPage backTo={pipelineInventoryReturnPath(state)} />;
+}
 
 /**
  * Route table for the app.
@@ -33,6 +48,9 @@ export function App() {
         element={<Navigate to={operationsQueuePath("validation")} replace />}
       />
       <Route path={routes.history} element={<HistoryPage />} />
+      <Route path={routes.pipelines} element={<PipelinesPage />} />
+      <Route path={routes.addMonitoredWorkflow} element={<AddMonitoredWorkflowRoute />} />
+      <Route path={routes.pipelineDetail} element={<PipelineDetailRoute />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
