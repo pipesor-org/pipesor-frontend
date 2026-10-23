@@ -17,6 +17,7 @@ export const routes = {
   operationsNeedsValidationLegacy: "/operations/needs-validation",
   history: "/history",
   pipelines: "/pipelines",
+  pipelineDetail: "/pipelines/:pipelineId",
 } as const;
 
 /**

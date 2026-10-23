@@ -3,6 +3,7 @@ import {
   monitoredPipelines,
   monitoredPipelineSchema,
   monitoredPipelinesSchema,
+  selectMonitoredPipelineById,
   syntheticWorkflowCatalog,
   syntheticWorkflowCatalogSchema,
 } from "../index";
@@ -67,6 +68,14 @@ for (const record of malformedRecords) {
   assert(!monitoredPipelineSchema.safeParse(record).success, "Malformed pipeline was accepted");
 }
 const second = monitoredPipelines[1];
+for (const pipeline of monitoredPipelines) {
+  assert(selectMonitoredPipelineById(pipeline.id) === pipeline, "Stable ID lookup returned the wrong record");
+  assert(selectMonitoredPipelineById(pipeline.slug) === undefined, "Slug must not resolve as identity");
+}
+for (const id of [undefined, "", "new", "unknown", "b8c63000-0000-4000-8000-000000000099"]) {
+  assert(selectMonitoredPipelineById(id) === undefined, "Unknown ID must not fall back to another record");
+}
+assert(selectMonitoredPipelineById(first.id, []) === undefined, "Empty collection must not fall back to fixtures");
 assert(!monitoredPipelinesSchema.safeParse([first, { ...second, id: first.id }]).success, "Duplicate IDs accepted");
 assert(!monitoredPipelinesSchema.safeParse([first, {
   ...second, github: { ...first.github, repository: "ACME/payments-api" },

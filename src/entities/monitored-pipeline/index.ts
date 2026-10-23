@@ -1,4 +1,5 @@
 export { monitoredPipelines } from "./model/monitoredPipelines";
+export { selectMonitoredPipelineById } from "./model/selectors";
 export { syntheticWorkflowCatalog } from "./model/syntheticWorkflowCatalog";
 export {
   githubWorkflowReferenceSchema,

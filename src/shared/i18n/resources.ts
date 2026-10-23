@@ -1,9 +1,11 @@
 import enCommon from "./locales/en/common";
 import enHistory from "./locales/en/history";
 import enOperations from "./locales/en/operations";
+import enPipelines from "./locales/en/pipelines";
 import esCommon from "./locales/es/common";
 import esHistory from "./locales/es/history";
 import esOperations from "./locales/es/operations";
+import esPipelines from "./locales/es/pipelines";
 
 /**
  * Translation resources bundled with the app.
@@ -20,10 +22,12 @@ export const resources = {
     common: enCommon,
     operations: enOperations,
     history: enHistory,
+    pipelines: enPipelines,
   },
   es: {
     common: esCommon,
     operations: esOperations,
     history: esHistory,
+    pipelines: esPipelines,
   },
 } as const;
