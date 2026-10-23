@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigationType, useSearchParams } from "react-router-dom";
 
 import { PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES } from "../../../entities/monitored-pipeline";
-import { pipelineDetailPath } from "../../../shared/config";
+import { pipelineDetailPath, routes } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Badge } from "../../../shared/ui/badge";
 import { ChevronRightIcon, SearchIcon } from "../../../shared/ui/icons";
@@ -63,10 +63,10 @@ export function PipelinesPage() {
         </div>
         <div className={styles.actions}>
           <Badge variant="outline">{t("demoBadge")}</Badge>
-          <button type="button" className={styles.add} disabled aria-describedby="pipeline-add-unavailable">
+          <Link className={styles.add} to={routes.addMonitoredWorkflow}
+            state={{ pipelineSearch: new URLSearchParams({ ...query, q: search }).toString() }}>
             <span aria-hidden="true">+</span>{t("inventory.add")}
-          </button>
-          <p id="pipeline-add-unavailable" className={styles.unavailable}>{t("inventory.addUnavailable")}</p>
+          </Link>
         </div>
       </header>
       <div className={styles.filters}>

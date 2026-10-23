@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
 import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
+import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
 import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
@@ -13,6 +14,11 @@ function PipelineDetailRoute() {
   const { state } = useLocation();
   const pipeline = selectMonitoredPipelineById(pipelineId);
   return pipeline ? <PipelineDetailPage pipeline={pipeline} backTo={pipelineInventoryReturnPath(state)} /> : <NotFoundPage />;
+}
+
+function AddMonitoredWorkflowRoute() {
+  const { state } = useLocation();
+  return <AddMonitoredWorkflowPage backTo={pipelineInventoryReturnPath(state)} />;
 }
 
 /**
@@ -43,6 +49,7 @@ export function App() {
       />
       <Route path={routes.history} element={<HistoryPage />} />
       <Route path={routes.pipelines} element={<PipelinesPage />} />
+      <Route path={routes.addMonitoredWorkflow} element={<AddMonitoredWorkflowRoute />} />
       <Route path={routes.pipelineDetail} element={<PipelineDetailRoute />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
