@@ -60,15 +60,15 @@ Preserve these domain distinctions: incident lifecycle vs. diagnosis validation;
 4. For UI changes, verify navigation, both locales, keyboard accessibility, responsive behavior, and visual fidelity where relevant. For domain/schema changes, verify valid and invalid data cases.
 5. Report changed files, checks passed/failed, any browser or design comparisons **not performed**, and open decisions. Do not claim verification you did not perform.
 
-The repository currently has no established test runner or CI. Do not claim automated test coverage; propose it separately when justified.
+The repository has no established test runner. The Quality workflow runs typecheck, lint, and build; do not claim automated test coverage.
 
 ## Git workflow
 
-Follow Git Flow and Conventional Commits (Angular convention) for every change. [Git workflow](docs/git-workflow.md) is the single source of truth for branches, commit format, Pull Requests, merge strategies and release tags.
+Follow Trunk-Based Development and Conventional Commits (Angular convention). The [Git workflow](docs/git-workflow.md) describes branches, Pull Requests, and the target release process.
 
-- Branch from and merge into the correct integration branch: `feature/*` ⇄ `develop`; `release/*` and `hotfix/*` into **both** `main` and `develop`.
-- Use `<type>(<optional scope>): <description>` for commit and Pull Request titles, with the approved types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
-- Never commit directly to `main` or `develop`; every change goes through a Pull Request.
+- Branch from `main` and open a PR into `main`; keep branches short-lived and prefer squash merges.
+- Use `<type>(<optional scope>): <description>` for commit and PR titles, with the approved types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
+- Do not push directly to `main`. Pass required checks and obtain review before merging.
 
 ## Scope, permissions, and escalation
 

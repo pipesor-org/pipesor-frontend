@@ -102,6 +102,6 @@ History — Insights derives its metrics from the same demo incidents through en
 - [AGENTS.md](AGENTS.md) — shared engineering instructions for developers and coding agents, including boundaries, quality checks and approval rules.
 - [Frontend conventions](docs/frontend-conventions.md) — implementation guidance for FSD, tokens, styling, localization, accessibility and domain presentation.
 - [Frontend functional architecture map](docs/architecture/frontend-functional-map.md) — implemented functional boundaries, unapproved candidates and unresolved domain decisions.
-- [Git workflow](docs/git-workflow.md) — contribution workflow: Git Flow branches, Conventional Commits, Pull Request conventions, merge strategies and release tags.
+- [Git workflow](docs/git-workflow.md) — contribution workflow: trunk-based branches, Conventional Commits, Pull Requests and target releases.
 
 Implement changes in small, reviewable units. Paper MCP, Context7, Engram and Codex may assist individual developers but are **not required** to install, run, review, or contribute to this frontend. When a design is not directly accessible, request the approved screenshot/specification instead of guessing.
