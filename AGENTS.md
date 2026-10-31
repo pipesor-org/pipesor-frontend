@@ -4,7 +4,7 @@ Shared, version-controlled instructions for developers and AI coding agents. Rea
 
 ## Product and scope
 
-Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend is the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), plus a Not Found screen. **No backend is integrated**: displayed incidents and the provisional Insights aggregations come from local demonstration fixtures.
+Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend includes the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), Pipelines inventory/read-only Detail/draft onboarding, and a Not Found screen. Incident Workspace, configuration saves and workflow registration are not implemented. **No backend is integrated**: displayed incidents and the provisional Insights aggregations come from local demonstration fixtures.
 
 - Preserve approved product behavior and visual design. Paper is a design reference **when accessible**, not a prerequisite for working on this repository.
 - Without Paper access, work from approved screenshots, specifications, and existing components. Ask when essential behavior or design details are missing; do not invent them.
@@ -30,7 +30,7 @@ Follow Feature-Sliced Design (FSD): `app → pages → widgets → features → 
 
 Search, sorting, scopes, tabs, navigation, and other presentational interactions **do not automatically require** feature slices. You may create a well-scoped page, widget, or entity slice for approved work. Seek approval before introducing a new architectural layer or implementing an unapproved business capability.
 
-See the [frontend functional architecture map](docs/architecture/frontend-functional-map.md) for verified functional boundaries, candidate mappings and open domain decisions. Its proposals are not implementation authorization.
+See the [frontend functional architecture map](docs/architecture/frontend-functional-map.md) for implemented boundaries, agreed target decisions, candidate mappings and open contracts. Agreed direction is not a claim of implementation or authorization for unresolved commands; candidate mappings are not approved architecture.
 
 ## Visual design, components, and responsiveness
 
@@ -44,7 +44,7 @@ See the [frontend functional architecture map](docs/architecture/frontend-functi
 
 ## Localization and domain data
 
-- Internationalize user-facing UI copy with the existing `common` and `operations` namespaces. Add keys to **both** English and Spanish; introduce another namespace only when required by an implemented screen.
+- Internationalize user-facing UI copy with the existing `common`, `operations`, `history` and `pipelines` namespaces. Add keys to **both** English and Spanish; introduce another namespace only when required by an implemented screen.
 - Keep domain values, IDs, GitHub names, logs, and evidence separate from translated UI labels. Do not automatically translate user- or system-generated technical content.
 - Use the existing `shared/i18n` formatting utilities for locale-sensitive presentation. Never sort, filter, or calculate with formatted display strings.
 - Zod contracts in `entities/incident/model/schema.ts` and inferred TypeScript types govern incident fixture shape. Validate new data at its boundary, not in every presentational component.
