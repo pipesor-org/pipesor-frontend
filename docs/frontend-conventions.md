@@ -19,7 +19,7 @@ Follow the dependency direction `app → pages → widgets → features → enti
 
 Create only slices needed for the current task. Do not create placeholder directories for future features or a general-purpose component library in anticipation of reuse.
 
-The [frontend functional architecture map](architecture/frontend-functional-map.md) explains current functional boundaries, candidate decomposition and open domain decisions; this guide remains authoritative for implementation conventions.
+The [frontend functional architecture map](architecture/frontend-functional-map.md) separates implemented boundaries, agreed target decisions, candidate decomposition and open contracts; this guide remains authoritative for implementation conventions. Agreed read/navigation direction does not approve a new slice or a domain-changing command.
 
 ## 2. Visual source of truth and design handoff
 
@@ -53,7 +53,7 @@ Prefer one coherent implementation over visually similar, duplicated badges, ico
 
 Do not generalize every table into a universal domain table. Share low-level styling and affordances where justified while allowing each queue to own its columns, formatting and empty state. Keep source data and selectors out of reusable visual primitives.
 
-The existing queue tables are implemented with flex-based rows; follow their established sizing and scroll behavior when modifying those tables. **Do not treat flex rows as a universal requirement for new tables**: prefer native table semantics when feasible, or provide equivalent accessible header/row/cell relationships when using custom layout elements.
+The existing Operations, History, Insights recurring-context and Pipelines tables use native `<table>`, `<thead>`, `<tbody>`, `<tr>`, `<th>` and `<td>` markup with scoped headers. Flex layout is used for surrounding containers and content inside cells, not as a replacement for table rows. Preserve native table semantics, established column sizing and internal horizontal scrolling when modifying these tables; do not generalize their internal flex helpers into a table-row requirement.
 
 For new screen states, consider a single data-driven composition instead of cloning entire pages when structure is shared. Do not couple UI components to future REST response DTOs that have not been approved.
 
@@ -77,6 +77,7 @@ Use semantic links for navigation and buttons for actions. Keep visible `:focus-
 - React Router routes and redirects are managed in `src/app/App.tsx`; destinations and URLs are centralized under `src/shared/config/`.
 - Operations uses `/operations?queue=active` and `/operations?queue=validation`. Preserve the URL's selected queue so browser back/forward and reload behave coherently.
 - History uses `/history?view=incidents` and `/history?view=insights`; bare `/history` renders Incidents and invalid values canonicalize to it. Keep unimplemented destinations non-links rather than adding speculative parameters.
+- `/incidents/:incidentId` is an agreed, initially read-only Workspace target, **not a registered route**. Its origin-aware safe-return direction and proposed direct-entry fallback are documented in the [functional map](architecture/frontend-functional-map.md#43-incident-workspace--diagnosis-ready); do not invent query parameters, fallback acceptance or history/focus mechanics. Operations/History need not adopt Pipelines' implementation structure.
 - Do not create working navigation links to unimplemented screens. Unknown URLs should retain an accessible Not Found experience.
 - Sidebar toggles should expose their expanded/collapsed state appropriately. In collapsed mode, the branding/expand control must remain keyboard discoverable, not hover-only.
 - The profile popover (currently `widgets/app-sidebar/ui/UserMenu.tsx`) contains the language selector and provides a useful interaction reference: keep it within the viewport, avoid clipping in either sidebar mode, and preserve Escape/outside-click dismissal and sensible focus return.
@@ -86,11 +87,11 @@ ARIA choices should describe the component's actual semantics: use `aria-expande
 
 ## 7. Localization
 
-The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs live under `src/shared/i18n/locales/`. Existing namespaces are `common`, `operations` and `history`. The module initializes bundled resources synchronously (no translation HTTP backend), and the repository's i18next declaration derives typed translation keys from the English resources.
+The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs live under `src/shared/i18n/locales/`. Existing namespaces are `common`, `operations`, `history` and `pipelines`, registered in `config.ts` and bundled for both locales in `resources.ts`. The module initializes bundled resources synchronously (no translation HTTP backend), and the repository's i18next declaration derives typed translation keys from the English resources.
 
 - Use `useTranslation("<namespace>")` and semantic translation keys for UI strings, including labels, placeholders, tooltips, accessibility text and empty states. Use the public i18n helpers rather than introducing another translation singleton.
 - Add or update keys in **both** `en` and `es`; English resources define the typed key surface. Keep catalog structure and keys aligned. Check `resources.ts`, `i18next.d.ts`, and `config.ts` before altering initialization, namespaces or locale resolution.
-- Reserve `common` for genuinely shared/application-level strings and keep Operations-specific wording in `operations`. Add another namespace only when implementing its screen.
+- Reserve `common` for genuinely shared/application-level strings; keep screen-specific wording in `operations`, `history` or `pipelines` as appropriate. Add another namespace only when implementing its screen.
 - Use existing `useFormatters`/`Intl` utilities for locale-aware numbers, dates and durations; compare and sort structured source values, never translated/formatted strings. Preserve the existing saved-language/browser-language/fallback resolution and keep the document language in sync on changes.
 - Keep the brand name **Pipesor**, technical identifiers, GitHub workflow/repository names, logs, evidence and arbitrary free text in their source language unless a separate localization capability has been explicitly approved.
 - Keep canonical domain enums independent of translation keys. Existing label mappings in `src/entities/incident/ui/labels.ts` bridge domain values to display text.
@@ -101,11 +102,12 @@ Test both languages after UI changes. Spanish copy can increase control width; d
 
 `src/entities/incident/model/types.ts` defines canonical vocabulary (literal arrays/objects); `schema.ts` builds **Zod 4 discriminated unions** from that vocabulary, with TypeScript types inferred from the schemas. Its strict lifecycle branches prevent unresolved records from carrying resolution-only fields, and require resolution data for resolved incidents. `incidents.ts` owns demo fixtures and validates them on load. `selectors.ts` owns queue membership and derived summary values. Domain-label mappings in `src/entities/incident/ui/labels.ts` are intended to be exhaustive over the corresponding union values.
 
-- The current demo dataset contains six unresolved incidents and seven resolved incidents with pending diagnosis validation. **These counts describe the present fixture snapshot, not constants to duplicate**; selectors and fixture data remain authoritative.
+- The current demo dataset contains six unresolved, seven resolved/pending-validation and eight resolved/terminal-validation incidents. History currently selects only the eight terminal records; its agreed all-resolved target would include 15 before date/filter criteria, but is not implemented. **These are fixture counts, not constants to duplicate**; selectors and fixture data remain authoritative for current behavior.
 - Lifecycle status, diagnosis-validation outcome, incident severity, pipeline criticality and ownership/assignment are distinct concepts. Do not merge them for UI convenience.
 - Keep timestamps and elapsed durations structured; format at the presentation boundary. Respect the fixed demo snapshot (`INCIDENT_SNAPSHOT_AT`) rather than pretending that fixture metrics are live. Never synthesize a timestamp when the design only supplies a duration.
 - Prefer domain selectors for derived view data. Do not embed hardcoded metrics in widgets or infer business conditions from translated labels.
 - Zod validates data structure and selected invariants; it does not automatically define backend authorization, cross-record consistency or transition permissions.
+- Preserve observed evidence, AIOps inference, operational lifecycle and human review as separate dimensions. Do not fabricate missing Workspace references, timestamps, actors or actual causes. A successful run does not automatically resolve an incident or confirm its diagnosis; rejection must not overwrite the original hypothesis/evidence/confidence.
 
 The app currently has no backend integration. Do not implement API clients, domain mutations or permission checks by guessing the future microservice, REST or CQRS contracts.
 
