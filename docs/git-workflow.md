@@ -78,7 +78,7 @@ A breaking change commits the author to explaining the migration path in the bod
 
 ## 4. Releases and deployment
 
-The [organization contribution guide](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) describes the target staged promotion and exceptional hotfix process. The future Azure-based frontend deployment has not been implemented. Its eventual process should build an immutable artifact once, promote the same artifact through environments with recorded results and approvals, and assign a protected SemVer release tag without rebuilding. Do not claim those controls exist until configured.
+The [organization contribution guide](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) describes the target staged promotion and exceptional hotfix process. On pushes to `main`, Quality stores the verified `dist/` build as a GitHub Actions artifact named for the commit, retained for 90 days. PR builds are not published. This artifact is a CI baseline, not yet a deployment or release registry; promotion and retention for deployed releases are not implemented. The future Azure-based frontend deployment has not been implemented. Its eventual process should build an immutable artifact once, promote the same artifact through environments with recorded results and approvals, and assign a protected SemVer release tag without rebuilding. Do not claim those controls exist until configured.
 
 If production cannot take the head of `main`, merge the fix to `main` first, then cherry-pick it with `-x` onto a short-lived hotfix branch from the production tag. Follow the organization hotfix promotion and approval process and delete the branch after release.
 
