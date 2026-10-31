@@ -1,0 +1,236 @@
+.section {
+  flex-shrink: 0;
+  margin-top: 24px;
+  padding: 24px;
+  background-color: var(--color-surface);
+}
+
+.panels {
+  display: flex;
+  gap: 24px;
+}
+
+/*
+ * 680px at the 1440px frame width, then fluid. The 424px outcome panel keeps its
+ * frame width so the distribution bar stays comparable across widths.
+ */
+.stages {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  padding-right: 24px;
+  border-right: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.caption {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: right;
+}
+
+.stageList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stageRow {
+  display: grid;
+  grid-template-columns: 126px minmax(0, 460px) 32px;
+  align-items: center;
+  gap: 12px;
+  height: 28px;
+}
+
+.stageLabel {
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  background-color: var(--color-surface-subtle);
+  border-radius: 2px;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 2px;
+}
+
+.stageCount {
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.outcome {
+  display: flex;
+  flex: 0 0 424px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.subtitle {
+  height: 26px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.barBlock {
+  padding-top: 24px;
+}
+
+.bar {
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  background-color: var(--color-surface-subtle);
+  border-radius: 3px;
+}
+
+.confirmedSegment {
+  flex-shrink: 0;
+  height: 100%;
+  background-color: var(--color-success);
+}
+
+.rejectedSegment {
+  flex-shrink: 0;
+  height: 100%;
+  background-color: var(--color-critical);
+}
+
+.rows {
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.confirmedRow {
+  padding: 20px 0 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rejectedRow {
+  padding: 12px 0;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  line-height: 20px;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.confirmedDot {
+  background-color: var(--color-success);
+}
+
+.rejectedDot {
+  background-color: var(--color-critical);
+}
+
+.value {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.note {
+  margin: 0;
+  padding-top: 12px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.noData {
+  margin: 0;
+  padding-top: 24px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/*
+ * Below the width where the sidebar leaves room for both panels, the outcome
+ * panel moves under the stage bars. 1200px is a layout breakpoint for this
+ * section only; navigation keeps its 900px breakpoint.
+ */
+@media (max-width: 1200px) {
+  .panels {
+    flex-direction: column;
+  }
+
+  .stages {
+    flex: 0 0 auto;
+    padding-right: 0;
+    padding-bottom: 24px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* Stacked, the stage panel spans the surface, so let the bars use it. */
+  .stageRow {
+    grid-template-columns: 126px minmax(0, 1fr) 32px;
+  }
+
+  .outcome {
+    flex: 0 0 auto;
+  }
+}

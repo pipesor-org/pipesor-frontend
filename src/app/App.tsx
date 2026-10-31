@@ -1,17 +1,35 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
+import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
+import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
+import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
+import { PipelineDetailPage } from "../pages/pipeline-detail";
+import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
 import { operationsQueuePath, routes } from "../shared/config";
+
+function PipelineDetailRoute() {
+  const { pipelineId } = useParams<"pipelineId">();
+  const { state } = useLocation();
+  const pipeline = selectMonitoredPipelineById(pipelineId);
+  return pipeline ? <PipelineDetailPage pipeline={pipeline} backTo={pipelineInventoryReturnPath(state)} /> : <NotFoundPage />;
+}
+
+function AddMonitoredWorkflowRoute() {
+  const { state } = useLocation();
+  return <AddMonitoredWorkflowPage backTo={pipelineInventoryReturnPath(state)} />;
+}
 
 /**
  * Route table for the app.
  *
- * The Operations workspace is a single route: both queues are read projections
- * of the same domain and are selected with the `queue` query parameter
+ * `/operations` is a single route: both queues are read projections of the same
+ * domain and are selected with the `queue` query parameter
  * (`/operations?queue=active|validation`). The former per-queue URLs are kept as
- * redirects so existing links and bookmarks keep working, and an unknown path
- * renders NotFound instead of silently redirecting.
+ * redirects so existing links and bookmarks keep working. `/history` follows the
+ * same pattern with `?view=incidents|insights`. An unknown path renders NotFound
+ * instead of silently redirecting.
  */
 export function App() {
   return (
@@ -29,6 +47,10 @@ export function App() {
         path={routes.operationsNeedsValidationLegacy}
         element={<Navigate to={operationsQueuePath("validation")} replace />}
       />
+      <Route path={routes.history} element={<HistoryPage />} />
+      <Route path={routes.pipelines} element={<PipelinesPage />} />
+      <Route path={routes.addMonitoredWorkflow} element={<AddMonitoredWorkflowRoute />} />
+      <Route path={routes.pipelineDetail} element={<PipelineDetailRoute />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

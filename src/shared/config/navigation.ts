@@ -17,7 +17,13 @@ export const routes = {
   operationsNeedsValidationLegacy: "/operations/needs-validation",
   history: "/history",
   pipelines: "/pipelines",
+  addMonitoredWorkflow: "/pipelines/new",
+  pipelineDetail: "/pipelines/:pipelineId",
 } as const;
+
+export function pipelineDetailPath(pipelineId: string): string {
+  return `${routes.pipelines}/${encodeURIComponent(pipelineId)}`;
+}
 
 /**
  * Operations queue identity.
@@ -56,6 +62,43 @@ export function operationsQueuePath(queue: OperationsQueue): string {
   return `${routes.operations}?${OPERATIONS_QUEUE_PARAM}=${queue}`;
 }
 
+/**
+ * History view identity.
+ *
+ * Incidents and Insights are two read presentations of the same resolved-
+ * incident domain, so they share `/history` and are selected by a `view` query
+ * parameter. Both tabs write the parameter so the active view is always
+ * deep-linkable; a bare `/history` still renders the default view for backwards
+ * compatibility with previously shared links.
+ */
+export const historyViews = ["incidents", "insights"] as const;
+export type HistoryView = (typeof historyViews)[number];
+
+/** View shown when the URL omits or mis-states the `view` parameter. */
+export const DEFAULT_HISTORY_VIEW: HistoryView = "incidents";
+
+/** Query parameter that selects the History view. */
+export const HISTORY_VIEW_PARAM = "view";
+
+/** Narrows an arbitrary value (e.g. a raw query string) to a History view. */
+export function isHistoryView(
+  value: string | null | undefined,
+): value is HistoryView {
+  return (historyViews as readonly string[]).includes(value ?? "");
+}
+
+/** Parses a raw query value, falling back to the default History view. */
+export function parseHistoryView(
+  value: string | null | undefined,
+): HistoryView {
+  return isHistoryView(value) ? value : DEFAULT_HISTORY_VIEW;
+}
+
+/** Canonical deep-link URL for a History view. */
+export function historyViewPath(view: HistoryView): string {
+  return `${routes.history}?${HISTORY_VIEW_PARAM}=${view}`;
+}
+
 export type AppDestinationKey = "operations" | "history" | "pipelines";
 
 /**
@@ -88,12 +131,12 @@ export const appDestinations: AppDestination[] = [
     key: "history",
     labelKey: "nav.history",
     path: routes.history,
-    implemented: false,
+    implemented: true,
   },
   {
     key: "pipelines",
     labelKey: "nav.pipelines",
     path: routes.pipelines,
-    implemented: false,
+    implemented: true,
   },
 ];

@@ -5,7 +5,10 @@ import { BrowserRouter } from 'react-router-dom'
 // Initializes i18next before the first render (bundled resources, sync init).
 import './shared/i18n'
 import { App } from './app/App'
+import { ThemeProvider, applyTheme, getPreferredTheme } from './shared/lib'
 import './app/styles/global.css'
+
+applyTheme(getPreferredTheme())
 
 const rootElement = document.getElementById('root')
 
@@ -16,7 +19,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

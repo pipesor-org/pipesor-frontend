@@ -4,3 +4,50 @@
   font-weight: var(--font-weight-medium);
   line-height: 20px;
 }
+
+.withDot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* History's frame sets the status line to 18px, unlike the text-only variant. */
+  line-height: 18px;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.success.dot {
+  background-color: var(--color-success);
+}
+
+.critical {
+  color: var(--color-critical);
+}
+
+.critical.dot {
+  background-color: var(--color-critical);
+}
+
+.warning {
+  color: var(--color-text-primary);
+}
+
+.warning.dot {
+  background-color: var(--color-warning);
+}
+
+.neutral {
+  color: var(--color-text-secondary);
+}
+
+.neutral.dot {
+  background-color: var(--color-text-secondary);
+}

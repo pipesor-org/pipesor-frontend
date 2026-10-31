@@ -1,0 +1,151 @@
+.surface {
+  flex-shrink: 0;
+  margin-top: 24px;
+  padding: 24px;
+  background-color: var(--color-surface);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.caption {
+  flex-shrink: 0;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: right;
+}
+
+/*
+ * The plotting area keeps the frame's 56px gutters: 40px for the y labels plus
+ * 16px before the first point, mirrored on the right for the last value label.
+ * Narrow viewports scroll the chart instead of shrinking its labels.
+ */
+.body {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.area {
+  position: relative;
+  min-width: 560px;
+  height: 242px;
+}
+
+.plot {
+  position: absolute;
+  top: 0;
+  right: 56px;
+  left: 56px;
+  height: 214px;
+}
+
+.gridLine {
+  position: absolute;
+  right: 0;
+  left: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.axisLabel {
+  position: absolute;
+  left: -56px;
+  width: 40px;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.lineLayer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 214px;
+  overflow: visible;
+}
+
+.dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.valueLabel {
+  position: absolute;
+  transform: translateX(-50%);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.noDataLabel {
+  position: absolute;
+  top: 186px;
+  transform: translateX(-50%);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.axisTick {
+  position: absolute;
+  top: 224px;
+  transform: translateX(-50%);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/*
+ * At narrow widths the range caption would take the room the title needs,
+ * breaking "Mean diagnosis time over time" into four short lines. Stacking the
+ * caption below keeps the title readable; the chart itself still scrolls inside
+ * its own body.
+ */
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .caption {
+    max-width: 100%;
+    text-align: left;
+  }
+}

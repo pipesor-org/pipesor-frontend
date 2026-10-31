@@ -32,77 +32,99 @@ export function IncidentsTable() {
 
   return (
     <div className={styles.card}>
-      <div className={styles.headerRow}>
-        {HEADER_CELLS.map((cell) => (
-          <span
-            key={cell.key}
-            className={`${styles.headerCell} ${styles[cell.column]}`}
-          >
-            {t(cell.labelKey)}
-          </span>
-        ))}
-      </div>
+      <table className={styles.table} aria-label={t("tabs.activeIncidents")}>
+        <colgroup>
+          {HEADER_CELLS.map((cell) => (
+            <col key={cell.key} className={styles[cell.column]} />
+          ))}
+        </colgroup>
+        <thead>
+          <tr className={styles.headerRow}>
+            {HEADER_CELLS.map((cell) => (
+              <th key={cell.key} scope="col" className={styles.headerCell}>
+                {t(cell.labelKey)}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
-      {selectActiveIncidents().map((incident) => (
-        <div key={incident.id} className={styles.row}>
-          <div className={`${styles.cell} ${styles.colSeverity}`}>
-            <IncidentSeverity severity={incident.severity} />
-          </div>
+        <tbody>
+          {selectActiveIncidents().map((incident) => (
+            <tr key={incident.id} className={styles.row}>
+              <td>
+                <div className={styles.cell}>
+                  <IncidentSeverity severity={incident.severity} />
+                </div>
+              </td>
 
-          <div className={`${styles.cell} ${styles.colIncident}`}>
-            <span className={styles.incidentId}>{incident.id}</span>
-            <span className={styles.incidentRepository}>
-              {incident.repository}
-            </span>
-            <span className={styles.incidentWorkflow}>{incident.workflow}</span>
-          </div>
+              <td>
+                <div className={styles.cell}>
+                  <span className={styles.incidentId}>{incident.id}</span>
+                  <span className={styles.incidentRepository}>
+                    {incident.repository}
+                  </span>
+                  <span className={styles.incidentWorkflow}>{incident.workflow}</span>
+                </div>
+              </td>
 
-          <div className={`${styles.cell} ${styles.colStage}`}>
-            <span className={styles.stage}>
-              {t(STAGE_LABEL_KEY[incident.stage])}
-            </span>
-          </div>
+              <td>
+                <div className={styles.cell}>
+                  <span className={styles.stage}>
+                    {t(STAGE_LABEL_KEY[incident.stage])}
+                  </span>
+                </div>
+              </td>
 
-          <div className={`${styles.cell} ${styles.colDiagnosis}`}>
-            <span className={styles.diagnosisTitle}>{incident.diagnosis}</span>
-            {incident.diagnosisNote ? (
-              <span className={styles.diagnosisNote}>
-                {incident.diagnosisNote}
-              </span>
-            ) : null}
-          </div>
+              <td>
+                <div className={styles.cell}>
+                  <span className={styles.diagnosisTitle}>{incident.diagnosis}</span>
+                  {incident.diagnosisNote ? (
+                    <span className={styles.diagnosisNote}>
+                      {incident.diagnosisNote}
+                    </span>
+                  ) : null}
+                </div>
+              </td>
 
-          <div className={`${styles.cell} ${styles.colStatus}`}>
-            <span className={styles.status}>
-              {t(STATUS_LABEL_KEY[incident.status])}
-            </span>
-          </div>
+              <td>
+                <div className={styles.cell}>
+                  <span className={styles.status}>
+                    {t(STATUS_LABEL_KEY[incident.status])}
+                  </span>
+                </div>
+              </td>
 
-          <div className={`${styles.cell} ${styles.colAssignee}`}>
-            {incident.assignee ? (
-              <span className={styles.assignee}>{incident.assignee}</span>
-            ) : (
-              <>
-                <span className={styles.assigneeUnassigned}>
-                  {t("table.unassigned")}
-                </span>
-                <span className={styles.assignAction}>
-                  {t("table.assignToMe")}
-                </span>
-              </>
-            )}
-          </div>
+              <td>
+                <div className={styles.cell}>
+                  {incident.assignee ? (
+                    <span className={styles.assignee}>{incident.assignee}</span>
+                  ) : (
+                    <>
+                      <span className={styles.assigneeUnassigned}>
+                        {t("table.unassigned")}
+                      </span>
+                      <span className={styles.assignAction}>
+                        {t("table.assignToMe")}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </td>
 
-          <div className={`${styles.cell} ${styles.colElapsed}`}>
-            <span className={styles.elapsedRow}>
-              <span className={styles.elapsedValue}>
-                {formatDuration(incident.elapsedMinutes * MS_PER_MINUTE)}
-              </span>
-              <ChevronRightIcon className={styles.elapsedChevron} />
-            </span>
-          </div>
-        </div>
-      ))}
+              <td>
+                <div className={styles.cell}>
+                  <span className={styles.elapsedRow}>
+                    <span className={styles.elapsedValue}>
+                      {formatDuration(incident.elapsedMinutes * MS_PER_MINUTE)}
+                    </span>
+                    <ChevronRightIcon className={styles.elapsedChevron} />
+                  </span>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

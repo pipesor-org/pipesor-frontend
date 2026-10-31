@@ -1,0 +1,92 @@
+.strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  flex-shrink: 0;
+  height: 80px;
+  margin: 24px 0 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cell + .cell {
+  padding-left: 24px;
+  border-left: 1px solid var(--color-border);
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+}
+
+.value {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 26px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-medium);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    height: auto;
+    row-gap: 16px;
+    padding: 16px 0;
+  }
+
+  .cell:nth-child(3) {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .cell:nth-child(n + 3) {
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+/*
+ * On phones the Spanish duration no longer fits two columns without breaking
+ * its unit onto a second line ("31 min 07 / s"). One column keeps every value
+ * whole; the cell separators become horizontal.
+ */
+@media (max-width: 400px) {
+  .strip {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  .cell + .cell {
+    padding-top: 16px;
+    padding-left: 0;
+    border-top: 1px solid var(--color-border);
+    border-left: none;
+  }
+}

@@ -27,28 +27,98 @@ export function formatDate(iso: string, language: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * Formats an ISO-8601 UTC instant as a day only (`Sep 1`, `1 sept`).
+ *
+ * Used where a period boundary is displayed without a time of day, such as the
+ * History — Insights weekly axis. Time zone handling matches {@link formatDate}:
+ * the demo instants are authored in UTC and must not shift.
+ */
+export function formatShortDate(iso: string, language: string): string {
+  return new Intl.DateTimeFormat(intlLocaleFor(language), {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
+/**
+ * Formats an inclusive ISO-8601 UTC interval as one localized range
+ * (`Sep 1 – 30`, `1–30 sept`).
+ *
+ * `formatRange` collapses the parts the two ends share, so the Insights period
+ * control fits its fixed width without hand-joining two labels or assuming
+ * month-day order.
+ */
+export function formatShortDateRange(
+  startIso: string,
+  endIso: string,
+  language: string,
+): string {
+  const formatter = new Intl.DateTimeFormat(intlLocaleFor(language), {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
+  return formatter.formatRange(new Date(startIso), new Date(endIso));
+}
+
 /** Formats an integer with the locale's grouping rules. */
 export function formatNumber(value: number, language: string): string {
   return new Intl.NumberFormat(intlLocaleFor(language)).format(value);
+}
+
+/**
+ * Formats a ratio (`0.625`) as a localized percentage (`62.5%`).
+ *
+ * At most one fraction digit is kept, so whole percentages stay short (`84%`)
+ * while small denominators are not rounded into a misleading total: the
+ * Insights demo has eight validated diagnoses, where integer rounding would
+ * render `63%` and `38%` (101%). Callers pass a canonical ratio, never a
+ * display string.
+ */
+export function formatPercent(value: number, language: string): string {
+  return new Intl.NumberFormat(intlLocaleFor(language), {
+    style: "percent",
+    maximumFractionDigits: 1,
+  }).format(value);
 }
 
 export interface DurationParts {
   days: number;
   hours: number;
   minutes: number;
+  /** Additive: existing callers may keep using day/hour/minute granularity. */
+  seconds: number;
 }
 
 /**
- * Decomposes a millisecond duration into whole days/hours/minutes.
+ * Decomposes a millisecond duration into whole days/hours/minutes/seconds.
  *
  * The values are canonical numbers; the caller localizes the unit labels.
  */
 export function durationParts(ms: number): DurationParts {
-  const totalMinutes = Math.max(0, Math.floor(ms / 60_000));
+  const totalSeconds = Math.max(0, Math.floor(ms / 1_000));
 
   return {
-    days: Math.floor(totalMinutes / 1_440),
-    hours: Math.floor((totalMinutes % 1_440) / 60),
-    minutes: totalMinutes % 60,
+    days: Math.floor(totalSeconds / 86_400),
+    hours: Math.floor((totalSeconds % 86_400) / 3_600),
+    minutes: Math.floor((totalSeconds % 3_600) / 60),
+    seconds: totalSeconds % 60,
   };
+}
+
+/**
+ * Formats an integer with at least two digits (e.g. `5` -> `05`).
+ *
+ * Used for the seconds component of a duration, which the History frames
+ * present zero-padded (`1m 42s`, `3m 05s`). Locale-aware so the digits follow
+ * the active language's numbering system.
+ */
+export function formatPaddedNumber(value: number, language: string): string {
+  return new Intl.NumberFormat(intlLocaleFor(language), {
+    minimumIntegerDigits: 2,
+    useGrouping: false,
+  }).format(value);
 }

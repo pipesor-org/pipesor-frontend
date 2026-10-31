@@ -2,28 +2,11 @@
 
 Single source of truth for branching, commits, Pull Requests and releases in this repository. [AGENTS.md](../AGENTS.md) states the mandatory rule that points here; the [README](../README.md) covers setup and implemented scope. Do not maintain a second, conflicting description elsewhere.
 
-## 1. Branch model (Git Flow)
+## 1. Branch model (Trunk-Based Development)
 
-Two long-lived branches plus short-lived working branches. Never commit directly to `main` or `develop`; every change reaches them through a Pull Request.
+`main` is the shared trunk and should remain healthy and releasable. Branch from `main` for each small change, open a Pull Request back into `main`, and delete the branch after merging. Use short-lived names such as `feature/incident-queue-filters` or `fix/sidebar-focus`.
 
-| Branch | Created from | Merged into | Purpose |
-| --- | --- | --- | --- |
-| `main` | — | — | Stable baseline and releases. Always reproducible and releasable. |
-| `develop` | `main` (initial) | — | Integration branch for the next release. Receives completed features. |
-| `feature/*` | `develop` | `develop` | A single feature, fix or preparatory change. |
-| `release/*` | `develop` | `main` **and** `develop` | Stabilizes and version-stamps an upcoming release. |
-| `hotfix/*` | `main` | `main` **and** `develop` | Urgent production fix that cannot wait for the next release. |
-
-Rules:
-
-- `feature/*` is created from and merged back into `develop`.
-- `release/*` is created from `develop` and must be merged into **both** `main` and `develop` (so the integration branch receives the release commits and any release-only fixes).
-- `hotfix/*` is created from `main` and must be merged into **both** `main` and `develop` (so the fix is not lost on the next release).
-- Keep branches short-lived and scoped to one reviewable change. Delete a branch after it is merged.
-- `release/*` should contain only release stabilization: version bumps, changelog, documentation and confirmed bug fixes — no new features.
-- Use lowercase, hyphen-separated names that describe the work, for example `feature/incident-queue-filters`, `release/0.1.0`, `hotfix/sidebar-focus-trap`.
-
-`main` holds tagged releases only. Do not rewrite or discard published history.
+Do not push directly to `main`, maintain a long-lived `develop` branch, or create routine release branches. During the migration, integrate the existing work on `develop` into `main` before changing the default branch; do not discard its history or changes.
 
 ## 2. Conventional Commits (Angular convention)
 
@@ -69,7 +52,7 @@ Examples:
 ```text
 feat(operations): add severity filter to the active incidents queue
 fix(sidebar): keep the profile popover inside the viewport
-docs(git-workflow): document release branch merge targets
+docs(git-workflow): clarify trunk-based development
 chore(deps): bump zod to 4.6.7
 ```
 
@@ -88,49 +71,23 @@ A breaking change commits the author to explaining the migration path in the bod
 
 ## 3. Pull Requests
 
-- Open a Pull Request for every change; never push directly to `main` or `develop`.
-- Target branch follows the branch model: `feature/*` → `develop`, `release/*` and `hotfix/*` → `main` (then back-merge into `develop`).
-- The Pull Request **title** follows the Conventional Commits format, because squash-merged titles become the commit message.
-- Keep each Pull Request small, single-purpose and independently reviewable. Avoid unrelated refactors.
-- Fill in: what changed and why, linked issue/task when available, and the checks actually run (`bun run typecheck`, `bun run lint`, `bun run build` where applicable) with their results. State explicitly what was **not** verified (browser, Paper/design comparison, alternate locale).
-- Resolve review comments before merge; keep the branch up to date with its base.
+- Open a PR into `main` for every change, with a Conventional Commit title. Keep it small and focused.
+- Describe the change, link the task, report checks and anything not verified. Resolve review comments and obtain review before merging.
+- Pass the repository's required checks and prefer squash merging. Do not force-push shared branches or branches under review by others.
 - Do not commit build output, credentials, `.env` files, or machine-specific configuration.
 
-### Merge strategies
+## 4. Releases and deployment
 
-| Into | Strategy | Why |
-| --- | --- | --- |
-| `feature/*` → `develop` | Squash merge | Keeps `develop` history linear and one-commit-per-feature; the PR title becomes the commit subject. |
-| `release/*` → `main` | Merge commit (`--no-ff`) | Preserves the release boundary and its history on the stable branch. |
-| `release/*` → `develop` | Merge commit (`--no-ff`) | Brings release-only fixes back into integration. |
-| `hotfix/*` → `main` | Merge commit (`--no-ff`) | Preserves the hotfix boundary; then tag the release. |
-| `hotfix/*` → `develop` | Merge commit (`--no-ff`) | Prevents the fix from regressing on the next release. |
+The [organization contribution guide](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) describes the target staged promotion and exceptional hotfix process. The future Azure-based frontend deployment has not been implemented. Its eventual process should build an immutable artifact once, promote the same artifact through environments with recorded results and approvals, and assign a protected SemVer release tag without rebuilding. Do not claim those controls exist until configured.
 
-Do not rebase or force-push shared branches (`main`, `develop`) or branches under review by others.
-
-## 4. Releases and tags
-
-- Releases are cut from `main` after a `release/*` branch is merged.
-- Tag every release on `main` with a SemVer tag prefixed with `v`, for example `v0.1.0`.
-- Use annotated tags (`git tag -a v0.1.0 -m "Release v0.1.0"`) so the tag carries a message and author.
-- A tag marks a released baseline and must not be moved after publication; ship a new patch release instead.
-- Before tagging, the release branch owns the version bump in `package.json` and any updated release documentation.
-- Until a release process is formally established, `0.y.z` versions remain pre-1.0 and `main` may track the initial baseline.
+If production cannot take the head of `main`, merge the fix to `main` first, then cherry-pick it with `-x` onto a short-lived hotfix branch from the production tag. Follow the organization hotfix promotion and approval process and delete the branch after release.
 
 ## 5. Quick reference
 
 ```bash
-# Start a feature
-git switch develop
-git switch -c feature/incident-queue-filters
-
-# Start a release from integration
-git switch develop
-git switch -c release/0.1.0
-
-# Start an urgent fix from the stable baseline
 git switch main
-git switch -c hotfix/sidebar-focus-trap
+git pull --ff-only
+git switch -c feature/incident-queue-filters
 ```
 
-Commit, push the branch, open a Pull Request against the correct base, and merge only after review. This repository currently has no CI pipeline, so reviewers rely on the checks reported in the Pull Request.
+Run `bun run typecheck`, `bun run lint`, and `bun run build` before opening the PR. The Quality workflow runs these checks on PRs and pushes to `main`.

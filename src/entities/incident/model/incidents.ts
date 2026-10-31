@@ -20,11 +20,14 @@ export const INCIDENT_SNAPSHOT_AT = "2026-09-30T10:30:00Z";
  * array is intentionally left untyped — runtime validation, not a cast, is what
  * gives `incidents` its `Incident[]` type.
  *
- * The array intentionally mixes both Operations queues:
- * - operationally unresolved incidents (Active Incidents), and
- * - resolved incidents whose diagnosis validation is still pending.
+ * The array intentionally mixes three read projections:
+ * - operationally unresolved incidents (Active Incidents),
+ * - resolved incidents whose diagnosis validation is still pending
+ *   (Needs Validation), and
+ * - resolved incidents with a terminal validation outcome (History).
  *
- * See `selectActiveIncidents` / `selectNeedsValidationIncidents`.
+ * See `selectActiveIncidents` / `selectNeedsValidationIncidents` /
+ * `selectHistoryIncidents`.
  */
 const rawIncidents = [
   // --- Active Incidents: operationally unresolved ---
@@ -189,6 +192,132 @@ const rawIncidents = [
     validationStatus: "PENDING",
     assignee: "Maya Patel",
     resolvedAt: "2026-09-30T10:05:00Z",
+  },
+
+  // --- History — Incidents: validated resolved incidents (demo-only) ---
+  //
+  // These rows mirror the approved "History — Incidents" frame. They are read
+  // only through `selectHistoryIncidents` and do not join the Operations queues.
+  //
+  // The durations are the values shown by the frame. Paper supplies only
+  // formatted durations, so they are stored as whole seconds and no timestamps
+  // are synthesized.
+  //
+  // Severity is required by the shared incident contract but is not shown by the
+  // History frame. The values below are explicit synthetic placeholders for the
+  // demo: they are not derived from any other incident's severity or from
+  // pipeline criticality.
+  {
+    id: "INC-1038",
+    repository: "acme/identity-api",
+    workflow: "Code quality checks",
+    severity: "Medium",
+    stage: "Quality Gate",
+    diagnosis: "Coverage below configured threshold",
+    status: "Resolved",
+    validationStatus: "CONFIRMED",
+    assignee: "Alex Chen",
+    resolvedAt: "2026-09-29T14:26:00Z",
+    diagnosisDurationSeconds: 102,
+    resolutionDurationSeconds: 738,
+  },
+  {
+    id: "INC-1037",
+    repository: "acme/payments-api",
+    workflow: "Deploy production",
+    severity: "High",
+    stage: "Deployment",
+    diagnosis: "Deployment token lacks required scope",
+    status: "Resolved",
+    validationStatus: "REJECTED",
+    assignee: "Maya Patel",
+    resolvedAt: "2026-09-29T11:08:00Z",
+    diagnosisDurationSeconds: 130,
+    resolutionDurationSeconds: 2826,
+  },
+  {
+    id: "INC-1035",
+    repository: "acme/worker-service",
+    workflow: "Build container image",
+    severity: "Medium",
+    stage: "Container",
+    diagnosis: "Registry authentication failure",
+    status: "Resolved",
+    validationStatus: "CONFIRMED",
+    assignee: "Sam Rivera",
+    resolvedAt: "2026-09-29T09:42:00Z",
+    diagnosisDurationSeconds: 78,
+    resolutionDurationSeconds: 1112,
+  },
+  {
+    id: "INC-1034",
+    repository: "acme/platform-infra",
+    workflow: "Provision infrastructure",
+    severity: "Critical",
+    stage: "Infrastructure",
+    diagnosis: "Terraform state lock conflict",
+    status: "Resolved",
+    validationStatus: "CONFIRMED",
+    assignee: "Alex Chen",
+    resolvedAt: "2026-09-28T18:35:00Z",
+    diagnosisDurationSeconds: 185,
+    resolutionDurationSeconds: 2204,
+  },
+  {
+    id: "INC-1033",
+    repository: "acme/checkout-api",
+    workflow: "Integration tests",
+    severity: "High",
+    stage: "Testing",
+    diagnosis: "Test database connection timeout",
+    status: "Resolved",
+    validationStatus: "REJECTED",
+    assignee: "Sam Rivera",
+    resolvedAt: "2026-09-28T16:12:00Z",
+    diagnosisDurationSeconds: 154,
+    resolutionDurationSeconds: 3492,
+  },
+  {
+    id: "INC-1032",
+    repository: "acme/web-storefront",
+    workflow: "Build and test",
+    severity: "Medium",
+    stage: "Build",
+    diagnosis: "Dependency version mismatch",
+    status: "Resolved",
+    validationStatus: "CONFIRMED",
+    assignee: "Maya Patel",
+    resolvedAt: "2026-09-28T13:07:00Z",
+    diagnosisDurationSeconds: 116,
+    resolutionDurationSeconds: 1449,
+  },
+  {
+    id: "INC-1031",
+    repository: "acme/payments-api",
+    workflow: "Deploy production",
+    severity: "Critical",
+    stage: "Deployment",
+    diagnosis: "Missing deployment secret",
+    status: "Resolved",
+    validationStatus: "CONFIRMED",
+    assignee: "Alex Chen",
+    resolvedAt: "2026-09-27T17:54:00Z",
+    diagnosisDurationSeconds: 69,
+    resolutionDurationSeconds: 585,
+  },
+  {
+    id: "INC-1030",
+    repository: "acme/identity-api",
+    workflow: "Unit tests",
+    severity: "High",
+    stage: "Testing",
+    diagnosis: "Test fixture configuration mismatch",
+    status: "Resolved",
+    validationStatus: "REJECTED",
+    assignee: "Maya Patel",
+    resolvedAt: "2026-09-27T10:31:00Z",
+    diagnosisDurationSeconds: 168,
+    resolutionDurationSeconds: 2536,
   },
 ];
 

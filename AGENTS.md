@@ -4,7 +4,7 @@ Shared, version-controlled instructions for developers and AI coding agents. Rea
 
 ## Product and scope
 
-Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend is the **Operations** workspace (Active Incidents and Needs Validation) plus a Not Found screen. **No backend is integrated**: displayed incidents are local demonstration fixtures.
+Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend includes the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), Pipelines inventory/read-only Detail/draft onboarding, and a Not Found screen. Incident Workspace, configuration saves and workflow registration are not implemented. **No backend is integrated**: displayed incidents and the provisional Insights aggregations come from local demonstration fixtures.
 
 - Preserve approved product behavior and visual design. Paper is a design reference **when accessible**, not a prerequisite for working on this repository.
 - Without Paper access, work from approved screenshots, specifications, and existing components. Ask when essential behavior or design details are missing; do not invent them.
@@ -30,19 +30,21 @@ Follow Feature-Sliced Design (FSD): `app → pages → widgets → features → 
 
 Search, sorting, scopes, tabs, navigation, and other presentational interactions **do not automatically require** feature slices. You may create a well-scoped page, widget, or entity slice for approved work. Seek approval before introducing a new architectural layer or implementing an unapproved business capability.
 
+See the [frontend functional architecture map](docs/architecture/frontend-functional-map.md) for implemented boundaries, agreed target decisions, candidate mappings and open contracts. Agreed direction is not a claim of implementation or authorization for unresolved commands; candidate mappings are not approved architecture.
+
 ## Visual design, components, and responsiveness
 
 - Reuse existing components and patterns before adding new ones: `shared/ui`, the Operations widgets, and incident UI in `entities/incident`.
 - Use CSS Modules for component styles. Keep global CSS limited to its existing application-level responsibilities.
 - Prefer semantic values from `src/app/styles/tokens.css`. Do not introduce arbitrary palette values, duplicate styling, or a parallel theming system. Specific CSS layout measurements are acceptable when needed for an approved responsive design; extend tokens only for justified design-system needs.
-- Preserve Pipesor SVG assets and branding; do not redraw or recolor logos. The current UI uses a light theme; do not implement dark mode without approval.
+- Preserve Pipesor SVG assets and branding; do not redraw or recolor logos. The UI supports light and dark themes via the theme toggle in the profile menu. The preference model is `system`, `light`, or `dark`, persisted in `localStorage` under `pipesor.theme`. Theme resolution (`system` follows the OS color scheme) is applied before initial render and synchronized with OS changes while following `system`. New visual themes and design changes require explicit approval.
 - Preserve the collapsible desktop sidebar and narrow-screen overlay. Keep the CSS breakpoint and the corresponding media-query logic consistent.
 - Tables should remain legible at 100% browser zoom; retain internal horizontal scrolling when columns cannot fit. Never solve overflow solely by shrinking text.
 - Provide visible keyboard focus, correct semantic controls, accessible labels, and expected popover/dialog/overlay dismissal and focus behavior.
 
 ## Localization and domain data
 
-- Internationalize user-facing UI copy with the existing `common` and `operations` namespaces. Add keys to **both** English and Spanish; introduce another namespace only when required by an implemented screen.
+- Internationalize user-facing UI copy with the existing `common`, `operations`, `history` and `pipelines` namespaces. Add keys to **both** English and Spanish; introduce another namespace only when required by an implemented screen.
 - Keep domain values, IDs, GitHub names, logs, and evidence separate from translated UI labels. Do not automatically translate user- or system-generated technical content.
 - Use the existing `shared/i18n` formatting utilities for locale-sensitive presentation. Never sort, filter, or calculate with formatted display strings.
 - Zod contracts in `entities/incident/model/schema.ts` and inferred TypeScript types govern incident fixture shape. Validate new data at its boundary, not in every presentational component.
@@ -58,15 +60,15 @@ Preserve these domain distinctions: incident lifecycle vs. diagnosis validation;
 4. For UI changes, verify navigation, both locales, keyboard accessibility, responsive behavior, and visual fidelity where relevant. For domain/schema changes, verify valid and invalid data cases.
 5. Report changed files, checks passed/failed, any browser or design comparisons **not performed**, and open decisions. Do not claim verification you did not perform.
 
-The repository currently has no established test runner or CI. Do not claim automated test coverage; propose it separately when justified.
+The repository has no established test runner. The Quality workflow runs typecheck, lint, and build; do not claim automated test coverage.
 
 ## Git workflow
 
-Follow Git Flow and Conventional Commits (Angular convention) for every change. [Git workflow](docs/git-workflow.md) is the single source of truth for branches, commit format, Pull Requests, merge strategies and release tags.
+Follow Trunk-Based Development and Conventional Commits (Angular convention). The [Git workflow](docs/git-workflow.md) describes branches, Pull Requests, and the target release process.
 
-- Branch from and merge into the correct integration branch: `feature/*` ⇄ `develop`; `release/*` and `hotfix/*` into **both** `main` and `develop`.
-- Use `<type>(<optional scope>): <description>` for commit and Pull Request titles, with the approved types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
-- Never commit directly to `main` or `develop`; every change goes through a Pull Request.
+- Branch from `main` and open a PR into `main`; keep branches short-lived and prefer squash merges.
+- Use `<type>(<optional scope>): <description>` for commit and PR titles, with the approved types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`).
+- Do not push directly to `main`. Pass required checks and obtain review before merging.
 
 ## Scope, permissions, and escalation
 

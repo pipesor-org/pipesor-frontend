@@ -1,17 +1,37 @@
 import { useTranslation } from "react-i18next";
 
 import { DEFAULT_LANGUAGE, matchSupportedLanguage } from "../config";
-import { durationParts, formatDate, formatNumber } from "./format";
+import {
+  durationParts,
+  formatDate,
+  formatNumber,
+  formatPaddedNumber,
+  formatPercent,
+  formatShortDate,
+  formatShortDateRange,
+} from "./format";
 
 export interface Formatters {
   /** Active supported language code. */
   language: string;
   /** Localized `Sep 30, 10:30` rendering of an ISO-8601 UTC instant. */
   formatTimestamp: (iso: string) => string;
+  /** Localized day-only rendering of an ISO-8601 UTC instant (`Sep 1`). */
+  formatShortDate: (iso: string) => string;
+  /** Localized day-only interval (`Sep 1 – 30`). */
+  formatShortDateRange: (startIso: string, endIso: string) => string;
   /** Localized integer rendering (grouping separators). */
   formatNumber: (value: number) => string;
+  /** Localized ratio rendering (`0.625` -> `62.5%`). */
+  formatPercent: (value: number) => string;
   /** Localized compact duration, e.g. `2d 1h`, `19h 30m`, `25m`. */
   formatDuration: (ms: number) => string;
+  /**
+   * Compact duration that keeps seconds precision below one hour, e.g.
+   * `1m 42s`. Above an hour it falls back to the two most significant units
+   * (`1h 12m`, `2d 1h`) like {@link Formatters.formatDuration}.
+   */
+  formatPreciseDuration: (ms: number) => string;
 }
 
 /**
@@ -30,13 +50,27 @@ export function useFormatters(): Formatters {
   return {
     language,
     formatTimestamp: (iso) => formatDate(iso, language),
+    formatShortDate: (iso) => formatShortDate(iso, language),
+    formatShortDateRange: (startIso, endIso) =>
+      formatShortDateRange(startIso, endIso, language),
     formatNumber: (value) => formatNumber(value, language),
+    formatPercent: (value) => formatPercent(value, language),
     formatDuration: (ms) => {
       const { days, hours, minutes } = durationParts(ms);
 
       if (days > 0) return t("duration.daysHours", { days, hours });
       if (hours > 0) return t("duration.hoursMinutes", { hours, minutes });
       return t("duration.minutes", { minutes });
+    },
+    formatPreciseDuration: (ms) => {
+      const { days, hours, minutes, seconds } = durationParts(ms);
+
+      if (days > 0) return t("duration.daysHours", { days, hours });
+      if (hours > 0) return t("duration.hoursMinutes", { hours, minutes });
+      return t("duration.minutesSeconds", {
+        minutes,
+        seconds: formatPaddedNumber(seconds, language),
+      });
     },
   };
 }
