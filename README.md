@@ -1,118 +1,73 @@
 # Pipesor frontend
 
-Pipesor is an AIOps interface for **monitoring CI/CD workflows, managing incidents, and reviewing operational history and AI-assisted diagnoses**. This repository contains its React frontend.
+The React frontend for Pipesor, an AIOps thesis project for monitoring CI/CD workflows, triaging incidents, and reviewing operational history and AI-assisted diagnoses.
 
-**Current implementation:** the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), Pipelines inventory/read-only Detail/draft onboarding, a responsive application sidebar, English/Spanish localization, Pipesor branding, and an accessible Not Found page. Incident information currently comes from **local, Zod-validated demo fixtures**; there is no backend integration.
+## Current state
 
-The approved interface designs are maintained in Paper (file **Pipesor**). Paper access is optional: contributors can work from approved design handoffs and existing components without Paper credentials.
+- Operations provides Active Incidents and Needs Validation read views; History provides Incidents and Insights. Pipelines includes local inventory queries, read-only Detail, and an unsaved onboarding draft.
+- The interface supports English/Spanish, light/dark themes, responsive navigation, and a Not Found screen.
+- Displayed data comes from local, Zod-validated demonstration fixtures. No backend integration, authentication, authorization, or business-operation persistence is implemented.
+- Incident Workspace, workflow registration, configuration saves, assignment, lifecycle changes, and diagnosis-validation commands are not implemented. Incident search/filter and row-action affordances remain presentation only.
+- Insights uses provisional, fixed-window demo metrics. Its controls do not recompute results, and the diagnosis-confirmation rate is not a model-accuracy measurement.
+
+See the [functional architecture map](docs/architecture/frontend-functional-map.md) for implemented routes, domain boundaries, agreed targets, and open contracts. Documented targets do not authorize new behavior or architecture.
 
 ## Requirements and getting started
 
-- [Bun](https://bun.sh/) **1.4.3** (declared in `package.json`).
-- [Lefthook **2.2.2**](https://github.com/evilmartians/lefthook/releases/tag/v2.2.2), installed as a standalone binary on your `PATH` (see [installation options](https://lefthook.dev/install/)).
+Run commands from the repository root. Use Bun exclusively for dependency operations; commit `bun.lock` and keep build output and credentials out of source control.
+
+- Bun: use the version pinned in [package.json](package.json). Dependency versions are recorded in that file and [bun.lock](bun.lock).
+- Standalone [Lefthook 2.2.2](https://github.com/evilmartians/lefthook/releases/tag/v2.2.2): install the binary for your OS/architecture on `PATH` and verify `lefthook version`.
 - A modern browser for local UI verification.
 
-```bash
+```sh
 bun install --frozen-lockfile
 bun run setup:hooks
 bun run dev
 ```
 
-Open the local URL printed by Vite. To verify changes:
+Open the local URL printed by Vite. Hook setup is required once per clone; Lefthook and Commitlint run with Bun without requiring Node.js. Keep personal overrides in ignored `lefthook-local.yml`.
 
-```bash
+Paper access and agent tools are optional. Approved screenshots, specifications, and existing components provide design handoffs; request missing details rather than inventing them. Sora and JetBrains Mono load from Google Fonts through `index.html`, so those fonts may be unavailable offline.
+
+## Verification
+
+Before opening a PR, run the [frontend Git workflow](docs/git-workflow.md) checks:
+
+```sh
+bun run test:hooks
 bun run typecheck
 bun run lint
 bun run build
 ```
 
-| Command | Purpose |
+These validate accepted/rejected commit messages, TypeScript, ESLint, and the production bundle. There is no established automated application test runner; `test:hooks` covers commit-message validation only.
+
+After building, use `bun run preview` for manual browser verification. Follow [AGENTS.md](AGENTS.md) for the applicable navigation, EN/ES, keyboard, responsive, and design checks; build success does not establish those results.
+
+The [Quality workflow](.github/workflows/quality.yml) checks PR commits, the PR title and prospective squash message, hook cases, typecheck, lint, and build. It also checks the latest commit on pushes to `main`.
+
+## Repository guide
+
+| Location | Purpose |
 | --- | --- |
-| `bun install` | Install dependencies from the Bun project |
-| `bun run dev` | Start the Vite development server |
-| `bun run typecheck` | TypeScript checking |
-| `bun run lint` | ESLint |
-| `bun run build` | Typecheck and create the production bundle |
-| `bun run preview` | Preview the production build |
-| `bun run setup:hooks` | Install Git hooks managed by the standalone Lefthook binary, once per clone |
-| `bun run test:hooks` | Check accepted and rejected commit messages through Lefthook |
+| `src/app/` | Application setup, routes, global styles, and design tokens |
+| `src/pages/`, `src/widgets/` | Screens and composed UI sections |
+| `src/entities/` | Incident and monitored-pipeline contracts, fixtures, selectors, and domain UI |
+| `src/shared/` | Shared UI, navigation configuration, EN/ES resources, assets, and utilities |
+| `public/` | Browser-served assets |
 
-**Use Bun**, not npm/yarn/pnpm, for dependency operations. Commit `bun.lock`; do not commit build output or credentials. The Quality workflow checks commit messages, the hook cases, typecheck, lint, and build. There is no established application test runner.
+The project follows Feature-Sliced Design. No `features/` layer is implemented; introduce one only for an approved business capability under the existing conventions.
 
-Lefthook manages `commit-msg` from `lefthook.yml`. Commitlint runs directly with Bun, so the hooks require no Node.js installation. The [Git workflow](docs/git-workflow.md) defines the message convention; local hooks and CI use the same Commitlint configuration. Re-run `bun run setup:hooks` after cloning. Hook configuration changes are read on each invocation. Keep personal overrides in ignored `lefthook-local.yml`; CI remains authoritative.
+- [Agent and engineering guidance](AGENTS.md): scope, approval boundaries, and required verification.
+- [Frontend conventions](docs/frontend-conventions.md): implementation patterns, styling, localization, accessibility, and fixture invariants.
+- [Functional architecture map](docs/architecture/frontend-functional-map.md): detailed behavior, routes, current limitations, and target decisions.
+- [Frontend Git workflow](docs/git-workflow.md): local commit constraints, PR checks, and release status.
 
-## Technology
+## Deployment status
 
-React 19 · TypeScript (strict) · Vite 6 · React Router 7 · Zod 4 · i18next/react-i18next · CSS Modules · ESLint 9 · Bun 1.4.3.
+On pushes to `main`, Quality stores the verified `dist/` build as a commit-named GitHub Actions artifact. PR builds are not published. Azure deployment and staged promotion are not implemented; the [release guide](docs/git-workflow.md#4-releases-and-deployment) describes the current CI baseline and target process.
 
-Exact resolved dependency versions are defined by `package.json` and `bun.lock`.
+## Contribution
 
-## Implemented screens and routing
-
-| Screen | URL | Status |
-| --- | --- | --- |
-| Operations — Active Incidents | `/operations?queue=active` | Implemented with demo data |
-| Operations — Needs Validation | `/operations?queue=validation` | Implemented with demo data |
-| History — Incidents | `/history?view=incidents` (bare `/history` also renders Incidents) | Implemented with demo data |
-| History — Insights | `/history?view=insights` | Implemented with demo data and provisional metrics |
-| Unknown route | Any unmatched path | Not Found page |
-| Pipelines inventory, Detail and onboarding draft | `/pipelines`, `/pipelines/:pipelineId`, `/pipelines/new` | Implemented read-only views and local draft; configuration saves and workflow registration are deferred until local API integration |
-| Incident Workspace | `/incidents/:incidentId` — target only, not registered | Agreed initially read-only destination; not implemented |
-
-`/` and the legacy paths `/operations/active-incidents` and `/operations/needs-validation` redirect to the canonical Operations URLs. History uses `?view=incidents|insights`; bare `/history` renders Incidents and any other `view` value canonicalizes to `?view=incidents`. The routing implementation is in `src/app/App.tsx`, with the history view contract in `src/shared/config/navigation.ts`.
-
-Incident search, scopes, filters, row actions, assignment and Insights period/filter affordances are **nonfunctional presentation**. Active/Needs Validation ordering captions do not sort; History's newest-resolution-first ordering is implemented but not interactive. Pipelines local inventory queries are separate behavior, not an incident-query contract. Do not assume any of these views call an API or persist business operations.
-
-## Project structure
-
-```text
-src/
-├── app/                  # Root routing, global CSS and design tokens
-├── pages/                # Operations, History, Pipelines/Detail/onboarding and Not Found
-├── widgets/              # Sidebar, Operations sections, filters, History table and Insights
-├── entities/
-│   ├── incident/         # Zod schemas, mock fixtures, selectors and entity UI
-│   └── monitored-pipeline/ # Local monitored-workflow demonstration data
-├── shared/
-│   ├── assets/           # Approved Pipesor SVG assets
-│   ├── config/           # Navigation registry
-│   ├── i18n/             # EN/ES catalogs and locale-aware formatters
-│   ├── lib/              # Shared utilities
-│   └── ui/               # Generic UI components and application layout
-└── main.tsx
-public/                   # Browser-served assets, including favicon.png
-```
-
-The project follows **Feature-Sliced Design (FSD)**. Its `features/` layer is intentionally absent until a cohesive user-facing business capability is approved for implementation.
-
-## Design, navigation and localization
-
-- **Design:** CSS Modules and semantic values in `src/app/styles/tokens.css`. The UI supports light and dark themes (preference `system`/`light`/`dark`, persisted in `localStorage` under `pipesor.theme`; theme toggle in the profile menu). New UI should reuse established patterns and approved specifications rather than reinterpret them.
-- **Sidebar:** collapsible navigation on desktop, with a narrow-screen overlay. The profile popover contains the language selector.
-- **Responsive tables:** queue tables preserve usable column widths and scroll within their containers when horizontal space is limited.
-- **Branding:** provided Pipesor SVG assets are stored in `src/shared/assets/branding/`; the favicon and tab title are configured in `index.html`.
-- **Localization:** English (`en`) and Spanish (`es`) are bundled with i18next; the selected language is persisted locally. UI labels are translated separately from canonical domain values.
-- **Typography:** Sora and JetBrains Mono are loaded through Google Fonts in `index.html`; access to those hosted files may be unavailable offline.
-
-## Domain model and current limitations
-
-`src/entities/incident/model/` contains the current incident contract and demo data. Zod validates incident fixtures; selectors derive queue membership, History membership, counts and the fixed-window Insights aggregations. Incident resolution and diagnosis validation are distinct states.
-
-**Implemented now:** six unresolved incidents appear in Active, seven resolved/pending incidents in Needs Validation, and eight resolved/terminal-validation incidents in History. Insights uses the terminal population within its fixed period. These are fixture counts, not production results.
-
-**Agreed target, not implemented:** History includes all operationally resolved incidents, so pending incidents can also remain in Needs Validation. Workspace uses one initially read-only incident route with origin-aware safe return. Search/filter coherence and recurring-context drill-down are agreed directions; exact query, direct-entry fallback and read-model contracts remain open. See [Incident Management functional flows](docs/architecture/frontend-functional-map.md#4-functional-flows) for D01–D07; these decisions do not authorize domain commands or new architecture.
-
-The frontend does **not** currently implement real persistence, API pagination, authentication, authorization, remote data fetching, or incident lifecycle commands. The following remain proposed business features, subject to approved requirements and contracts:
-
-`onboard-monitored-workflow`, `configure-monitored-pipeline`, `assign-incident`, `manage-incident-lifecycle`, `validate-diagnosis`.
-
-History — Insights derives its metrics from the same demo incidents through entity selectors. Its fixed window and definitions are **provisional**: the diagnosis-confirmation rate is not an accuracy metric, missing periods are never interpolated, and the presentational filters do not recompute results. Recurring-group rows and chevrons do not filter or open Incidents.
-
-## Working on the project
-
-- [AGENTS.md](AGENTS.md) — shared engineering instructions for developers and coding agents, including boundaries, quality checks and approval rules.
-- [Frontend conventions](docs/frontend-conventions.md) — implementation guidance for FSD, tokens, styling, localization, accessibility and domain presentation.
-- [Frontend functional architecture map](docs/architecture/frontend-functional-map.md) — implemented boundaries, agreed target decisions, unapproved candidates and unresolved contracts.
-- [Git workflow](docs/git-workflow.md) — contribution workflow: trunk-based branches, Conventional Commits, Pull Requests and target releases.
-
-Implement changes in small, reviewable units. Paper MCP, Context7, Engram and Codex may assist individual developers but are **not required** to install, run, review, or contribute to this frontend. When a design is not directly accessible, request the approved screenshot/specification instead of guessing.
+Follow the [Pipesor contribution guidelines](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) for short-lived branches from `main`, English Angular-style Conventional Commits, PR reviews, and squash merges. The [frontend Git workflow](docs/git-workflow.md) specifies local formatting constraints and scopes; [commitlint.config.js](commitlint.config.js) and [lefthook.yml](lefthook.yml) configure message validation.
