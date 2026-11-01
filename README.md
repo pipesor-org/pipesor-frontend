@@ -9,10 +9,12 @@ The approved interface designs are maintained in Paper (file **Pipesor**). Paper
 ## Requirements and getting started
 
 - [Bun](https://bun.sh/) **1.4.3** (declared in `package.json`).
+- [Lefthook **2.2.2**](https://github.com/evilmartians/lefthook/releases/tag/v2.2.2), installed as a standalone binary on your `PATH` (see [installation options](https://lefthook.dev/install/)).
 - A modern browser for local UI verification.
 
 ```bash
-bun install
+bun install --frozen-lockfile
+bun run setup:hooks
 bun run dev
 ```
 
@@ -32,8 +34,12 @@ bun run build
 | `bun run lint` | ESLint |
 | `bun run build` | Typecheck and create the production bundle |
 | `bun run preview` | Preview the production build |
+| `bun run setup:hooks` | Install Git hooks managed by the standalone Lefthook binary, once per clone |
+| `bun run test:hooks` | Check accepted and rejected commit messages through Lefthook |
 
-**Use Bun**, not npm/yarn/pnpm, for dependency operations. Commit `bun.lock`; do not commit build output or credentials. The project does not yet have an established test runner or CI pipeline.
+**Use Bun**, not npm/yarn/pnpm, for dependency operations. Commit `bun.lock`; do not commit build output or credentials. The Quality workflow checks commit messages, the hook cases, typecheck, lint, and build. There is no established application test runner.
+
+Lefthook manages `commit-msg` from `lefthook.yml`. Commitlint runs directly with Bun, so the hooks require no Node.js installation. The [Git workflow](docs/git-workflow.md) defines the message convention; local hooks and CI use the same Commitlint configuration. Re-run `bun run setup:hooks` after cloning. Hook configuration changes are read on each invocation. Keep personal overrides in ignored `lefthook-local.yml`; CI remains authoritative.
 
 ## Technology
 

@@ -3,6 +3,7 @@ name: Quality
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
@@ -15,11 +16,42 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Install standalone Lefthook
+        env:
+          LEFTHOOK_VERSION: 2.2.2
+        run: |
+          mkdir -p "$RUNNER_TEMP/lefthook" "$RUNNER_TEMP/bin"
+          cd "$RUNNER_TEMP/lefthook"
+          asset="lefthook_${LEFTHOOK_VERSION}_Linux_x86_64"
+          curl -fsSLO "https://github.com/evilmartians/lefthook/releases/download/v${LEFTHOOK_VERSION}/${asset}"
+          curl -fsSLO "https://github.com/evilmartians/lefthook/releases/download/v${LEFTHOOK_VERSION}/lefthook_checksums.txt"
+          grep " ${asset}$" lefthook_checksums.txt | sha256sum --check -
+          install -m 755 "$asset" "$RUNNER_TEMP/bin/lefthook"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
+      - run: bun run test:hooks
+      - name: Validate pull request squash message
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n' "$PR_TITLE" | bun run commitlint
+          printf '%s\n\n%s\n' "$PR_TITLE" "$PR_BODY" | bun run commitlint
+      - name: Validate pull request commits
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bun run commitlint --from "$BASE_SHA" --to "$HEAD_SHA"
+      - name: Validate latest main commit
+        if: github.event_name == 'push'
+        run: bun run commitlint --last
       - run: bun run typecheck
       - run: bun run lint
       - run: bun run build
