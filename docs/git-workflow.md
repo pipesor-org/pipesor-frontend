@@ -1,12 +1,10 @@
 # Pipesor frontend Git workflow
 
-Single source of truth for branching, commits, Pull Requests and releases in this repository. [AGENTS.md](../AGENTS.md) states the mandatory rule that points here; the [README](../README.md) covers setup and implemented scope. Do not maintain a second, conflicting description elsewhere.
+The [organization contribution policy](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) defines shared branching, commit and review rules. This guide documents their application to the frontend, including formatting constraints, scopes, CI and release status. [AGENTS.md](../AGENTS.md) points here; the [README](../README.md) covers setup and implemented scope.
 
 ## 1. Branch model (Trunk-Based Development)
 
-`main` is the shared trunk and should remain healthy and releasable. Branch from `main` for each small change, open a Pull Request back into `main`, and delete the branch after merging. Use short-lived names such as `feature/incident-queue-filters` or `fix/sidebar-focus`.
-
-Do not push directly to `main`, maintain a long-lived `develop` branch, or create routine release branches. During the migration, integrate the existing work on `develop` into `main` before changing the default branch; do not discard its history or changes.
+Follow the organization branch model. Frontend branch names can use areas such as `feature/incident-queue-filters` or `fix/sidebar-focus`.
 
 ## 2. Conventional Commits (Angular convention)
 
@@ -30,19 +28,7 @@ The `commit-msg` hook is managed by Lefthook and validates messages with Commitl
 
 ### Allowed types
 
-| Type | Use for |
-| --- | --- |
-| `feat` | A new user-facing capability. |
-| `fix` | A bug fix. |
-| `docs` | Documentation only. |
-| `style` | Formatting/whitespace that does not change behavior (not CSS visual changes). |
-| `refactor` | A code change that neither fixes a bug nor adds a feature. |
-| `perf` | A performance improvement. |
-| `test` | Adding or correcting tests. |
-| `build` | Build system, tooling or dependency changes that affect the bundle. |
-| `ci` | Continuous integration configuration. |
-| `chore` | Maintenance that does not fit the types above. |
-| `revert` | Reverts a previous commit. |
+The [organization policy](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md#commits--angular-style-conventional-commits) maintains the allowed types and their meanings. Frontend-specific scopes and examples follow.
 
 ### Optional scopes
 
