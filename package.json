@@ -9,7 +9,10 @@
     "build": "tsc && vite build",
     "typecheck": "tsc",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "setup:hooks": "lefthook install",
+    "commitlint": "bun ./node_modules/@commitlint/cli/cli.js",
+    "test:hooks": "sh tests/commit-msg.sh"
   },
   "dependencies": {
     "i18next": "^26.4.4",
@@ -20,6 +23,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "@eslint/js": "^9.19.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",

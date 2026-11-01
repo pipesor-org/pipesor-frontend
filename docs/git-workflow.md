@@ -23,7 +23,10 @@ Every commit message uses the Conventional Commits format:
 - **type** — required, lowercase.
 - **scope** — optional, lowercase, names the affected area.
 - **description** — required, imperative, present tense, no trailing period (for example "add", not "added" or "adds").
+- Keep the header within 72 characters.
 - Body and footers are optional and separated from the subject by one blank line.
+
+The `commit-msg` hook is managed by Lefthook and validates messages with Commitlint running on Bun. Enable it once per clone using the [README setup](../README.md#requirements-and-getting-started). CI validates every PR commit and the latest commit pushed to `main`, including the final squash commit. Imperative wording and the meaning of scopes still require review.
 
 ### Allowed types
 
@@ -73,6 +76,11 @@ A breaking change commits the author to explaining the migration path in the bod
 
 - Open a PR into `main` for every change, with a Conventional Commit title. Keep it small and focused.
 - Describe the change, link the task, report checks and anything not verified. Resolve review comments and obtain review before merging.
+- GitHub defaults squash commits to the PR title and description. Keep the title conventional
+  and put migration notes and any `BREAKING CHANGE:` footer in the PR description,
+  even when they already appear in individual commits. CI checks the title and the
+  combined squash message, including after edits to the PR. Preserve that message
+  when merging; the final commit is checked again on `main`.
 - Pass the repository's required checks and prefer squash merging. Do not force-push shared branches or branches under review by others.
 - Do not commit build output, credentials, `.env` files, or machine-specific configuration.
 
@@ -90,4 +98,4 @@ git pull --ff-only
 git switch -c feature/incident-queue-filters
 ```
 
-Run `bun run typecheck`, `bun run lint`, and `bun run build` before opening the PR. The Quality workflow runs these checks on PRs and pushes to `main`.
+Run `bun run test:hooks`, `bun run typecheck`, `bun run lint`, and `bun run build` before opening the PR. The Quality workflow runs these checks on PRs and pushes to `main`.
