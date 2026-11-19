@@ -5,7 +5,7 @@ const id = z.guid();
 
 function sameIds(cited: string[], linked: string[]) {
   const ids = new Set(linked);
-  return ids.size === linked.length && new Set(cited).size === ids.size && cited.every((value) => ids.has(value));
+  return ids.size === linked.length && cited.length === ids.size && new Set(cited).size === ids.size && cited.every((value) => ids.has(value));
 }
 
 // This schema reads the emitted local demonstration artifact.

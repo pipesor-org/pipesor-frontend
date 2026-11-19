@@ -23,6 +23,8 @@ const operations = {
     recommendation: "Recomendación",
     limitations: "Limitaciones",
     evidence: "Evidencia de respaldo",
+    incident: "ID de incidente",
+    context: "ID de contexto",
     correlation: "ID de correlación",
     execution: "ID de ejecución",
     origin: "ID del contexto de origen",
