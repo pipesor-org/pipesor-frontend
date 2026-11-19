@@ -29,6 +29,8 @@ const operations = {
     history: "Historial de revisión",
   },
   diagnosticDemo: {
+    replayTitle: "Diagnóstico reproducido localmente",
+    replayDescription: "Esta vista usa evidencia reproducida y una identidad de prueba autorizada. La revisión se guarda en PostgreSQL.",
     title: "Demostración de diagnóstico",
     description: "Consulta el diagnóstico sintético en el servicio local de recomendaciones.",
     choose: "Token de acceso local",
