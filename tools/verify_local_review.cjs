@@ -12,12 +12,19 @@ async function verify() {
     const { port } = vite.httpServer.address();
     const ids = process.env.PIPESOR_REVIEW_IDS.split(",");
     const token = process.env.PIPESOR_REVIEW_TOKEN;
-    for (const [i, decision] of ["CONFIRMED", "CORRECTED", "REJECTED"].entries()) {
+    const integrated = ids.length === 1;
+    const decisions = ["CONFIRMED", "CORRECTED", "REJECTED"];
+    const comments = [
+      "The log identifies the unresolved dependency coordinate.",
+      "The log does not establish why this version was requested.",
+      "The original hypothesis cannot explain the upstream cause of the request.",
+    ];
+    for (const [i, decision] of decisions.entries()) {
       const spanish = decision === "CORRECTED";
       const page = await browser.newPage({ viewport: { width: spanish ? 390 : 1280, height: 850 } });
       page.setDefaultTimeout(15_000);
       await page.addInitScript(lang => localStorage.setItem("pipesor.language", lang), spanish ? "es" : "en");
-      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo?review=${ids[i]}`);
+      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo?review=${ids[integrated ? 0 : i]}`);
       const key = page.getByLabel(spanish ? "Token de acceso local" : "Local access token");
       const load = page.getByRole("button", { name: spanish ? "Cargar diagnóstico" : "Load diagnosis" });
       await key.focus();
@@ -28,14 +35,17 @@ async function verify() {
       const response = await loaded;
       assert.equal(response.status(), 200);
       const before = await response.json();
-      assert.equal(before.status, "PENDING");
+      assert.equal(before.status, integrated && i > 0 ? decisions[i - 1] : "PENDING");
+      const comment = integrated ? comments[i] : "Reviewed synthetic test evidence.";
+      const correction = integrated ? "Check the dependency declaration and repository configuration first."
+        : "Check header and include settings first.";
       const hypothesis = page.getByText(before.original.hypothesis.recommendation, { exact: true });
       await hypothesis.waitFor();
       await page.getByLabel(spanish ? "Decisión" : "Decision").selectOption(decision);
-      await page.getByLabel(spanish ? "Justificación" : "Justification").fill("Reviewed synthetic test evidence.");
+      await page.getByLabel(spanish ? "Justificación" : "Justification").fill(comment);
       if (spanish) {
-        await page.getByLabel("Causa corregida").fill("Missing libproc.h; upstream cause unknown.");
-        await page.getByLabel("Recomendación corregida (opcional)").fill("Check header and include settings first.");
+        await page.getByLabel("Causa corregida").fill(integrated ? "The declared dependency could not be resolved; upstream cause unknown." : "Missing libproc.h; upstream cause unknown.");
+        await page.getByLabel("Recomendación corregida (opcional)").fill(correction);
       }
       const submitted = page.waitForResponse(res => res.request().method() === "POST" && res.url().endsWith("/review"));
       await page.getByRole("button", { name: spanish ? "Guardar revisión" : "Save review" }).click();
@@ -44,10 +54,11 @@ async function verify() {
       const review = await reply.json();
       assert.equal(review.status, decision);
       assert.deepEqual(review.original, before.original);
-      assert.equal(review.history[0].reviewer, "reviewer-local-01");
-      await page.getByText("Reviewed synthetic test evidence.", { exact: true }).waitFor();
+      assert.equal(review.history.at(-1).reviewer, "reviewer-local-01");
+      assert.deepEqual(review.history.slice(0, -1), before.history);
+      await page.getByText(comment, { exact: true }).waitFor();
       if (spanish) {
-        await page.getByText("Recomendación corregida (opcional): Check header and include settings first.",
+        await page.getByText(`Recomendación corregida (opcional): ${correction}`,
           { exact: true }).waitFor();
       }
       await hypothesis.waitFor();
@@ -55,7 +66,7 @@ async function verify() {
       const restored = page.waitForResponse(res => res.url().endsWith("/review"));
       await load.click();
       assert.equal((await (await restored).json()).status, decision);
-      await page.getByText("Reviewed synthetic test evidence.", { exact: true }).waitFor();
+      await page.getByText(comment, { exact: true }).waitFor();
       await key.fill("invalid");
       const denied = page.waitForResponse(res => res.url().endsWith("/review"));
       await load.click();
