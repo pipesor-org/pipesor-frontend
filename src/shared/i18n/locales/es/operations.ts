@@ -55,6 +55,8 @@ const operations = {
     operationalUnavailable: "El servicio de revisión local proporciona identificadores e historial del diagnóstico. El estado operativo, las ejecuciones y la actividad del incidente requieren una consulta autorizada a Pipeline.",
   },
   diagnosticDemo: {
+    replayTitle: "Diagnóstico reproducido localmente",
+    replayDescription: "Esta vista usa evidencia reproducida y una identidad de prueba autorizada. La revisión se guarda en PostgreSQL.",
     title: "Demostración de diagnóstico",
     description: "Consulta el diagnóstico sintético en el servicio local de recomendaciones.",
     choose: "Token de acceso local",

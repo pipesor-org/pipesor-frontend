@@ -1,1 +1,1 @@
-export { DiagnosticDemoPage } from "./DiagnosticDemoPage";
+export { DiagnosticDemoPage, DiagnosticPanel } from "./DiagnosticDemoPage";

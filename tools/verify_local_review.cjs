@@ -25,7 +25,11 @@ async function verify() {
       const page = await browser.newPage({ viewport: { width: spanish ? 390 : 1280, height: 850 } });
       page.setDefaultTimeout(15_000);
       await page.addInitScript(lang => localStorage.setItem("pipesor.language", lang), spanish ? "es" : "en");
-      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo?review=${ids[integrated ? 0 : i]}`);
+      const route = integrated ? "/operations?queue=validation&review=" : "/diagnostic-demo?review=";
+      await page.goto(`http://127.0.0.1:${port}${route}${ids[integrated ? 0 : i]}`);
+      if (integrated) {
+        await page.getByRole("heading", { name: spanish ? "Diagnóstico reproducido localmente" : "Local replay diagnosis" }).waitFor();
+      }
       const key = page.getByLabel(spanish ? "Token de acceso local" : "Local access token");
       const load = page.getByRole("button", { name: spanish ? "Cargar diagnóstico" : "Load diagnosis" });
       await key.focus();
@@ -64,6 +68,8 @@ async function verify() {
       }
       await hypothesis.waitFor();
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+      await page.reload();
+      await key.fill(token);
       const restored = page.waitForResponse(res => res.url().endsWith("/review"));
       await load.click();
       assert.equal((await (await restored).json()).status, decision);
