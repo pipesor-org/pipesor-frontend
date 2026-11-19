@@ -26,6 +26,8 @@ Incident Management decisions D01–D07 below consolidate the functional/navigat
 
 When approved work changes a functional boundary or resolves an open decision, update its status and supporting source/reference here.
 
+See the [verified Paper inventory and product reconciliation](paper-product-reconciliation.md) for current artboard evidence, backend contract gaps and the staged advisor proposal.
+
 ## 1. Current frontend baseline — Implemented
 
 | Area | Verified implementation | Evidence |
