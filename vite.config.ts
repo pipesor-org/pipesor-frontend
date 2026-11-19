@@ -12,6 +12,7 @@ export default defineConfig(({ command, mode }) => {
     server: command === "serve" && port ? {
       host: "127.0.0.1",
       proxy: {
+        "^/api/v1/(pipelines$|pipelines/[0-9a-f-]{36}/incidents$|incidents/[0-9a-f-]{36}$)": { target: `http://127.0.0.1:${port}` },
         "^/local-demo/v1/(diagnosis$|diagnoses/[0-9a-f-]{36}/review$)": { target: `http://127.0.0.1:${port}` },
       },
     } : undefined,

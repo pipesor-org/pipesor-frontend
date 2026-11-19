@@ -2,6 +2,34 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const { verifyReplay } = require("./verify_incident_workspace.cjs");
 
+async function verifyOperationalPilot(page, base, token) {
+  const operations = `${base}/operations?queue=active&pilot=1`;
+  await page.goto(operations);
+  const key = page.getByLabel("Pipeline access token");
+  const load = page.getByRole("button", { name: "Load incidents" });
+  await key.fill(token);
+  await load.click();
+  const record = page.getByRole("link", { name: /^[0-9a-f-]{36}$/ });
+  await record.waitFor();
+  assert.equal(await page.getByText("INC-1042", { exact: true }).count(), 0);
+  const incidentId = await record.innerText();
+  await record.click();
+  await page.getByRole("heading", { name: incidentId, exact: true }).waitFor();
+  assert(!page.url().includes("replay="));
+  await page.reload();
+  await key.fill(token);
+  await load.click();
+  const diagnosisUnavailable = page.getByText("Diagnosis lookup is unavailable for this operational view.");
+  await diagnosisUnavailable.waitFor();
+  await key.fill("invalid");
+  await load.click();
+  await page.getByRole("alert").waitFor();
+  assert.equal(await diagnosisUnavailable.count(), 0);
+  await page.getByRole("link", { name: "Back to Operations" }).click();
+  assert.equal(page.url(), operations);
+  console.log("PILOT_CHROMIUM Operations → persistent Pipeline incident → Workspace; reload, invalid identity, no diagnostic ID");
+}
+
 async function verify() {
   const { chromium } = require(process.env.PIPESOR_PLAYWRIGHT_MODULE || "playwright");
   const { createServer } = await import("vite");
@@ -26,6 +54,9 @@ async function verify() {
       page.setDefaultTimeout(15_000);
       await page.addInitScript(lang => localStorage.setItem("pipesor.language", lang), spanish ? "es" : "en");
       const route = integrated ? "/operations?queue=validation&review=" : "/diagnostic-demo?review=";
+      if (i === 0 && process.env.PIPESOR_OPERATIONAL_TOKEN) {
+        await verifyOperationalPilot(page, `http://127.0.0.1:${port}`, process.env.PIPESOR_OPERATIONAL_TOKEN);
+      }
       await page.goto(`http://127.0.0.1:${port}${route}${ids[integrated ? 0 : i]}`);
       if (integrated) {
         await page.getByRole("heading", { name: spanish ? "Diagnóstico reproducido localmente" : "Local replay diagnosis" }).waitFor();

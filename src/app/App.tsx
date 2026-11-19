@@ -9,6 +9,7 @@ import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { PipelineDetailPage } from "../pages/pipeline-detail";
 import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
+import { OperationalPilot } from "../widgets/operational-pilot";
 import { operationsQueuePath, routes } from "../shared/config";
 
 function PipelineDetailRoute() {
@@ -25,12 +26,13 @@ function AddMonitoredWorkflowRoute() {
 
 function OperationsRoute() {
   const [search] = useSearchParams();
+  const pilot = import.meta.env.DEV && search.get("pilot") === "1";
   const review = search.get("review");
   const replay = import.meta.env.DEV && search.get("queue") === "validation" && review !== null;
 
   return (
-    <OperationsPage>
-      {replay && <DiagnosticPanel key={review} requestedId={review} replay />}
+    <OperationsPage pilot={pilot}>
+      {pilot ? <OperationalPilot /> : replay && <DiagnosticPanel key={review} requestedId={review} replay />}
     </OperationsPage>
   );
 }

@@ -29,11 +29,14 @@ import { OperationsTabs } from "../../../widgets/operations-tabs";
  * An unknown or missing `queue` value is canonicalised to the default queue so
  * the URL always names what is on screen.
  */
-export function OperationsPage({ children }: { children?: ReactNode }) {
+export function OperationsPage({ children, pilot = false }: { children?: ReactNode; pilot?: boolean }) {
   const { t } = useTranslation("operations");
   const [searchParams] = useSearchParams();
   const queue = searchParams.get(OPERATIONS_QUEUE_PARAM);
 
+  if (pilot && queue !== "active") {
+    return <Navigate to={`${operationsQueuePath("active")}&pilot=1`} replace />;
+  }
   if (!isOperationsQueue(queue)) {
     return <Navigate to={operationsQueuePath(DEFAULT_OPERATIONS_QUEUE)} replace />;
   }
@@ -69,9 +72,9 @@ export function OperationsPage({ children }: { children?: ReactNode }) {
       };
 
   return (
-    <AppLayout sidebar={<AppSidebar />} hint={view.hint}>
-      <OperationsHeader subtitle={view.subtitle} />
-      <OperationsTabs />
+    <AppLayout sidebar={<AppSidebar />} hint={pilot ? undefined : view.hint}>
+      <OperationsHeader subtitle={pilot ? t("pilot.title") : view.subtitle} pilot={pilot} />
+      {!pilot && <OperationsTabs />}
       {children || <>
         <OperationsSummary variant={queue} />
         <IncidentFilters
