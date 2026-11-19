@@ -1,0 +1,27 @@
+.panel {
+  min-width: 0;
+  max-width: 68rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow-wrap: anywhere;
+}
+
+.panel input {
+  display: block;
+  max-width: 100%;
+  margin-block: 0.5rem 1rem;
+}
+
+.panel pre {
+  padding: 0.75rem;
+  white-space: pre-wrap;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-md);
+}
+
+.panel code,
+.panel pre {
+  font-family: var(--font-mono);
+}
