@@ -11,6 +11,7 @@ import {
 import { historyViewPath, isOperationsQueue, operationsQueuePath } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Badge } from "../../../shared/ui/badge";
+import { OperationalPilot } from "../../../widgets/operational-pilot";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { FixtureIncident } from "./FixtureIncident";
 import { ReplayDiagnosis } from "./ReplayDiagnosis";
@@ -24,10 +25,12 @@ export function IncidentWorkspaceRoute() {
   const [search] = useSearchParams();
   const origin = search.get("from");
   const reviewId = search.get("replay");
-  const replay = import.meta.env.DEV && reviewId !== null &&
+  const pilot = import.meta.env.DEV && search.get("pilot") === "1";
+  const validPilot = pilot && uuid.test(incidentId);
+  const replay = !pilot && import.meta.env.DEV && reviewId !== null &&
     uuid.test(reviewId) && uuid.test(incidentId);
-  const incident = reviewId === null ? selectDemoIncident(incidentId) : undefined;
-  const backTo = origin === "history" ? historyViewPath("incidents")
+  const incident = !pilot && reviewId === null ? selectDemoIncident(incidentId) : undefined;
+  const backTo = pilot ? `${operationsQueuePath("active")}&pilot=1` : origin === "history" ? historyViewPath("incidents")
     : operationsQueuePath(isOperationsQueue(origin) ? origin : "active");
   const heading = useRef<HTMLHeadingElement>(null);
 
@@ -36,13 +39,14 @@ export function IncidentWorkspaceRoute() {
   return (
     <AppLayout sidebar={<AppSidebar section={origin === "history" ? "history" : "operations"} />}>
       <div className={styles.context}>
-        <Link to={backTo}>{t(origin === "history" ? "workspace.backHistory" : "workspace.backOperations")}</Link>
+        <Link to={backTo}>{t(!pilot && origin === "history" ? "workspace.backHistory" : "workspace.backOperations")}</Link>
         {incident && <Badge variant="outline">{t("demoBadge")}</Badge>}
+        {pilot && <Badge variant="outline">{t("pilot.badge")}</Badge>}
         {replay && <Badge variant="outline">{t("workspace.replay")}</Badge>}
       </div>
       <header className={styles.header}>
         <h1 ref={heading} tabIndex={-1}>
-          {incident ? `${incident.id} · ${incident.repository}` : replay ? incidentId : t("workspace.notFound")}
+          {incident ? `${incident.id} · ${incident.repository}` : replay || validPilot ? incidentId : t("workspace.notFound")}
         </h1>
         {incident && <>
           <p>{incident.workflow}</p>
@@ -57,7 +61,8 @@ export function IncidentWorkspaceRoute() {
       </header>
       {incident && <FixtureIncident incident={incident} />}
       {replay && <ReplayDiagnosis key={`${incidentId}/${reviewId}`} incidentId={incidentId} reviewId={reviewId} />}
-      {!incident && !replay && <p>{t("workspace.notFoundDescription")}</p>}
+      {validPilot && <OperationalPilot key={incidentId} incidentId={incidentId} />}
+      {!incident && !replay && !validPilot && <p>{t("workspace.notFoundDescription")}</p>}
     </AppLayout>
   );
 }
