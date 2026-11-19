@@ -23,6 +23,8 @@ const operations = {
     recommendation: "Recommendation",
     limitations: "Limitations",
     evidence: "Supporting evidence",
+    incident: "Incident ID",
+    context: "Context ID",
     correlation: "Correlation ID",
     execution: "Execution ID",
     origin: "Origin context ID",

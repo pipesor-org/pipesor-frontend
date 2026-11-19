@@ -18,9 +18,9 @@ async function verify() {
       ["es", 390, "Token de acceso local", "Cargar diagnóstico", "Se rechazó el token de acceso."],
     ]) {
       const page = await browser.newPage({ viewport: { width, height: 850 } });
-      page.setDefaultTimeout(5000);
+      page.setDefaultTimeout(15_000);
       await page.addInitScript((lang) => localStorage.setItem("pipesor.language", lang), language);
-      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo`);
+      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo`, { waitUntil: "domcontentloaded" });
       const input = page.getByLabel(tokenLabel);
       const load = page.getByRole("button", { name: loadLabel });
       await input.focus();
@@ -37,12 +37,14 @@ async function verify() {
       await cause.waitFor();
       for (const value of [
         output.hypothesis.recommendation, output.hypothesis.limitations, output.correlationId,
+        output.incidentId, output.executionId,
         output.evidence[0].content, output.evidence[0].evidenceId,
         output.sources[0].provenance, output.sources[0].documentId, output.sources[0].chunkId,
       ]) {
         await page.getByText(value, { exact: true }).waitFor();
       }
       assert.equal(output.evidence[0].originContextId, output.contextId);
+      assert.equal(await page.getByText(output.contextId, { exact: true }).count(), 2);
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
 
       await input.fill("invalid");

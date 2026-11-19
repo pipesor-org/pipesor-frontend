@@ -65,6 +65,8 @@ export function DiagnosticDemoPage() {
             <p>{output.hypothesis.limitations}</p>
             <h2>{t("diagnosticDemo.evidence")}</h2>
             <p>{t("diagnosticDemo.correlation")} <code>{output.correlationId}</code></p>
+            <p>{t("diagnosticDemo.incident")} <code>{output.incidentId}</code></p>
+            <p>{t("diagnosticDemo.context")} <code>{output.contextId}</code></p>
             <p>{t("diagnosticDemo.execution")} <code>{output.executionId}</code></p>
             <ul>
               {output.evidence.map((signal) => (
