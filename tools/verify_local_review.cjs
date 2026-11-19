@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
+const { verifyReplay } = require("./verify_incident_workspace.cjs");
 
 async function verify() {
   const { chromium } = require(process.env.PIPESOR_PLAYWRIGHT_MODULE || "playwright");
@@ -73,6 +74,7 @@ async function verify() {
       assert.equal((await denied).status(), 401);
       await page.getByRole("alert").waitFor();
       assert.equal(await hypothesis.count(), 0);
+      if (integrated) await verifyReplay(page, `http://127.0.0.1:${port}`, review, token, spanish);
       await page.close();
       console.log(`P3_REACT ${decision} ${spanish ? "es 390px" : "en 1280px"}; persisted history, original preserved, 401 clears view`);
     }

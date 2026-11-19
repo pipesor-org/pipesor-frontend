@@ -1,11 +1,13 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import {
   IncidentValidationStatus,
   STAGE_LABEL_KEY,
   selectHistoryIncidents,
 } from "../../../entities/incident";
+import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 
@@ -47,9 +49,6 @@ const EMPTY_VALUE = "—";
  * History — Incidents table.
  *
  * Lists resolved incidents with a terminal diagnosis validation, newest first.
- * The rows are presentational for now: opening an Incident Workspace in
- * historical view depends on routing that does not exist yet, so only the
- * screen-reader table semantics and hover affordance are provided.
  *
  * Durations come from the optional structured seconds fields and are formatted
  * with the shared precise formatter; no timestamp arithmetic is invented.
@@ -106,7 +105,9 @@ export function HistoryIncidentsTable() {
                 <tr key={incident.id} className={styles.row}>
                   <td>
                     <div className={styles.stack}>
-                      <span className={styles.incidentId}>{incident.id}</span>
+                      <Link className={styles.incidentId} to={incidentWorkspacePath(incident.id, "history")}>
+                        {incident.id}
+                      </Link>
                       <span className={styles.incidentRepository}>
                         {incident.repository}
                       </span>

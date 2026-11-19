@@ -5,6 +5,7 @@ export {
   OPERATIONS_QUEUE_PARAM,
   appDestinations,
   historyViewPath,
+  incidentWorkspacePath,
   isHistoryView,
   isOperationsQueue,
   operationsQueuePath,

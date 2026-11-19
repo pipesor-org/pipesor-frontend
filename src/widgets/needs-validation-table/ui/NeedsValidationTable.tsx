@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import {
   INCIDENT_SNAPSHOT_AT,
@@ -7,6 +8,7 @@ import {
   STAGE_LABEL_KEY,
   selectNeedsValidationIncidents,
 } from "../../../entities/incident";
+import { incidentWorkspacePath } from "../../../shared/config";
 import { durationMs } from "../../../shared/lib";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
@@ -84,7 +86,9 @@ export function NeedsValidationTable() {
 
                 <td>
                   <div className={styles.cell}>
-                    <span className={styles.incidentId}>{incident.id}</span>
+                    <Link className={styles.incidentId} to={incidentWorkspacePath(incident.id, "validation")}>
+                      {incident.id}
+                    </Link>
                     <span className={styles.incidentRepository}>
                       {incident.repository}
                     </span>

@@ -1,6 +1,6 @@
 # Paper product UX reconciliation
 
-Observed 2026-11-19. This companion to the [frontend functional map](frontend-functional-map.md) records design evidence and proposes a delivery sequence. D01–D07 and the accepted architecture decisions continue to govern their respective boundaries. The implementation baseline is frontend `main` at `d398af3`. The separate Operations replay is draft [PR #23](https://github.com/pipesor-org/pipesor-frontend/pull/23) at `16fe60b`.
+Observed 2026-11-19. This companion to the [frontend functional map](frontend-functional-map.md) records design evidence and proposes a delivery sequence. D01–D07 and the accepted architecture decisions continue to govern their respective boundaries. The pre-Workspace comparison baseline was frontend `main` at `d398af3`. The separate Operations replay is draft [PR #23](https://github.com/pipesor-org/pipesor-frontend/pull/23) at `16fe60b`.
 
 ## Paper MCP access and evidence
 
@@ -12,7 +12,7 @@ Using the Paper guide and then `get_basic_info`, the open file was **Pipesor**, 
 
 Widths are 1440 px. Heights are rounded to the nearest pixel. Action labels, descriptions and visible states establish the intended presentation. The exported JSX contained no wired links or click handlers for these controls.
 
-| Paper frame and identifier | Height | Observed design content and interaction cues | Current frontend and reuse |
+| Paper frame and identifier | Height | Observed design content and interaction cues | Pre-Workspace frontend baseline and reuse |
 | --- | ---: | --- | --- |
 | Operations — Active Incidents (`1-0`) | 900 | Active/Needs Validation tabs, severity and analyzing counts, Mine/Unassigned/All, search and facets, severity/elapsed order cue, diagnosis and assignment cells. “Select a row to open its Incident Workspace.” | [OperationsPage](../../src/pages/operations/ui/OperationsPage.tsx), `OperationsTabs`, `OperationsSummary`, `IncidentFilters`, `IncidentsTable`. Tab navigation works. Incident data are fixtures; rows, filter/sort and assignment affordances have no product connection. |
 | Operations — Needs Validation (`1KV-0`) | 900 | Pending count, oldest pending, resolved-date facet, sort menu alternatives, proposed diagnosis, resolved/pending duration, Pending badge, and an empty-state variant. Rows lead to Workspace for review. | Same Operations composition with `NeedsValidationTable`; fixture membership is resolved plus pending. PR #23 embeds the P3 replay panel under an explicit review query. That URL is a local harness entry and does not establish incident discovery. |
@@ -28,6 +28,14 @@ Widths are 1440 px. Heights are rounded to the nearest pixel. Action labels, des
 All artboards share the AIOps sidebar with Operations, History, Pipelines and the Maya Patel / DevOps / SRE profile footer. The ten frames show connected context but contain no standalone GitHub connection, callback, recovery, or profile settings screen. The current [UserMenu](../../src/widgets/app-sidebar/ui/UserMenu.tsx) supplies locale/theme controls and a fixture identity. An authenticated GitHub connection entry and recovery presentation need product confirmation within the existing flow.
 
 The file reports Sora and JetBrains Mono and an empty token collection. Representative inline design values are a 200 px white sidebar, `#F7F8FA` canvas, `#17191C` main text, `#667085` muted text, `#E4E7EC` borders and `#3157D5` action accent. The Workspace places the incident header above a primary evidence/action column and a compact context rail. Use the app's [semantic tokens](../../src/app/styles/tokens.css), responsive shell and EN/ES conventions when implementing; Paper supplies a desktop composition. The inspected page does not establish mobile behavior, production copy, or the underlying event chronology. The INC-1039 snapshots have inconsistent elapsed times. Use coherent persisted timestamps and genuine GitHub references.
+
+## Workspace implementation mapping
+
+[IncidentWorkspaceRoute](../../src/pages/incident-workspace/ui/IncidentWorkspaceRoute.tsx) implements the shared Paper destination at `/incidents/:incidentId`. The three tables use accessible incident-ID links. An allowlisted `from` value selects Active Incidents, Needs Validation or History on return and survives reload. Direct entries and invalid origins return to Active. The current lists have no functional incident query state to transfer.
+
+[FixtureIncident](../../src/pages/incident-workspace/ui/FixtureIncident.tsx) maps the Paper inference, evidence and recommended-action sections into the main column and operational details, timing and activity into the rail. It shows the fixture's own state and review badge. INC-1039 adds explicitly labeled synthetic excerpts and a recommendation from Paper. Other rows show unavailable evidence and recommendation states. The rail only uses supported data, including recorded fixture resolution, and the Workspace omits unverified GitHub links, verification runs and activity actors.
+
+[ReplayDiagnosis](../../src/pages/incident-workspace/ui/ReplayDiagnosis.tsx) reads the existing P3 GET in an explicit development-only mode. It checks both diagnostic and incident UUIDs and reuses the [P3 schema and history renderer](../../src/entities/diagnosis/index.ts). The harness supplies the UUIDs; the response provides a durable diagnosis, observed evidence, scoped citations, recommendation and review history. It provides no authorized Pipeline operational read. No replay data are merged into fixture records. The Workspace has no review writes.
 
 ## Interaction and navigation
 
@@ -76,6 +84,29 @@ Paths below are implemented boundaries unless explicitly described as pending. P
 | Read historical decisions and drill into Insights | Incident selectors and Insights widget aggregate fixtures. D03/D04/D05 specify target local cohorts and query behavior. | **Visual with fixtures; drill-down unimplemented.** Require authorized pagination/aggregate sources, stable contributor keys and review-outcome semantics for product history. |
 
 The incident fixture schema requires `INC-<digits>` and has a display diagnosis plus optional note. The monitored pipeline schema has a distinct branded UUID, workflow display metadata, policy and named ownership. The P3 schema validates a structured diagnosis and versioned history independently. Introduce contract-specific boundary mapping when approved. Preserve the existing entity and widget public APIs, and share the reusable review renderer and Zod contract from an appropriate lower FSD layer when Workspace is implemented.
+
+## Workspace verification and remaining pilot boundary
+
+Chromium opened Active Incidents, Needs Validation and History rows by keyboard at 1440 px in English and 390 px in Spanish. The verifier checked heading focus, reload, return to the originating view, unknown ID, rejection of an arbitrary return URL and horizontal fit. Optional screenshots are saved by the verifier when `PIPESOR_WORKSPACE_SCREENSHOTS` is set to an output directory.
+
+The E02 PostgreSQL/pgvector owner-chain run passed. The existing P3 verifier recorded all three review decisions through its established test path. After each write it opened the Workspace with the persisted incident and diagnosis UUIDs, reloaded and reauthenticated, and read the decision history there. This exercised the real local 401/404 responses, then an injected browser HTTP 503 and a mismatched incident UUID. The Workspace exposed only read operations. No live GitHub delivery, managed inference or product authorization changes were used.
+
+From the frontend directory, with Playwright and Chromium installed:
+
+```sh
+node tools/verify_incident_workspace.cjs
+```
+
+For E02, follow the Python/Docker and browser setup in the [owner-chain runbook](https://github.com/pipesor-org/pipesor-evidence-correlation-engine/blob/main/docs/local-diagnostic-demo.md). From the workspace root:
+
+```sh
+PIPESOR_DEMO_SCENARIO=E02 PIPESOR_DEMO_RAG_MODE=pgvector-fixture \
+PIPESOR_DEMO_LLM_MODE=fixture PIPESOR_DEMO_REVIEW=1 \
+PIPESOR_DEMO_BROWSER_CHECK="$PWD/pipesor-frontend/tools/verify_local_review.cjs" \
+bash services/pipesor-evidence-correlation-engine/tools/verify_local_owner_chain.sh
+```
+
+The remaining product read path needs the current delegated browser identity for Pipeline's incident/runs APIs, an authorized incident-to-diagnosis/version lookup, and authorization for evidence and review under PD-034. Log/Event's membership check is machine-scoped. P3's scoped local GET is a lookup by diagnosis ID. Neither is an authorized product incident-detail aggregation. Keep Paper's rejection-with-actual-cause and P3's correction-with-actual-cause semantics intact until product decides their mapping.
 
 ## Staged proposal and decision gates
 

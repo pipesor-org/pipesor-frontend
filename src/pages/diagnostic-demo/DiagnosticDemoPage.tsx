@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { AppLayout } from "../../shared/ui/app-layout";
 import { AppSidebar } from "../../widgets/app-sidebar";
-import { diagnosticOutputSchema, reviewSchema, type DiagnosticOutput, type ReviewView } from "./diagnosticOutput";
+import { diagnosticOutputSchema, reviewSchema, type DiagnosticOutput, type ReviewView } from "../../entities/diagnosis";
 import { DiagnosticReview } from "./DiagnosticReview";
 import styles from "./DiagnosticDemoPage.module.css";
 

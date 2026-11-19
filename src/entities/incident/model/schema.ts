@@ -97,7 +97,10 @@ export const incidentSchema = z.discriminatedUnion("status", [
 ]);
 
 /** Validates a collection of incidents (used at the mock-data boundary). */
-export const incidentsSchema = z.array(incidentSchema);
+export const incidentsSchema = z.array(incidentSchema).refine(
+  (records) => new Set(records.map((incident) => incident.id)).size === records.length,
+  "Incident identifiers must be unique",
+);
 
 export type UnresolvedIncident = z.infer<typeof unresolvedIncidentSchema>;
 export type ResolvedIncident = z.infer<typeof resolvedIncidentSchema>;

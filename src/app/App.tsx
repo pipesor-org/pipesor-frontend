@@ -4,6 +4,7 @@ import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
 import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
 import { DiagnosticDemoPage } from "../pages/diagnostic-demo";
 import { HistoryPage } from "../pages/history";
+import { IncidentWorkspaceRoute } from "../pages/incident-workspace";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { PipelineDetailPage } from "../pages/pipeline-detail";
@@ -48,6 +49,7 @@ export function App() {
         path={routes.operationsNeedsValidationLegacy}
         element={<Navigate to={operationsQueuePath("validation")} replace />}
       />
+      <Route path={routes.incidentWorkspace} element={<IncidentWorkspaceRoute />} />
       <Route path={routes.history} element={<HistoryPage />} />
       <Route path={routes.pipelines} element={<PipelinesPage />} />
       <Route path={routes.addMonitoredWorkflow} element={<AddMonitoredWorkflowRoute />} />

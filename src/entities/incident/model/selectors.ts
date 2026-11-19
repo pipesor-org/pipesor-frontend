@@ -8,6 +8,10 @@ import { DiagnosisValidationStatus } from "./types";
  */
 const ANALYZING_DIAGNOSIS = "Analyzing evidence…";
 
+export function selectDemoIncident(id: string) {
+  return incidents.find((incident) => incident.id === id);
+}
+
 /**
  * Narrows an incident to its resolved branch.
  *

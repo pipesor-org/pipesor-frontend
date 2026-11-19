@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
 import { pipesorSymbolDark, pipesorSymbolLight } from "../../../shared/assets";
-import { appDestinations } from "../../../shared/config";
+import { appDestinations, type AppDestinationKey } from "../../../shared/config";
 import { useMediaQuery, useTheme } from "../../../shared/lib";
 import {
   ChevronLeftIcon,
@@ -38,7 +38,7 @@ const MOBILE_MEDIA_QUERY = "(max-width: 900px)";
  * width; it is opened from a floating trigger and dismissed with the backdrop,
  * the toggle, or Escape.
  */
-export function AppSidebar() {
+export function AppSidebar({ section }: { section?: AppDestinationKey }) {
   const { t } = useTranslation("common");
   const { collapsed, toggleCollapsed, mobileOpen, openMobile, closeMobile } =
     useSidebarLayout();
@@ -243,7 +243,7 @@ export function AppSidebar() {
                 to={path}
                 title={isCollapsed ? label : undefined}
                 className={({ isActive }) =>
-                  `${styles.navItem}${isActive ? ` ${styles.navItemActive}` : ""}`
+                  `${styles.navItem}${isActive || key === section ? ` ${styles.navItemActive}` : ""}`
                 }
               >
                 <Icon className={styles.navIcon} />
