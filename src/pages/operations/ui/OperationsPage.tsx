@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useSearchParams } from "react-router-dom";
 
@@ -28,7 +29,7 @@ import { OperationsTabs } from "../../../widgets/operations-tabs";
  * An unknown or missing `queue` value is canonicalised to the default queue so
  * the URL always names what is on screen.
  */
-export function OperationsPage() {
+export function OperationsPage({ children }: { children?: ReactNode }) {
   const { t } = useTranslation("operations");
   const [searchParams] = useSearchParams();
   const queue = searchParams.get(OPERATIONS_QUEUE_PARAM);
@@ -71,13 +72,15 @@ export function OperationsPage() {
     <AppLayout sidebar={<AppSidebar />} hint={view.hint}>
       <OperationsHeader subtitle={view.subtitle} />
       <OperationsTabs />
-      <OperationsSummary variant={queue} />
-      <IncidentFilters
-        searchPlaceholder={view.searchPlaceholder}
-        filterLabels={view.filterLabels}
-        sortLabel={view.sortLabel}
-      />
-      {isValidation ? <NeedsValidationTable /> : <IncidentsTable />}
+      {children || <>
+        <OperationsSummary variant={queue} />
+        <IncidentFilters
+          searchPlaceholder={view.searchPlaceholder}
+          filterLabels={view.filterLabels}
+          sortLabel={view.sortLabel}
+        />
+        {isValidation ? <NeedsValidationTable /> : <IncidentsTable />}
+      </>}
     </AppLayout>
   );
 }

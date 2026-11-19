@@ -1,8 +1,8 @@
-import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams, useSearchParams } from "react-router-dom";
 
 import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
 import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
-import { DiagnosticDemoPage } from "../pages/diagnostic-demo";
+import { DiagnosticDemoPage, DiagnosticPanel } from "../pages/diagnostic-demo";
 import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
@@ -22,6 +22,18 @@ function AddMonitoredWorkflowRoute() {
   return <AddMonitoredWorkflowPage backTo={pipelineInventoryReturnPath(state)} />;
 }
 
+function OperationsRoute() {
+  const [search] = useSearchParams();
+  const review = search.get("review");
+  const replay = import.meta.env.DEV && search.get("queue") === "validation" && review !== null;
+
+  return (
+    <OperationsPage>
+      {replay && <DiagnosticPanel key={review} requestedId={review} replay />}
+    </OperationsPage>
+  );
+}
+
 /**
  * Route table for the app.
  *
@@ -39,7 +51,7 @@ export function App() {
         path="/"
         element={<Navigate to={operationsQueuePath("active")} replace />}
       />
-      <Route path={routes.operations} element={<OperationsPage />} />
+      <Route path={routes.operations} element={<OperationsRoute />} />
       <Route
         path={routes.operationsActiveIncidentsLegacy}
         element={<Navigate to={operationsQueuePath("active")} replace />}

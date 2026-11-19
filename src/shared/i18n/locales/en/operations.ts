@@ -29,6 +29,8 @@ const operations = {
     history: "Review history",
   },
   diagnosticDemo: {
+    replayTitle: "Local replay diagnosis",
+    replayDescription: "This view uses replayed evidence and an authorized test identity. The review is saved in PostgreSQL.",
     title: "Diagnostic demonstration",
     description: "Retrieve the synthetic diagnosis from the running local Recommendation service.",
     choose: "Local access token",
