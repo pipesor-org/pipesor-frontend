@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation, useParams } from "react-router-do
 
 import { selectMonitoredPipelineById } from "../entities/monitored-pipeline";
 import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
+import { DiagnosticDemoPage } from "../pages/diagnostic-demo";
 import { HistoryPage } from "../pages/history";
 import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
@@ -51,6 +52,7 @@ export function App() {
       <Route path={routes.pipelines} element={<PipelinesPage />} />
       <Route path={routes.addMonitoredWorkflow} element={<AddMonitoredWorkflowRoute />} />
       <Route path={routes.pipelineDetail} element={<PipelineDetailRoute />} />
+      {import.meta.env.DEV && <Route path="/diagnostic-demo" element={<DiagnosticDemoPage />} />}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
