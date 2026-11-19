@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import {
   IncidentSeverity,
@@ -6,6 +7,7 @@ import {
   STATUS_LABEL_KEY,
   selectActiveIncidents,
 } from "../../../entities/incident";
+import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 import styles from "./IncidentsTable.module.css";
@@ -59,7 +61,9 @@ export function IncidentsTable() {
 
               <td>
                 <div className={styles.cell}>
-                  <span className={styles.incidentId}>{incident.id}</span>
+                  <Link className={styles.incidentId} to={incidentWorkspacePath(incident.id, "active")}>
+                    {incident.id}
+                  </Link>
                   <span className={styles.incidentRepository}>
                     {incident.repository}
                   </span>

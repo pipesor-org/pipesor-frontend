@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { type z } from "zod";
 
-import { reviewDecision, reviewSchema, type ReviewView } from "./diagnosticOutput";
+import { ReviewHistory, reviewDecision, reviewSchema, type ReviewView } from "../../entities/diagnosis";
 
 export function DiagnosticReview({ url, token, view, onUpdate, onDenied }: {
   url: string;
@@ -99,19 +99,7 @@ export function DiagnosticReview({ url, token, view, onUpdate, onDenied }: {
         </fieldset>
       </form>
       {status && <p role={status === "saved" ? "status" : "alert"}>{t(`diagnosticReview.${status}`)}</p>}
-      <h3>{t("diagnosticReview.history")}</h3>
-      <ol>
-        {view.history.map((entry) => (
-          <li key={entry.id}>
-            <strong>{t(`diagnosticReview.${entry.decision}`)}</strong> · {entry.reviewer} ·{" "}
-            <time dateTime={entry.timestamp}>{entry.timestamp}</time>
-            <p>{entry.comment}</p>
-            {entry.actualCause && <p>{t("diagnosticReview.actualCause")}: {entry.actualCause}</p>}
-            {entry.correctedRecommendation &&
-              <p>{t("diagnosticReview.correctedRecommendation")}: {entry.correctedRecommendation}</p>}
-          </li>
-        ))}
-      </ol>
+      <ReviewHistory view={view} />
     </section>
   );
 }

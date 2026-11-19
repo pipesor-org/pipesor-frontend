@@ -6,8 +6,8 @@ The React frontend for Pipesor, an AIOps thesis project for monitoring CI/CD wor
 
 - Operations provides Active Incidents and Needs Validation read views; History provides Incidents and Insights. Pipelines includes local inventory queries, read-only Detail, and an unsaved onboarding draft.
 - The interface supports English/Spanish, light/dark themes, responsive navigation, and a Not Found screen.
-- The standard product routes use Zod-validated demonstration fixtures. The development-only [local product replay](docs/local-product-mvp.md) also exercises scoped PostgreSQL-backed diagnosis and review within Needs Validation.
-- Incident Workspace, workflow registration, configuration saves, assignment and operational lifecycle changes are not implemented. Incident search/filter and row-action affordances remain presentation only.
+- The standard routes use Zod-validated demonstration fixtures. The development-only [local product replay](docs/local-product-mvp.md) exercises scoped PostgreSQL-backed diagnosis and review in Needs Validation. The Workspace also reads that persisted diagnosis and review through the local P3 endpoint.
+- Active Incidents, Needs Validation and History link to a read-only Incident Workspace. Workflow registration, configuration saves, assignment, lifecycle and product review commands remain unconnected. Incident search and filters remain presentational.
 - Insights uses provisional, fixed-window demo metrics. Its controls do not recompute results, and the diagnosis-confirmation rate is not a model-accuracy measurement.
 
 See the [functional architecture map](docs/architecture/frontend-functional-map.md) for implemented routes, domain boundaries, agreed targets, and open contracts. Documented targets do not authorize new behavior or architecture.

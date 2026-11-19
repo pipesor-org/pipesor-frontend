@@ -16,10 +16,15 @@ export const routes = {
   operationsActiveIncidentsLegacy: "/operations/active-incidents",
   operationsNeedsValidationLegacy: "/operations/needs-validation",
   history: "/history",
+  incidentWorkspace: "/incidents/:incidentId",
   pipelines: "/pipelines",
   addMonitoredWorkflow: "/pipelines/new",
   pipelineDetail: "/pipelines/:pipelineId",
 } as const;
+
+export function incidentWorkspacePath(id: string, origin: OperationsQueue | "history") {
+  return `/incidents/${encodeURIComponent(id)}?from=${origin}`;
+}
 
 export function pipelineDetailPath(pipelineId: string): string {
   return `${routes.pipelines}/${encodeURIComponent(pipelineId)}`;

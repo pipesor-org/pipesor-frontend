@@ -22,6 +22,7 @@ export {
   isOperationallyResolved,
   selectActiveIncidents,
   selectActiveIncidentSummary,
+  selectDemoIncident,
   selectHistoryIncidents,
   selectNeedsValidationIncidents,
   selectNeedsValidationSummary,
