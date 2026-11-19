@@ -3,12 +3,18 @@ import { useTranslation } from "react-i18next";
 
 import { AppLayout } from "../../shared/ui/app-layout";
 import { AppSidebar } from "../../widgets/app-sidebar";
-import { diagnosticOutputSchema, type DiagnosticOutput } from "./diagnosticOutput";
+import { diagnosticOutputSchema, reviewSchema, type DiagnosticOutput, type ReviewView } from "./diagnosticOutput";
+import { DiagnosticReview } from "./DiagnosticReview";
 import styles from "./DiagnosticDemoPage.module.css";
 
 export function DiagnosticDemoPage() {
   const { t } = useTranslation("operations");
   const [output, setOutput] = useState<DiagnosticOutput>();
+  const [review, setReview] = useState<ReviewView>();
+  const [reviewToken, setReviewToken] = useState("");
+  const requestedId = new URLSearchParams(window.location.search).get("review");
+  const reviewUrl = requestedId && /^[0-9a-f-]{36}$/.test(requestedId)
+    ? `/local-demo/v1/diagnoses/${requestedId}/review` : undefined;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<"unauthenticated" | "unavailable" | "invalid">();
 
@@ -16,10 +22,12 @@ export function DiagnosticDemoPage() {
     event.preventDefault();
     const token = String(new FormData(event.currentTarget).get("demoToken") ?? "").trim();
     setOutput(undefined);
+    setReview(undefined);
+    setReviewToken("");
     setError(undefined);
     setLoading(true);
     try {
-      const response = await fetch("/local-demo/v1/diagnosis", {
+      const response = await fetch(reviewUrl ?? "/local-demo/v1/diagnosis", {
         headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
         cache: "no-store",
         credentials: "omit",
@@ -30,7 +38,19 @@ export function DiagnosticDemoPage() {
         setError(response.status === 401 ? "unauthenticated" : "unavailable");
         return;
       }
-      const result = diagnosticOutputSchema.safeParse(await response.json().catch(() => undefined));
+      const body: unknown = await response.json().catch(() => undefined);
+      if (reviewUrl) {
+        const result = reviewSchema.safeParse(body);
+        if (!result.success || result.data.diagnosticId !== requestedId) {
+          setError("invalid");
+          return;
+        }
+        setOutput(result.data.original);
+        setReview(result.data);
+        setReviewToken(token);
+        return;
+      }
+      const result = diagnosticOutputSchema.safeParse(body);
       if (result.success) setOutput(result.data);
       else setError("invalid");
     } catch {
@@ -57,6 +77,7 @@ export function DiagnosticDemoPage() {
         {error && <p role="alert">{t(`diagnosticDemo.${error}`)}</p>}
         {output && (
           <div tabIndex={0} aria-label={t("diagnosticDemo.result")}>
+            {review && <h2>{t("diagnosticReview.generated")}</h2>}
             <h2>{t("diagnosticDemo.cause")}</h2>
             <p>{output.hypothesis.probableCause}</p>
             <h2>{t("diagnosticDemo.recommendation")}</h2>
@@ -89,6 +110,15 @@ export function DiagnosticDemoPage() {
                 ))}
               </ul>
             ) : <p>{t("diagnosticDemo.noSources")}</p>}
+            {review && reviewUrl && (
+              <DiagnosticReview url={reviewUrl} token={reviewToken} view={review}
+                onUpdate={setReview} onDenied={() => {
+                  setOutput(undefined);
+                  setReview(undefined);
+                  setReviewToken("");
+                  setError("unavailable");
+                }} />
+            )}
           </div>
         )}
       </article>

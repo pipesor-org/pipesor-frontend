@@ -38,3 +38,28 @@ export const diagnosticOutputSchema = z.object({
 );
 
 export type DiagnosticOutput = z.infer<typeof diagnosticOutputSchema>;
+
+export const reviewDecision = z.enum(["CONFIRMED", "CORRECTED", "REJECTED"]);
+export const reviewSchema = z.object({
+  diagnosticId: z.guid(),
+  diagnosisVersion: z.int().positive(),
+  reviewRevision: z.int().nonnegative(),
+  status: z.union([z.literal("PENDING"), reviewDecision]),
+  original: diagnosticOutputSchema,
+  history: z.array(z.object({
+    id: z.guid(),
+    revision: z.int().positive(),
+    decision: reviewDecision,
+    reviewer: z.string(),
+    timestamp: z.iso.datetime({ offset: true }),
+    correlationId: z.string(),
+    comment: z.string(),
+    actualCause: z.string().nullable(),
+    correctedRecommendation: z.string().nullable(),
+  })),
+}).refine((view) => view.reviewRevision === view.history.length &&
+  view.status === (view.history.at(-1)?.decision ?? "PENDING") &&
+  view.history.every((entry, i) => entry.revision === i + 1 &&
+    entry.correlationId === view.original.correlationId));
+
+export type ReviewView = z.infer<typeof reviewSchema>;
