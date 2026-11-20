@@ -1,15 +1,15 @@
 const assert = require("node:assert/strict");
-const path = require("node:path");
+const { startLoopbackVite } = require("./loopback-vite.cjs");
 
 async function verify() {
   const restart = process.argv[2] === "restart";
+  const ownerChain = process.argv[2] === "owner-chain";
+  const [workflow] = JSON.parse(process.env.PIPESOR_DEMO_REGISTRATION_CATALOG);
   const { chromium } = require(process.env.PIPESOR_PLAYWRIGHT_MODULE || "playwright");
-  const { createServer } = await import("vite");
-  const vite = await createServer({ root: path.resolve(__dirname, ".."), server: { port: 0 } });
+  const vite = await startLoopbackVite();
   const browser = await chromium.launch();
   try {
-    await vite.listen();
-    const base = `http://127.0.0.1:${vite.httpServer.address().port}`;
+    const base = `http://127.0.0.1:${vite.port}`;
     const page = await browser.newPage({ viewport: { width: restart ? 390 : 1440, height: 900 } });
     page.setDefaultTimeout(12_000);
     await page.addInitScript(language => localStorage.setItem("pipesor.language", language), restart ? "es" : "en");
@@ -25,8 +25,8 @@ async function verify() {
       await add.click();
       await submit.waitFor();
       assert(await submit.isDisabled());
-      await page.locator("#add-repository").selectOption("pilot/reporting-service");
-      await page.locator("#add-workflowPath").selectOption(".github/workflows/integration-checks.yml");
+      await page.locator("#add-repository").selectOption(workflow.repository);
+      await page.locator("#add-workflowPath").selectOption(workflow.workflowPath);
       await page.locator("#add-criticality").selectOption("High");
       await page.locator("#add-operationalEnvironment").selectOption("QA");
       await page.getByRole("radio", { name: "Active", exact: true }).check();
@@ -41,6 +41,13 @@ async function verify() {
       await submit.click();
       assert.equal((await created).status(), 201);
       await heading.waitFor();
+      if (ownerChain) {
+        await page.reload();
+        await connect();
+        await heading.waitFor();
+        console.log("PIPESOR_E02_REGISTRATION existing form → HTTP 201 → persisted detail after reload");
+        return;
+      }
       await page.locator('select[name="monitoringStatus"]').selectOption("PAUSED");
       const updated = page.waitForResponse(res => res.request().method() === "PUT");
       await page.getByRole("button", { name: "Save policy" }).click();

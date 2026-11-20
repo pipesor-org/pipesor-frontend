@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const path = require("node:path");
+const { startLoopbackVite } = require("./loopback-vite.cjs");
 const { verifyReplay } = require("./verify_incident_workspace.cjs");
 
 async function verifyOperationalPilot(page, base, token) {
@@ -32,13 +32,11 @@ async function verifyOperationalPilot(page, base, token) {
 
 async function verify() {
   const { chromium } = require(process.env.PIPESOR_PLAYWRIGHT_MODULE || "playwright");
-  const { createServer } = await import("vite");
-  const vite = await createServer({ root: path.resolve(__dirname, ".."), server: { port: 0 } });
+  const vite = await startLoopbackVite();
   const browser = await chromium.launch(process.env.PIPESOR_CHROMIUM_EXECUTABLE
     ? { executablePath: process.env.PIPESOR_CHROMIUM_EXECUTABLE } : {});
   try {
-    await vite.listen();
-    const { port } = vite.httpServer.address();
+    const { port } = vite;
     const ids = process.env.PIPESOR_REVIEW_IDS.split(",");
     const token = process.env.PIPESOR_REVIEW_TOKEN;
     const integrated = ids.length === 1;
@@ -52,6 +50,12 @@ async function verify() {
       const spanish = decision === "CORRECTED";
       const page = await browser.newPage({ viewport: { width: spanish ? 390 : 1280, height: 850 } });
       page.setDefaultTimeout(15_000);
+      page.on("pageerror", error => console.error(error.message));
+      page.on("response", response => {
+        if (response.status() >= 500 && response.request().resourceType() === "script") {
+          console.error("Browser module failed to load", new URL(response.url()).pathname, response.status());
+        }
+      });
       await page.addInitScript(lang => localStorage.setItem("pipesor.language", lang), spanish ? "es" : "en");
       const route = integrated ? "/operations?queue=validation&review=" : "/diagnostic-demo?review=";
       if (i === 0 && process.env.PIPESOR_OPERATIONAL_TOKEN) {
