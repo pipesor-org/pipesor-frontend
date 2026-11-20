@@ -1,4 +1,19 @@
 const pipelines = {
+  pilot: {
+    effectiveAccess: "Effective capabilities returned by Pipeline.",
+    badge: "Local pilot · Persisted workflows",
+    synthetic: "Synthetic GitHub discovery and authorization facts",
+    token: "Pipeline test access token",
+    connect: "Open pilot",
+    loading: "Loading workflows…",
+    duplicate: "This workflow is already monitored.",
+    invalid: "The selected workflow or monitoring configuration was rejected.",
+    denied: "Access denied. Reload to enter a valid test credential.",
+    unavailable: "Pipeline or GitHub authority is unavailable.",
+    saving: "Saving registration…",
+    editPolicy: "Edit monitoring policy",
+    save: "Save policy",
+  },
   demoBadge: "Prototype · Demo data",
   backToPipelines: "← Back to Pipelines",
   inventory: {

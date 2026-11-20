@@ -1,4 +1,19 @@
 const pipelines = {
+  pilot: {
+    effectiveAccess: "Capacidades efectivas devueltas por Pipeline.",
+    badge: "Piloto local · Flujos persistidos",
+    synthetic: "Descubrimiento y permisos sintéticos de GitHub",
+    token: "Token de prueba de Pipeline",
+    connect: "Abrir piloto",
+    loading: "Cargando flujos…",
+    duplicate: "Este flujo ya está monitorizado.",
+    invalid: "Se rechazó el flujo seleccionado o su configuración de monitorización.",
+    denied: "Acceso denegado. Recarga para introducir una credencial de prueba válida.",
+    unavailable: "Pipeline o la autoridad de GitHub no está disponible.",
+    saving: "Guardando registro…",
+    editPolicy: "Editar política de monitorización",
+    save: "Guardar política",
+  },
   demoBadge: "Prototipo · Datos de demo",
   backToPipelines: "← Volver a Pipelines",
   inventory: {

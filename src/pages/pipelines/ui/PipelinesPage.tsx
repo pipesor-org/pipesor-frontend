@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigationType, useSearchParams } from "react-router-dom";
 
-import { PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES } from "../../../entities/monitored-pipeline";
+import { monitoredPipelines, PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES, type PersistedPipeline } from "../../../entities/monitored-pipeline";
 import { pipelineDetailPath, routes } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Badge } from "../../../shared/ui/badge";
@@ -12,15 +12,16 @@ import { AppSidebar } from "../../../widgets/app-sidebar";
 import { isPendingSearchEcho, readInventoryQuery, responsibleTeams, selectInventoryPipelines } from "../model/inventory";
 import styles from "./PipelinesPage.module.css";
 
-export function PipelinesPage() {
+export function PipelinesPage({ records }: { records?: readonly PersistedPipeline[] }) {
   const { t } = useTranslation("pipelines");
   const [params, setParams] = useSearchParams();
-  const query = readInventoryQuery(params);
+  const teams = records ? [...new Set(records.map(({ ownership }) => ownership.responsibleTeam).filter(Boolean))] : responsibleTeams;
+  const query = readInventoryQuery(params, teams);
   const [search, setSearch] = useState(query.q);
   const pendingSearch = useRef<{ latest: string; values: Set<string> } | undefined>(undefined);
   const { key: locationKey } = useLocation();
   const navigationType = useNavigationType();
-  const pipelines = selectInventoryPipelines({ ...query, q: search });
+  const pipelines = selectInventoryPipelines({ ...query, q: search }, records ?? monitoredPipelines);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => { headingRef.current?.focus(); }, []);
@@ -62,7 +63,7 @@ export function PipelinesPage() {
           <p className={styles.subtitle}>{t("inventory.subtitle")}</p>
         </div>
         <div className={styles.actions}>
-          <Badge variant="outline">{t("demoBadge")}</Badge>
+          <Badge variant="outline">{t(records ? "pilot.badge" : "demoBadge")}</Badge>
           <Link className={styles.add} to={routes.addMonitoredWorkflow}
             state={{ pipelineSearch: new URLSearchParams({ ...query, q: search }).toString() }}>
             <span aria-hidden="true">+</span>{t("inventory.add")}
@@ -86,7 +87,7 @@ export function PipelinesPage() {
           <span className={styles.srOnly}>{t("inventory.team")}</span>
           <select value={query.team} onChange={(event) => setCriterion("team", event.target.value)}>
             <option value="">{t("inventory.team")}</option>
-            {responsibleTeams.map((team) => <option key={team} value={team}>{team}</option>)}
+            {teams.map((team) => <option key={team} value={team}>{team}</option>)}
           </select>
         </label>
         <label className={styles.filter}>
@@ -119,9 +120,9 @@ export function PipelinesPage() {
                 <span className={styles.workflow}>{pipeline.github.workflowName}</span>
               </Link></th>
               <td className={styles.repository}>{pipeline.github.repository}</td>
-              <td>{pipeline.policy.operationalEnvironment ? t(`environment.${pipeline.policy.operationalEnvironment}`) : t("policy.unspecified")}</td>
+              <td>{"environment" in pipeline ? pipeline.environment ?? t("policy.unspecified") : pipeline.policy.operationalEnvironment ? t(`environment.${pipeline.policy.operationalEnvironment}`) : t("policy.unspecified")}</td>
               <td><span className={`${styles.status} ${styles[pipeline.policy.criticality]}`}>{t(`criticality.${pipeline.policy.criticality}`)}</span></td>
-              <td>{pipeline.ownership.responsibleTeam}</td>
+              <td>{pipeline.ownership.responsibleTeam || t("ownership.unspecified")}</td>
               <td><div className={styles.monitoringCell}>
                 <span className={`${styles.status} ${styles[pipeline.policy.monitoringStatus]}`}>{t(`monitoring.${pipeline.policy.monitoringStatus}`)}</span>
                 <ChevronRightIcon width={12} height={12} aria-hidden="true" />

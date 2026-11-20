@@ -3,6 +3,7 @@ import {
   PIPELINE_CRITICALITIES,
   PIPELINE_MONITORING_STATUSES,
   type MonitoredPipeline,
+  type PersistedPipeline,
 } from "../../../entities/monitored-pipeline";
 import { routes } from "../../../shared/config";
 
@@ -12,18 +13,18 @@ export function isPendingSearchEcho(navigationType: string, search: string, pend
   return navigationType === "REPLACE" && pendingValues.has(search);
 }
 
-export function readInventoryQuery(params: URLSearchParams) {
+export function readInventoryQuery(params: URLSearchParams, teams: readonly string[] = responsibleTeams) {
   return {
     q: params.get("q") ?? "",
     criticality: PIPELINE_CRITICALITIES.find((value) => value === params.get("criticality")) ?? "",
-    team: responsibleTeams.find((value) => value === params.get("team")) ?? "",
+    team: teams.find((value) => value === params.get("team")) ?? "",
     monitoring: PIPELINE_MONITORING_STATUSES.find((value) => value === params.get("monitoring")) ?? "",
   };
 }
 
 export function selectInventoryPipelines(
   query: ReturnType<typeof readInventoryQuery>,
-  all: readonly MonitoredPipeline[] = monitoredPipelines,
+  all: readonly (MonitoredPipeline | PersistedPipeline)[] = monitoredPipelines,
 ) {
   const search = query.q.trim().toLowerCase();
   return all.filter((pipeline) =>
@@ -39,7 +40,8 @@ export function selectInventoryPipelines(
 export function pipelineInventoryReturnPath(state: unknown): string {
   if (!state || typeof state !== "object" || !("pipelineSearch" in state) ||
     typeof state.pipelineSearch !== "string") return routes.pipelines;
-  const query = readInventoryQuery(new URLSearchParams(state.pipelineSearch));
+  const search = new URLSearchParams(state.pipelineSearch);
+  const query = readInventoryQuery(search, [search.get("team") ?? ""]);
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
     if (value) params.set(key, value);
