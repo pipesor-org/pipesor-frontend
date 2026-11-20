@@ -1,4 +1,8 @@
 const pipelines = {
+  githubConnection: {
+    unavailable: "GitHub account linking is unavailable in this setup.",
+    synthetic: "Local pilot uses a synthetic GitHub catalog.",
+  },
   pilot: {
     effectiveAccess: "Effective capabilities returned by Pipeline.",
     badge: "Local pilot · Persisted workflows",

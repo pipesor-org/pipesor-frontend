@@ -1,4 +1,8 @@
 const pipelines = {
+  githubConnection: {
+    unavailable: "La vinculación de cuentas de GitHub no está disponible en esta configuración.",
+    synthetic: "El piloto local usa un catálogo sintético de GitHub.",
+  },
   pilot: {
     effectiveAccess: "Capacidades efectivas devueltas por Pipeline.",
     badge: "Piloto local · Flujos persistidos",

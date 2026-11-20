@@ -94,3 +94,7 @@ The registration response takes the user to the existing detail view, which perf
 Production builds omit the pilot mode. Live discovery requires the separate Ingestion API identity, account linking and runtime approval under ADR-020. The pilot does not change incident or diagnosis access. The proposed historical diagnosis read remains blocked until its provenance guarantees are approved and verified.
 
 Observed on 2026-11-19: all 14 existing WorkflowOnboardingTests and the opt-in browser test passed. Look for `WORKFLOW_REGISTRATION` markers for desktop English creation/policy edit/duplicate/outage and mobile Spanish after backend restart.
+
+## GitHub and OE3 readiness
+
+See the [verified GitHub connection and OE3 readiness handoff](architecture/github-oe3-readiness.md) for existing APIs, operator inputs and measurement boundaries.
