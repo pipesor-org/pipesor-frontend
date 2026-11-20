@@ -95,6 +95,6 @@ Production builds omit the pilot mode. Live discovery requires the separate Inge
 
 Observed on 2026-11-19: all 14 existing WorkflowOnboardingTests and the opt-in browser test passed. Look for `WORKFLOW_REGISTRATION` markers for desktop English creation/policy edit/duplicate/outage and mobile Spanish after backend restart.
 
-## Registered E02 advisor journey
+## GitHub and OE3 readiness
 
-The [registered E02 advisor runbook](https://github.com/pipesor-org/pipesor-evidence-correlation-engine/blob/main/docs/registered-e02-advisor.md) connects the existing workflow registration form to the same replay identity. It also documents how to keep the loopback services open for a live walkthrough and how to open the separately authorized P3 result.
+See the [verified GitHub connection and OE3 readiness handoff](architecture/github-oe3-readiness.md) for existing APIs, operator inputs and measurement boundaries.

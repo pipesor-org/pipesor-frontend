@@ -115,6 +115,7 @@ export function AddMonitoredWorkflowPage({ backTo, pilot }: {
       <section aria-labelledby="add-github">
         <div className={styles.sectionHeading}><h2 id="add-github">{t("onboarding.workflowTitle")}</h2>
           <span className={styles.note}>{t(pilot ? "pilot.synthetic" : "onboarding.synthetic")}</span></div>
+        {!pilot && <p className={styles.note}>{t("githubConnection.unavailable")}</p>}
         <p className={styles.note}>{t("onboarding.workflowDescription")}</p>
         <p className={styles.note}>{t("onboarding.readOnly")}</p>
         <SelectField {...fieldProps("repository")} label={t("identity.repository")} required

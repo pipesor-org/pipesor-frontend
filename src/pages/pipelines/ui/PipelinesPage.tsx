@@ -61,6 +61,7 @@ export function PipelinesPage({ records }: { records?: readonly PersistedPipelin
         <div>
           <h1 ref={headingRef} tabIndex={-1}>{t("inventory.title")}</h1>
           <p className={styles.subtitle}>{t("inventory.subtitle")}</p>
+          <p className={styles.subtitle}>{t(records ? "githubConnection.synthetic" : "githubConnection.unavailable")}</p>
         </div>
         <div className={styles.actions}>
           <Badge variant="outline">{t(records ? "pilot.badge" : "demoBadge")}</Badge>
