@@ -1,8 +1,8 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import type { MonitoredPipeline } from "../../../entities/monitored-pipeline";
+import { PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES, pilotError, savePilotPolicy, type MonitoredPipeline, type PersistedPipeline } from "../../../entities/monitored-pipeline";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Badge } from "../../../shared/ui/badge";
 import { AppSidebar } from "../../../widgets/app-sidebar";
@@ -15,9 +15,16 @@ function DetailFields({ fields }: { fields: readonly (readonly [string, ReactNod
   ))}</dl>;
 }
 
-export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPipeline; backTo: string }) {
+export function PipelineDetailPage({ pipeline: original, backTo, token }: {
+  pipeline: MonitoredPipeline | PersistedPipeline; backTo: string; token?: string;
+}) {
   const { t } = useTranslation("pipelines");
+  const [saved, setSaved] = useState<PersistedPipeline>();
+  const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState<ReturnType<typeof pilotError>>();
+  const pipeline = saved ?? original;
   const { github, policy, ownership } = pipeline;
+  const persisted = "capabilities" in pipeline ? pipeline : undefined;
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => { headingRef.current?.focus(); }, [pipeline.id]);
   const capabilityExamples = [
@@ -31,14 +38,14 @@ export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPi
     <AppLayout sidebar={<AppSidebar />}>
       <div className={styles.context}>
         <Link className={styles.backLink} to={backTo}>{t("backToPipelines")}</Link>
-        <Badge variant="outline">{t("demoBadge")}</Badge>
+        <Badge variant="outline">{t(persisted ? "pilot.badge" : "demoBadge")}</Badge>
       </div>
       <header className={styles.header}>
-        <h1 ref={headingRef} tabIndex={-1}>{pipeline.slug}</h1>
-        <p className={styles.metadata}><span>{github.repository}</span><span>GitHub Actions</span></p>
-        <p className={styles.note}>{t("demoContext")}</p>
+        <h1 ref={headingRef} tabIndex={-1}>{failure ? t("inventory.title") : pipeline.slug}</h1>
+        {!failure && <p className={styles.metadata}><span>{github.repository}</span><span>GitHub Actions</span></p>}
+        <p className={styles.note}>{t(persisted ? "pilot.synthetic" : "demoContext")}</p>
       </header>
-      <div className={styles.surface}>
+      {failure ? <p role="alert">{t(`pilot.${failure}`)}</p> : <div className={styles.surface}>
         <section className={styles.identity} aria-labelledby="pipeline-identity">
           <h2 id="pipeline-identity">{t("identity.title")}</h2>
           <p className={styles.note}>{t("identity.description")}</p>
@@ -46,7 +53,7 @@ export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPi
             [t("identity.repository"), github.repository],
             [t("identity.workflow"), github.workflowName],
             [t("identity.file"), github.workflowPath],
-            [t("identity.branch"), github.defaultBranch],
+            [t("identity.branch"), github.defaultBranch || t("policy.unspecified")],
             [t("identity.provider"), "GitHub Actions"],
           ]} />
           <p className={styles.note}>{t("identity.linksUnavailable")}</p>
@@ -56,16 +63,44 @@ export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPi
           <DetailFields fields={[
             [t("policy.criticality"), t(`criticality.${policy.criticality}`)],
             [t("policy.monitoring"), t(`monitoring.${policy.monitoringStatus}`)],
-            [t("policy.environment"), policy.operationalEnvironment
-              ? t(`environment.${policy.operationalEnvironment}`) : t("policy.unspecified")],
+            [t("policy.environment"), persisted ? persisted.environment ?? t("policy.unspecified")
+              : "operationalEnvironment" in policy && policy.operationalEnvironment
+                ? t(`environment.${policy.operationalEnvironment}`) : t("policy.unspecified")],
           ]} />
+          {token && persisted?.capabilities.includes("CONFIGURE") && !failure && <form onSubmit={async (event) => {
+            event.preventDefault();
+            const fields = new FormData(event.currentTarget);
+            setSaving(true);
+            try {
+              setSaved(await savePilotPolicy(token, persisted.id, {
+                criticality: fields.get("criticality"),
+                monitoringStatus: fields.get("monitoringStatus"),
+                environment: persisted.environment,
+              }));
+            } catch (error) {
+              setFailure(pilotError(error));
+            } finally {
+              setSaving(false);
+            }
+          }}>
+            <fieldset className={styles.editPolicy} disabled={saving}>
+              <legend>{t("pilot.editPolicy")}</legend>
+              <label>{t("policy.criticality")} <select name="criticality" defaultValue={policy.criticality.toUpperCase()}>
+                {PIPELINE_CRITICALITIES.map((value) => <option key={value} value={value.toUpperCase()}>{t(`criticality.${value}`)}</option>)}
+              </select></label>
+              <label>{t("policy.monitoring")} <select name="monitoringStatus" defaultValue={policy.monitoringStatus.toUpperCase()}>
+                {PIPELINE_MONITORING_STATUSES.map((value) => <option key={value} value={value.toUpperCase()}>{t(`monitoring.${value}`)}</option>)}
+              </select></label>
+              <button type="submit">{t("pilot.save")}</button>
+            </fieldset>
+          </form>}
           <p className={styles.note}>{t("policy.description")}</p>
           <p className={styles.note}>{t("policy.monitoringNote")}</p>
         </section>
         <section aria-labelledby="pipeline-ownership">
           <h2 id="pipeline-ownership">{t("ownership.title")}</h2>
           <DetailFields fields={[
-            [t("ownership.team"), ownership.responsibleTeam],
+            [t("ownership.team"), ownership.responsibleTeam || t("ownership.unspecified")],
             [t("ownership.owners"), ownership.pipelineOwners?.length
               ? ownership.pipelineOwners.join(" · ") : t("ownership.unspecified")],
           ]} />
@@ -73,8 +108,8 @@ export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPi
         </section>
         <section aria-labelledby="pipeline-access">
           <h2 id="pipeline-access">{t("access.title")}</h2>
-          <p className={styles.note} id="pipeline-access-note">{t("access.note")}</p>
-          <div className={styles.tableScroll} role="region" tabIndex={0}
+          <p className={styles.note} id="pipeline-access-note">{t(persisted ? "pilot.effectiveAccess" : "access.note")}</p>
+          {persisted ? <p>{persisted.capabilities.join(" · ")}</p> : <div className={styles.tableScroll} role="region" tabIndex={0}
             aria-labelledby="pipeline-access" aria-describedby="pipeline-access-note">
             <table className={styles.accessTable}>
               <thead><tr>
@@ -86,14 +121,14 @@ export function PipelineDetailPage({ pipeline, backTo }: { pipeline: MonitoredPi
                 <tr key={role}><th scope="row">{role}</th><td>{capability}</td><td>{description}</td></tr>
               ))}</tbody>
             </table>
-          </div>
+          </div>}
         </section>
-        <section className={styles.update} aria-labelledby="pipeline-update">
+        {!persisted && <section className={styles.update} aria-labelledby="pipeline-update">
           <h2 id="pipeline-update">{t("update.title")}</h2>
           <p className={styles.empty}>{t("update.empty")}</p>
           <p className={styles.note}>{t("update.note")}</p>
-        </section>
-      </div>
+        </section>}
+      </div>}
     </AppLayout>
   );
 }

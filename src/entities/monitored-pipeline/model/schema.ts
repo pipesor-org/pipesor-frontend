@@ -7,7 +7,7 @@ import {
 } from "./types";
 
 const nonBlankString = z.string().trim().min(1);
-const pipelineIdSchema = z.uuid().brand<"PipelineId">();
+export const pipelineIdSchema = z.uuid().brand<"PipelineId">();
 
 // Read-only source context; defaultBranch does not restrict monitoring coverage.
 export const githubWorkflowReferenceSchema = z.strictObject({

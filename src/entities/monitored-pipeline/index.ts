@@ -24,3 +24,7 @@ export {
   PIPELINE_CRITICALITIES,
   PIPELINE_MONITORING_STATUSES,
 } from "./model/types";
+export {
+  pilotEnvironments, pilotTeams, pilotError, readPilotCatalog, registrationPilot, registerPilotPipeline, savePilotPolicy, usePilotPipelineRead,
+} from "./model/registrationPilot";
+export type { PersistedPipeline } from "./model/registrationPilot";

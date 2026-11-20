@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { DEMO_OPERATIONAL_ENVIRONMENTS, PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES } from "../../../entities/monitored-pipeline";
+import { DEMO_OPERATIONAL_ENVIRONMENTS, PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES, pilotEnvironments, pilotTeams, pilotError, readPilotCatalog, registerPilotPipeline } from "../../../entities/monitored-pipeline";
+import { pipelineDetailPath } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Badge } from "../../../shared/ui/badge";
 import { AppSidebar } from "../../../widgets/app-sidebar";
@@ -30,15 +31,30 @@ function SelectField({ label, placeholder, choices, error, hint, compact, ...pro
   </div>;
 }
 
-export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
+export function AddMonitoredWorkflowPage({ backTo, pilot }: {
+  backTo: string;
+  pilot?: { token: string; catalog: ReturnType<typeof readPilotCatalog> };
+}) {
   const { t } = useTranslation("pipelines");
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState<ReturnType<typeof pilotError>>();
   const [draft, setDraft] = useState(createEmptyDraft);
   const [touched, setTouched] = useState<Partial<Record<DraftField, boolean>>>({});
   const headingRef = useRef<HTMLHeadingElement>(null);
   const ownerRef = useRef<HTMLSelectElement>(null);
   useEffect(() => { headingRef.current?.focus(); }, []);
-  const workflow = selectedWorkflow(draft);
+  const repositories = pilot ? [...new Set(pilot.catalog?.map((value) => value.repository) ?? [])] : demoRepositories;
+  const choices = pilot ? pilot.catalog?.filter((value) => value.repository === draft.repository) ?? [] : availableWorkflows(draft.repository);
+  const pilotWorkflow = pilot?.catalog?.find((value) => value.repository === draft.repository && value.workflowPath === draft.workflowPath);
+  const workflow = pilot ? pilotWorkflow : selectedWorkflow(draft);
   const errors = validateDraft(draft);
+  if (pilot) {
+    if (repositories.includes(draft.repository)) delete errors.repository;
+    if (pilotWorkflow) delete errors.workflowPath;
+    if (pilotTeams.some(([id]) => id === draft.responsibleTeam)) delete errors.responsibleTeam;
+  }
   const criticality = PIPELINE_CRITICALITIES.find((value) => value === draft.criticality);
   const monitoring = PIPELINE_MONITORING_STATUSES.find((value) => value === draft.monitoringStatus);
   const environment = DEMO_OPERATIONAL_ENVIRONMENTS.find((value) => value === draft.operationalEnvironment);
@@ -54,6 +70,28 @@ export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
   function setValue(field: Exclude<DraftField, "pipelineOwners">, value: string) {
     setDraft((previous) => ({ ...previous, [field]: value }));
   }
+  async function submit() {
+    const team = pilotTeams.find(([id]) => id === draft.responsibleTeam);
+    if (!pilot || !pilotWorkflow || !team || Object.keys(errors).length || saving) return;
+    setFailure(undefined);
+    setSaving(true);
+    try {
+      const saved = await registerPilotPipeline(pilot.token, {
+        githubRepositoryId: pilotWorkflow.repositoryId,
+        githubWorkflowId: pilotWorkflow.workflowId,
+        criticality: draft.criticality.toUpperCase(),
+        monitoringStatus: draft.monitoringStatus.toUpperCase(),
+        environment: environment ? pilotEnvironments[environment] : null,
+        responsibleTeamRef: team[0],
+        responsibleTeamNameSnapshot: team[1],
+      });
+      void navigate(pipelineDetailPath(saved.id), { replace: true, state });
+    } catch (error) {
+      setFailure(pilotError(error));
+    } finally {
+      setSaving(false);
+    }
+  }
   const notSelected = t("onboarding.notSelected");
   const review = [
     [t("identity.repository"), draft.repository || notSelected],
@@ -61,33 +99,33 @@ export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
     [t("policy.criticality"), criticality ? t(`criticality.${criticality}`) : notSelected],
     [t("policy.environment"), environment ? t(`environment.${environment}`) : t("policy.unspecified")],
     [t("policy.monitoring"), monitoring ? t(`monitoring.${monitoring}`) : notSelected],
-    [t("ownership.team"), draft.responsibleTeam || notSelected],
+    [t("ownership.team"), (pilot ? pilotTeams.find(([id]) => id === draft.responsibleTeam)?.[1] : draft.responsibleTeam) || notSelected],
   ];
 
   return <AppLayout sidebar={<AppSidebar />}>
     <div className={styles.context}>
       <Link className={styles.backLink} to={backTo}>{t("backToPipelines")}</Link>
-      <Badge variant="outline">{t("demoBadge")}</Badge>
+      <Badge variant="outline">{t(pilot ? "pilot.badge" : "demoBadge")}</Badge>
     </div>
     <header className={styles.header}>
       <h1 ref={headingRef} tabIndex={-1}>{t("onboarding.title")}</h1>
       <p>{t("onboarding.subtitle")}</p>
     </header>
-    <form className={styles.surface} noValidate onSubmit={(event) => event.preventDefault()}>
+    <form className={styles.surface} noValidate onSubmit={(event) => { event.preventDefault(); void submit(); }}>
       <section aria-labelledby="add-github">
         <div className={styles.sectionHeading}><h2 id="add-github">{t("onboarding.workflowTitle")}</h2>
-          <span className={styles.note}>{t("onboarding.synthetic")}</span></div>
+          <span className={styles.note}>{t(pilot ? "pilot.synthetic" : "onboarding.synthetic")}</span></div>
         <p className={styles.note}>{t("onboarding.workflowDescription")}</p>
         <p className={styles.note}>{t("onboarding.readOnly")}</p>
         <SelectField {...fieldProps("repository")} label={t("identity.repository")} required
-          placeholder={t("onboarding.selectRepository")} choices={demoRepositories.map((value) => [value, value])}
+          placeholder={t("onboarding.selectRepository")} choices={repositories.map((value) => [value, value])}
           onChange={(event) => {
             const repository = event.target.value;
             setDraft((previous) => changeRepository(previous, repository));
             setTouched((previous) => ({ ...previous, workflowPath: false }));
           }} />
         <SelectField {...fieldProps("workflowPath")} label={t("identity.workflow")} required disabled={!draft.repository}
-          placeholder={t("onboarding.selectWorkflow")} choices={availableWorkflows(draft.repository).map((value) => [value.workflowPath, value.workflowName])}
+          placeholder={t("onboarding.selectWorkflow")} choices={choices.map((value) => [value.workflowPath, value.workflowName])}
           hint={!draft.repository ? t("onboarding.selectRepositoryFirst") : undefined}
           onChange={(event) => setValue("workflowPath", event.target.value)} />
         <div className={styles.field}><label htmlFor="add-workflow-file">{t("identity.file")}</label>
@@ -128,9 +166,9 @@ export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
         <h2 id="add-ownership">{t("ownership.title")}</h2>
         <p className={styles.note}>{t("onboarding.ownershipDescription")}</p>
         <SelectField {...fieldProps("responsibleTeam")} label={t("ownership.team")} required
-          placeholder={t("onboarding.selectTeam")} choices={demoTeams.map((value) => [value, value])}
+          placeholder={t("onboarding.selectTeam")} choices={pilot ? pilotTeams : demoTeams.map((value) => [value, value])}
           onChange={(event) => setValue("responsibleTeam", event.target.value)} />
-        <div className={styles.field}>
+        {!pilot && <div className={styles.field}>
           <label htmlFor="add-owners">{t("ownership.owners")}</label>
           <div className={styles.control}>
             <select ref={ownerRef} id="add-owners" value="" aria-describedby="add-owners-hint"
@@ -153,21 +191,24 @@ export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
             ))}</ul>}
             <p className={styles.note} id="add-owners-hint">{t("onboarding.demoOwnership")}</p>
           </div>
-        </div>
+        </div>}
         <p className={styles.note}>{t("ownership.note")}</p>
       </section>
       <section aria-labelledby="add-review">
         <h2 id="add-review">{t("onboarding.review")}</h2>
         <dl className={styles.review}>
           {review.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-          <div className={styles.reviewOwners}><dt>{t("ownership.owners")}</dt><dd>{draft.pipelineOwners.join(" · ") || t("ownership.unspecified")}</dd></div>
+          {!pilot && <div className={styles.reviewOwners}><dt>{t("ownership.owners")}</dt><dd>{draft.pipelineOwners.join(" · ") || t("ownership.unspecified")}</dd></div>}
         </dl>
         <p className={styles.note} role="status">{t(Object.keys(errors).length ? "onboarding.incomplete" : "onboarding.complete")}</p>
         <footer className={styles.footer}>
-          <p className={styles.note} id="registration-api-unavailable">{t("onboarding.apiUnavailable")}</p>
+          {!pilot && <p className={styles.note} id="registration-api-unavailable">{t("onboarding.apiUnavailable")}</p>}
+          {pilot && !pilot.catalog && <p role="alert">{t("pilot.unavailable")}</p>}
+          {failure && <p role="alert">{t(`pilot.${failure}`)}</p>}
+          {saving && <p role="status">{t("pilot.saving")}</p>}
           <div className={styles.actions}>
             <Link className={styles.cancel} to={backTo}>{t("onboarding.cancel")}</Link>
-            <button type="submit" disabled aria-describedby="registration-api-unavailable">{t("inventory.add")}</button>
+            <button type="submit" disabled={!pilot || saving || Object.keys(errors).length > 0} aria-describedby={pilot ? undefined : "registration-api-unavailable"}>{t("inventory.add")}</button>
           </div>
         </footer>
       </section>

@@ -73,3 +73,24 @@ Run the E02 command above with Playwright, Chromium and the named frontend verif
 - **Minimum proposal for PD-011/PD-034 review.** Approve a read-only Recommendation lookup scoped to Pipeline-owned incident identity and a defined admitted-version selection rule. Authenticate the Recommendation caller independently and supply a verified current repository entitlement bound to subject, tenant and operation. Validate the snapshot's tenant, installation/repository, incident, execution and context against the authorized references before returning the existing admitted snapshot and permitted review projection. Distinguish no snapshot from unavailable authority for an authorized caller, conceal inaccessible records, and define how revocations and stale scope/version results are handled. Keep persistence and authorization with their existing owners. ADR-016's GitHub workflow surface and PD-036 are separate from this human read; ADR-018 preserves logical ownership, and ADR-020 requires current access on every protected read.
 
 Live GitHub delivery, Service Bus transport and managed inference are outside this run.
+
+## Workflow registration pilot
+
+This isolated development run opens the existing Pipelines, Add Monitored Workflow and Pipeline Detail screens against the real Pipeline controllers and PostgreSQL. It uses the existing signed delegated test identity and explicit GitHub facts double. The catalog shown in onboarding is synthetic and carries no authorization. Ingestion's `GET /api/v1/github/repositories` and `GET /api/v1/github/repositories/{repositoryId}/workflows` require their own delegated audience, a linked GitHub user and current provider facts. This run does not call them or claim live GitHub connectivity.
+
+From the workspace root with the frontend frozen Bun dependencies, Playwright and Chromium installed, Java and Docker available:
+
+```sh
+export PIPESOR_REGISTRATION_BROWSER="$PWD/pipesor-frontend/tools/verify_workflow_registration.cjs"
+# If Playwright is outside the frontend's node_modules, set PIPESOR_PLAYWRIGHT_MODULE to its installed path.
+cd services/pipesor-pipeline-service
+./mvnw -B -ntp -Dtest=WorkflowRegistrationBrowserTest,WorkflowOnboardingTests test
+```
+
+The test starts Pipeline on loopback and passes a test JWT and synthetic catalog to the browser verifier. The verifier opens the existing inventory, enters the credential, selects a repository and workflow, sets criticality, monitoring, environment and responsible team, and submits. The POST sends provider IDs and operational configuration. Pipeline rechecks the selected repo/workflow, current administrator status, installation eligibility and delegated identity. It creates the workflow and initial grant through its registration service. No workflow rows are seeded, and the test asserts that registration produces no incident.
+
+The registration response takes the user to the existing detail view, which performs its own GET. Detail surfaces effective capabilities and allows a user with CONFIGURE to submit criticality and monitoring changes under the existing policy contract. The server independently rechecks that write. Inventory and detail re-read the persisted record after reload. The verifier then restarts the backend against the same PostgreSQL container and repeats the product read. The token stays in memory while navigating and is entered again on reload. The test checks server-side duplicate, invalid selection/configuration, revoked authority and authority outage, plus the browser error state without fallback fixtures.
+
+Production builds omit the pilot mode. Live discovery requires the separate Ingestion API identity, account linking and runtime approval under ADR-020. The pilot does not change incident or diagnosis access. The proposed historical diagnosis read remains blocked until its provenance guarantees are approved and verified.
+
+Observed on 2026-11-19: all 14 existing WorkflowOnboardingTests and the opt-in browser test passed. Look for `WORKFLOW_REGISTRATION` markers for desktop English creation/policy edit/duplicate/outage and mobile Spanish after backend restart.
