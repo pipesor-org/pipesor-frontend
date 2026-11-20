@@ -94,3 +94,7 @@ The registration response takes the user to the existing detail view, which perf
 Production builds omit the pilot mode. Live discovery requires the separate Ingestion API identity, account linking and runtime approval under ADR-020. The pilot does not change incident or diagnosis access. The proposed historical diagnosis read remains blocked until its provenance guarantees are approved and verified.
 
 Observed on 2026-11-19: all 14 existing WorkflowOnboardingTests and the opt-in browser test passed. Look for `WORKFLOW_REGISTRATION` markers for desktop English creation/policy edit/duplicate/outage and mobile Spanish after backend restart.
+
+## Registered E02 advisor journey
+
+The [registered E02 advisor runbook](https://github.com/pipesor-org/pipesor-evidence-correlation-engine/blob/main/docs/registered-e02-advisor.md) connects the existing workflow registration form to the same replay identity. It also documents how to keep the loopback services open for a live walkthrough and how to open the separately authorized P3 result.
