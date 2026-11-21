@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 
@@ -48,9 +48,42 @@ async function errorKey(error: unknown) {
   return "unavailable";
 }
 
+const sessionKey = "pipesor.local-session";
+
+function pilotSession() {
+  try {
+    const parameters = new URLSearchParams(window.location.hash.slice(1));
+    const bootstrap = parameters.get("local-session");
+    if (bootstrap && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(bootstrap)) {
+      window.sessionStorage.setItem(sessionKey, bootstrap);
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    }
+    return window.sessionStorage.getItem(sessionKey) ?? "";
+  } catch {
+    return "";
+  }
+}
+
 export function LocalRunAnalysis() {
   const { t } = useTranslation("operations");
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(pilotSession);
+  const [authenticated, setAuthenticated] = useState(false);
+  useEffect(() => {
+    let current = true;
+    if (token) {
+      void request("/api/v1/github/local-session", token, "GET").then((value) => {
+        if (current) setAuthenticated(z.object({ authenticated: z.literal(true) }).safeParse(value).success);
+      }).catch((failure: unknown) => {
+        if (!current) return;
+        setAuthenticated(false);
+        if (failure instanceof Response && failure.status === 401) {
+          setToken("");
+          window.sessionStorage.removeItem(sessionKey);
+        }
+      });
+    }
+    return () => { current = false; };
+  }, [token]);
   const [candidate, setCandidate] = useState<Candidate>();
   const [phase, setPhase] = useState<z.infer<typeof analysisSchema>["phase"]>();
   const [busy, setBusy] = useState(false);
@@ -59,9 +92,8 @@ export function LocalRunAnalysis() {
   async function discover(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const credential = String(new FormData(form).get("githubToken") ?? "").trim();
+    const credential = token || String(new FormData(form).get("githubToken") ?? "").trim();
     form.reset();
-    setToken("");
     setCandidate(undefined);
     setPhase(undefined);
     setError(undefined);
@@ -93,7 +125,11 @@ export function LocalRunAnalysis() {
     } catch (failure) {
       const reason = await errorKey(failure);
       if (reason === "denied" || reason === "connectionRequired") {
-        setToken("");
+        if (failure instanceof Response && failure.status === 401) {
+          setToken("");
+          setAuthenticated(false);
+          window.sessionStorage.removeItem(sessionKey);
+        }
         setCandidate(undefined);
         setPhase(undefined);
       }
@@ -106,10 +142,11 @@ export function LocalRunAnalysis() {
   return (
     <section className={styles.panel} aria-label={t("capture.title")}>
       <h2>{t("capture.title")}</h2>
+      {authenticated && <p>{t("capture.sessionActive")}</p>}
       <form onSubmit={discover}>
-        <label>{t("capture.token")}
+        {!token && <label>{t("capture.token")}
           <input name="githubToken" type="password" autoComplete="off" required maxLength={8192} disabled={busy} />
-        </label>
+        </label>}
         <button type="submit" disabled={busy}>{t("capture.discover")}</button>
       </form>
       {candidate && (

@@ -23,7 +23,7 @@ export default defineConfig(({ command, mode }) => {
       host: "127.0.0.1",
       proxy: {
         ...(capturePort ? {
-          "^/api/v1/github/(local-analysis$|repositories/[0-9]+/workflows/[0-9]+/runs/[0-9]+/attempts/[0-9]+/analysis$)":
+          "^/api/v1/github/(local-session$|local-analysis$|repositories/[0-9]+/workflows/[0-9]+/runs/[0-9]+/attempts/[0-9]+/analysis$)":
             { target: `http://127.0.0.1:${capturePort}` },
         } : {}),
         ...(registrationCatalog ? {

@@ -70,6 +70,7 @@ const operations = {
   capture: {
     title: "Análisis de GitHub Actions",
     token: "Token delegado de acceso a Ingestion",
+    sessionActive: "Sesión local de Pipesor activa",
     discover: "Buscar ejecución autorizada",
     run: "Workflow {{workflowId}} · Ejecución {{runId}} · Intento {{attempt}}",
     analyze: "Analizar ejecución",
