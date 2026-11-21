@@ -15,6 +15,7 @@ import { AppLayout } from "../shared/ui/app-layout";
 import { Badge } from "../shared/ui/badge";
 import { AppSidebar } from "../widgets/app-sidebar";
 import { OperationalPilot } from "../widgets/operational-pilot";
+import { LocalRunAnalysis, localRunAnalysisEnabled } from "../widgets/operational-pilot/LocalRunAnalysis";
 import { operationsQueuePath, routes } from "../shared/config";
 
 function PipelineDetailRoute() {
@@ -69,7 +70,7 @@ function OperationsRoute() {
 
   return (
     <OperationsPage pilot={pilot}>
-      {pilot ? <OperationalPilot /> : replay && <DiagnosticPanel key={review} requestedId={review} replay />}
+      {pilot ? <>{localRunAnalysisEnabled && <LocalRunAnalysis />}<OperationalPilot /></> : replay && <DiagnosticPanel key={review} requestedId={review} replay />}
     </OperationsPage>
   );
 }
