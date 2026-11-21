@@ -1,7 +1,8 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
-const apiPath = "/local-demo/v1/diagnosis";
+const reviewId = process.env.PIPESOR_REVIEW_IDS;
+const apiPath = reviewId ? `/local-demo/v1/diagnoses/${reviewId}/review` : "/local-demo/v1/diagnosis";
 
 async function verify() {
   const { chromium } = require(process.env.PIPESOR_PLAYWRIGHT_MODULE || "playwright");
@@ -20,7 +21,8 @@ async function verify() {
       const page = await browser.newPage({ viewport: { width, height: 850 } });
       page.setDefaultTimeout(15_000);
       await page.addInitScript((lang) => localStorage.setItem("pipesor.language", lang), language);
-      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo`, { waitUntil: "domcontentloaded" });
+      const query = reviewId ? `?review=${encodeURIComponent(reviewId)}` : "";
+      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo${query}`, { waitUntil: "domcontentloaded" });
       const input = page.getByLabel(tokenLabel);
       const load = page.getByRole("button", { name: loadLabel });
       await input.focus();
@@ -32,7 +34,8 @@ async function verify() {
       const response = await accepted;
       assert.equal(response.status(), 200);
       assert.match(response.headers()["cache-control"], /no-store/);
-      const output = await response.json();
+      const payload = await response.json();
+      const output = reviewId ? payload.original : payload;
       const cause = page.getByText(output.hypothesis.probableCause, { exact: true });
       await cause.waitFor();
       for (const value of [
@@ -49,6 +52,17 @@ async function verify() {
       assert.equal(output.evidence[0].originContextId, output.contextId);
       assert.equal(await page.getByText(output.contextId, { exact: true }).count(), 2);
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+
+      if (reviewId) {
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await input.fill(process.env.PIPESOR_DEMO_TOKEN);
+        const restore = page.waitForResponse((reply) => new URL(reply.url()).pathname === apiPath);
+        await load.click();
+        const restored = await restore;
+        assert.equal(restored.status(), 200);
+        assert.deepEqual((await restored.json()).original, output);
+        await cause.waitFor();
+      }
 
       await input.fill("invalid");
       const denied = page.waitForResponse((reply) => new URL(reply.url()).pathname === apiPath);
