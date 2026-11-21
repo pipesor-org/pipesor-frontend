@@ -15,8 +15,11 @@ import { AppLayout } from "../shared/ui/app-layout";
 import { Badge } from "../shared/ui/badge";
 import { AppSidebar } from "../widgets/app-sidebar";
 import { OperationalPilot } from "../widgets/operational-pilot";
-import { LocalRunAnalysis, localRunAnalysisEnabled } from "../widgets/operational-pilot/LocalRunAnalysis";
+import { LocalRunAnalysis } from "../widgets/operational-pilot/LocalRunAnalysis";
 import { operationsQueuePath, routes } from "../shared/config";
+
+declare const __PIPESOR_LOCAL_CAPTURE__: boolean;
+const localRunAnalysisEnabled = import.meta.env.DEV && __PIPESOR_LOCAL_CAPTURE__;
 
 function PipelineDetailRoute() {
   const { pipelineId } = useParams<"pipelineId">();

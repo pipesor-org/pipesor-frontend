@@ -4,9 +4,6 @@ import { z } from "zod";
 
 import styles from "./OperationalPilot.module.css";
 
-declare const __PIPESOR_LOCAL_CAPTURE__: boolean;
-export const localRunAnalysisEnabled = import.meta.env.DEV && __PIPESOR_LOCAL_CAPTURE__;
-
 const externalId = z.string().regex(/^[1-9]\d*$/);
 const capturePhase = z.enum(["ACCEPTED", "PREPARED", "PUBLISHED", "BLOCKED"]);
 const candidateSchema = z.object({
