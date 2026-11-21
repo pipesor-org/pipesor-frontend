@@ -43,6 +43,9 @@ async function verify() {
       ]) {
         await page.getByText(value, { exact: true }).waitFor();
       }
+      if (output.evidence[0].sourceLocator) {
+        await page.getByText(output.evidence[0].sourceLocator, { exact: true }).waitFor();
+      }
       assert.equal(output.evidence[0].originContextId, output.contextId);
       assert.equal(await page.getByText(output.contextId, { exact: true }).count(), 2);
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
