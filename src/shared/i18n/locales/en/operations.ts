@@ -75,6 +75,7 @@ const operations = {
     analyze: "Analyze execution",
     loading: "Contacting Ingestion…",
     denied: "Access to this execution was denied.",
+    connectionRequired: "Link the authorized GitHub account before requesting analysis.",
     unsupported: "The execution has insufficient supported evidence.",
     conflict: "The execution is already being prepared or its source changed.",
     unavailable: "Ingestion or its authorization provider is unavailable.",

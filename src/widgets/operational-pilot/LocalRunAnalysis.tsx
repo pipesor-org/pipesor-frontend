@@ -8,6 +8,7 @@ declare const __PIPESOR_LOCAL_CAPTURE__: boolean;
 export const localRunAnalysisEnabled = import.meta.env.DEV && __PIPESOR_LOCAL_CAPTURE__;
 
 const externalId = z.string().regex(/^[1-9]\d*$/);
+const capturePhase = z.enum(["ACCEPTED", "PREPARED", "PUBLISHED", "BLOCKED"]);
 const candidateSchema = z.object({
   repositoryId: externalId,
   repository: z.string().min(1),
@@ -15,11 +16,12 @@ const candidateSchema = z.object({
   runId: externalId,
   attempt: z.number().int().positive(),
   conclusion: z.enum(["failure", "timed_out"]),
+  phase: capturePhase.nullish(),
 });
 const analysisSchema = z.object({
   runId: externalId,
   attempt: z.number().int().positive(),
-  phase: z.enum(["ACCEPTED", "PREPARED", "PUBLISHED", "BLOCKED"]),
+  phase: capturePhase,
 });
 type Candidate = z.infer<typeof candidateSchema>;
 
@@ -36,11 +38,15 @@ async function request(path: string, token: string, method: "GET" | "POST") {
   return response.json() as Promise<unknown>;
 }
 
-function errorKey(error: unknown) {
+async function errorKey(error: unknown) {
   if (error instanceof Response) {
     if ([401, 403].includes(error.status)) return "denied";
     if (error.status === 422) return "unsupported";
-    if (error.status === 409) return "conflict";
+    if (error.status === 409) {
+      const data: unknown = await error.json().catch(() => undefined);
+      if (z.object({ code: z.literal("CONNECTION_REQUIRED") }).safeParse(data).success) return "connectionRequired";
+      return "conflict";
+    }
   }
   return "unavailable";
 }
@@ -51,7 +57,7 @@ export function LocalRunAnalysis() {
   const [candidate, setCandidate] = useState<Candidate>();
   const [phase, setPhase] = useState<z.infer<typeof analysisSchema>["phase"]>();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<ReturnType<typeof errorKey>>();
+  const [error, setError] = useState<Awaited<ReturnType<typeof errorKey>>>();
 
   async function discover(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,8 +73,9 @@ export function LocalRunAnalysis() {
       const run = candidateSchema.parse(await request("/api/v1/github/local-analysis", credential, "GET"));
       setToken(credential);
       setCandidate(run);
+      setPhase(run.phase ?? undefined);
     } catch (failure) {
-      setError(errorKey(failure));
+      setError(await errorKey(failure));
     } finally {
       setBusy(false);
     }
@@ -87,8 +94,8 @@ export function LocalRunAnalysis() {
       if (result.runId !== runId || result.attempt !== attempt) throw new Error("Run identity mismatch");
       setPhase(result.phase);
     } catch (failure) {
-      const reason = errorKey(failure);
-      if (reason === "denied") {
+      const reason = await errorKey(failure);
+      if (reason === "denied" || reason === "connectionRequired") {
         setToken("");
         setCandidate(undefined);
         setPhase(undefined);

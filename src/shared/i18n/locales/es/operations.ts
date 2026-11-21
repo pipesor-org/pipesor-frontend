@@ -75,6 +75,7 @@ const operations = {
     analyze: "Analizar ejecución",
     loading: "Consultando Ingestion…",
     denied: "Se denegó el acceso a esta ejecución.",
+    connectionRequired: "Vincula la cuenta GitHub autorizada antes de solicitar el análisis.",
     unsupported: "La ejecución no contiene evidencia suficiente para el perfil.",
     conflict: "La ejecución ya se está preparando o cambió el origen.",
     unavailable: "Ingestion o su proveedor de autorización no está disponible.",
