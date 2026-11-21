@@ -117,6 +117,9 @@ export function DiagnosticPanel({ requestedId, replay = false }: {
               <li key={signal.evidenceId}>
                 <code>{signal.evidenceId}</code> · {signal.stage}
                 <p>{t("diagnosticDemo.origin")} <code>{signal.originContextId}</code></p>
+                {signal.sourceLocator && (
+                  <p>{t("diagnosticDemo.sourceLocator")} <code style={{ overflowWrap: "anywhere" }}>{signal.sourceLocator}</code></p>
+                )}
                 <pre>{signal.content}</pre>
               </li>
             ))}

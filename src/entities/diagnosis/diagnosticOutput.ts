@@ -25,6 +25,9 @@ export const diagnosticOutputSchema = z.object({
     evidenceId: id,
     originContextId: id,
     stage: text,
+    sourceLocator: z.string().regex(
+      /^v2:job:[1-9][0-9]*:member:[0-9]{1,9}_verify\.txt:lines:([1-9][0-9]{0,8})-\1:sha256:[0-9a-f]{64}$/,
+    ).optional(),
     content: z.string().min(1),
   })).min(1),
   sources: z.array(z.object({

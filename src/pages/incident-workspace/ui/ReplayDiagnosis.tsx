@@ -73,6 +73,9 @@ export function ReplayDiagnosis({ incidentId, reviewId }: { incidentId: string; 
                   <li key={signal.evidenceId}>
                     <p>{signal.stage} · <code>{signal.evidenceId}</code></p>
                     <p>{t("diagnosticDemo.origin")} <code>{signal.originContextId}</code></p>
+                    {signal.sourceLocator && (
+                      <p>{t("diagnosticDemo.sourceLocator")} <code style={{ overflowWrap: "anywhere" }}>{signal.sourceLocator}</code></p>
+                    )}
                     <pre>{signal.content}</pre>
                   </li>
                 ))}

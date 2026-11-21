@@ -87,6 +87,7 @@ const operations = {
     context: "ID de contexto",
     correlation: "ID de correlación",
     execution: "ID de ejecución",
+    sourceLocator: "Localizador de origen",
     origin: "ID del contexto de origen",
     sources: "Fuentes recuperadas",
     document: "ID del documento",
