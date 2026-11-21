@@ -22,9 +22,20 @@ async function verify() {
       page.setDefaultTimeout(15_000);
       await page.addInitScript((lang) => localStorage.setItem("pipesor.language", lang), language);
       const query = reviewId ? `?review=${encodeURIComponent(reviewId)}` : "";
-      await page.goto(`http://127.0.0.1:${port}/diagnostic-demo${query}`, { waitUntil: "domcontentloaded" });
+      const url = `http://127.0.0.1:${port}/diagnostic-demo${query}`;
       const input = page.getByLabel(tokenLabel);
       const load = page.getByRole("button", { name: loadLabel });
+      let networkChanged = false;
+      page.on("requestfailed", request => {
+        if (request.failure()?.errorText === "net::ERR_NETWORK_CHANGED") networkChanged = true;
+      });
+      try {
+        await page.goto(url, { waitUntil: "domcontentloaded" });
+        await input.waitFor({ timeout: 8000 });
+      } catch (error) {
+        if (!networkChanged && !String(error).includes("net::ERR_NETWORK_CHANGED")) throw error;
+        await page.goto(url, { waitUntil: "domcontentloaded" });
+      }
       await input.focus();
       assert(await input.evaluate((element) => element === document.activeElement));
 
