@@ -68,7 +68,9 @@ The project follows Feature-Sliced Design. No `features/` layer is implemented; 
 
 ## Deployment status
 
-On pushes to `main`, Quality stores the verified `dist/` build as a commit-named GitHub Actions artifact. PR builds are not published. Azure deployment and staged promotion are not implemented; the [release guide](docs/git-workflow.md#4-releases-and-deployment) describes the current CI baseline and target process.
+The DEV dashboard runs as an Azure Container App (pipesor-iac `workloads`): the Quality `image` job rebuilds the SPA with the DEV API origins (`PIPESOR_REQUIRE_API_ORIGINS=1` makes a build without them fail), packages it in unprivileged nginx on port 8080 ([Dockerfile](Dockerfile), [deploy/nginx.conf](deploy/nginx.conf)) and, on `main`, publishes it to GHCR by digest for `workloads.images.dashboard`. API origins are baked at build time, so each environment needs its own image.
+
+nginx serves client routes from `index.html` (`no-store`), hashed assets as immutable, and every response with the headers in [deploy/security-headers.conf](deploy/security-headers.conf): a CSP whose `connect-src` is exactly the three API origins (`PIPESOR_CONNECT_SRC` build argument, validated), HSTS, `no-referrer` (the sign-in handoff arrives in a URL), `DENY` framing and `nosniff`. The CSP has no `'unsafe-eval'`, so Zod runs `jitless` ([src/app/zodConfig.ts](src/app/zodConfig.ts), imported first). Staged promotion beyond DEV is described in the [release guide](docs/git-workflow.md#4-releases-and-deployment).
 
 ## Contribution
 
