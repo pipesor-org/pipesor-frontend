@@ -1,7 +1,9 @@
+import enAuth from "./locales/en/auth";
 import enCommon from "./locales/en/common";
 import enHistory from "./locales/en/history";
 import enOperations from "./locales/en/operations";
 import enPipelines from "./locales/en/pipelines";
+import esAuth from "./locales/es/auth";
 import esCommon from "./locales/es/common";
 import esHistory from "./locales/es/history";
 import esOperations from "./locales/es/operations";
@@ -23,11 +25,13 @@ export const resources = {
     operations: enOperations,
     history: enHistory,
     pipelines: enPipelines,
+    auth: enAuth,
   },
   es: {
     common: esCommon,
     operations: esOperations,
     history: esHistory,
     pipelines: esPipelines,
+    auth: esAuth,
   },
 } as const;

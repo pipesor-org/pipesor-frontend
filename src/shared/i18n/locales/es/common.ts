@@ -19,6 +19,8 @@ const common = {
   },
   userMenu: {
     label: "Menú de cuenta",
+    signedInWith: "Cuenta de GitHub",
+    signOut: "Cerrar sesión",
   },
   language: {
     label: "Idioma",
