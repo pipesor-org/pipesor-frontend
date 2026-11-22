@@ -1,0 +1,128 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.heading h2 {
+  margin: 0;
+}
+
+.section p {
+  margin: 0;
+}
+
+.muted,
+.hint {
+  color: var(--color-text-secondary);
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.recorded:empty {
+  display: none;
+}
+
+.recorded {
+  color: var(--color-success);
+  font-weight: var(--font-weight-medium);
+}
+
+.recorded:focus {
+  outline: none;
+}
+
+.error {
+  color: var(--color-critical);
+}
+
+.actions,
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-subtle);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  resize: vertical;
+}
+
+.field textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.field textarea[aria-invalid="true"] {
+  border-color: var(--color-critical);
+}
+
+.history h3 {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.history ol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.entryHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

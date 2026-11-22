@@ -1,10 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, Route, Routes, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 
 import { readPilotCatalog, registrationPilot, selectMonitoredPipelineById, usePilotPipelineRead } from "../entities/monitored-pipeline";
 import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
-import { DiagnosticDemoPage, DiagnosticPanel } from "../pages/diagnostic-demo";
 import { HistoryPage } from "../pages/history";
 import { IncidentWorkspaceRoute } from "../pages/incident-workspace";
 import { NotFoundPage } from "../pages/not-found";
@@ -15,7 +14,6 @@ import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
 import { AppLayout } from "../shared/ui/app-layout";
 import { Badge } from "../shared/ui/badge";
 import { AppSidebar } from "../widgets/app-sidebar";
-import { OperationalPilot } from "../widgets/operational-pilot";
 import { authRoutes, operationsQueuePath, routes } from "../shared/config";
 import { RequireSession } from "./RequireSession";
 
@@ -63,19 +61,6 @@ function PilotAddRoute({ token }: { token: string }) {
   return <AddMonitoredWorkflowPage backTo={pipelineInventoryReturnPath(state)} pilot={{ catalog: registrationCatalog, token }} />;
 }
 
-function OperationsRoute() {
-  const [search] = useSearchParams();
-  const pilot = import.meta.env.DEV && search.get("pilot") === "1";
-  const review = search.get("review");
-  const replay = import.meta.env.DEV && search.get("queue") === "validation" && review !== null;
-
-  return (
-    <OperationsPage pilot={pilot}>
-      {pilot ? <OperationalPilot /> : replay && <DiagnosticPanel key={review} requestedId={review} replay />}
-    </OperationsPage>
-  );
-}
-
 /**
  * Route table for the app.
  *
@@ -115,7 +100,7 @@ export function App() {
           path="/"
           element={<Navigate to={operationsQueuePath("active")} replace />}
         />
-        <Route path={routes.operations} element={<OperationsRoute />} />
+        <Route path={routes.operations} element={<OperationsPage />} />
         <Route
           path={routes.operationsActiveIncidentsLegacy}
           element={<Navigate to={operationsQueuePath("active")} replace />}
@@ -129,7 +114,6 @@ export function App() {
         <Route path={routes.pipelines} element={pilot(<PilotReadRoute token={token} />, <PipelinesPage />)} />
         <Route path={routes.addMonitoredWorkflow} element={pilot(<PilotAddRoute token={token} />, <AddMonitoredWorkflowRoute />)} />
         <Route path={routes.pipelineDetail} element={pilot(<PilotReadRoute token={token} detail />, <PipelineDetailRoute />)} />
-        {import.meta.env.DEV && <Route path="/diagnostic-demo" element={<DiagnosticDemoPage />} />}
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

@@ -5,7 +5,7 @@
    * horizontally inside the card instead of crushing its columns.
    */
   container-type: inline-size;
-  --table-min-width: 988px;
+  --table-min-width: 860px;
 
   display: flex;
   flex-direction: column;
@@ -44,7 +44,7 @@
 
 .row td {
   height: 64px;
-  padding: 0;
+  padding: 10px 12px 10px 0;
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
   vertical-align: middle;
@@ -84,6 +84,7 @@
 }
 
 .incidentRepository {
+  overflow-wrap: anywhere;
   color: var(--color-text-primary);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -103,9 +104,13 @@
 }
 
 .diagnosisTitle {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: var(--font-weight-medium);
+  font-size: 13px;
+  font-weight: var(--font-weight-regular);
   line-height: 20px;
 }
 
@@ -122,17 +127,7 @@
   line-height: 18px;
 }
 
-.assignee {
-  color: var(--color-text-primary);
-  font-size: 13px;
-  line-height: 20px;
-}
 
-.assigneeUnassigned {
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 20px;
-}
 
 .validationChevron {
   flex-shrink: 0;
@@ -179,7 +174,7 @@
 }
 
 .colIncident {
-  width: clamp(192px, calc(21.062619cqw - 25.696395px), 222px);
+  width: clamp(220px, 24cqw, 320px);
 }
 
 .colStage {
@@ -194,9 +189,6 @@
   width: clamp(112px, calc(12.333966cqw - 15.047438px), 130px);
 }
 
-.colAssignee {
-  width: clamp(120px, calc(14.041746cqw - 17.13093px), 148px);
-}
 
 .colValidation {
   width: clamp(128px, calc(12.523719cqw + 0.721063px), 148px);
@@ -207,4 +199,9 @@
   align-items: center;
   justify-content: space-between;
   padding-right: 2px;
+}
+
+.incidentId:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }

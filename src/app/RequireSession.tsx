@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { endSession, getAccessToken, useSession } from "../entities/session";
-import { configureApiAuth } from "../shared/api";
+import { configureApiAuth, resetRequestCaches } from "../shared/api";
 import { signInPath } from "../shared/config";
 
 /**
@@ -21,6 +22,9 @@ configureApiAuth({
 export function RequireSession() {
   const { session } = useSession();
   const location = useLocation();
+  const subject = session?.user.githubUserId ?? null;
+  // Cached reads belong to one signed-in person; drop them when that changes.
+  useEffect(() => resetRequestCaches, [subject]);
   if (!session) return <Navigate to={signInPath(`${location.pathname}${location.search}`)} replace />;
   return <Outlet />;
 }

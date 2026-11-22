@@ -18,7 +18,7 @@ Widths are 1440 px. Heights are rounded to the nearest pixel. Action labels, des
 | Operations — Needs Validation (`1KV-0`) | 900 | Pending count, oldest pending, resolved-date facet, sort menu alternatives, proposed diagnosis, resolved/pending duration, Pending badge, and an empty-state variant. Rows lead to Workspace for review. | Same Operations composition with `NeedsValidationTable`; fixture membership is resolved plus pending. PR #23 embeds the P3 replay panel under an explicit review query. That URL is a local harness entry and does not establish incident discovery. |
 | Incident Workspace — INC-1039 (`91-0`) | 1170 | Back to Operations; Open status and assignee; original run; AIOps inference and probable cause; Observed evidence with three time/stage-tagged snippets, View context and full event timeline; Recommended action with PR and run links and Start remediation. Right rail has Incident details, Ownership, Timing and Timeline. | Workspace absent. Reuse `AppLayout`, `AppSidebar`, incident status/stage UI and formatters. The local diagnostic panel supplies evidence/diagnosis rendering behavior to adapt. |
 | Incident Workspace — Verification — INC-1039 (`16D-0`) | 1395 | Same hierarchy, with Remediation completed, Verification run #1843 / Success, and Resolve incident. The frame explicitly says diagnosis validation remains pending. | Workspace variant absent. Pipeline implements transition and incident-run contracts; the product exposes neither. |
-| Incident Workspace — Resolved / Diagnosis Validation (`1CW-0`) | 1599 | Preserved original inference/evidence, remediation and successful verification, resolved actor, then Diagnosis validation. Default capture shows Confirm diagnosis and Reject diagnosis. The exported tree also contains a rejection form with required Actual cause, optional Additional notes, Cancel and Submit rejection. | Workspace variant absent. [DiagnosticReview](../../src/pages/diagnostic-demo/DiagnosticReview.tsx) implements local P3 decisions and immutable history; the Paper rejection form and P3 are semantically different. |
+| Incident Workspace — Resolved / Diagnosis Validation (`1CW-0`) | 1599 | Preserved original inference/evidence, remediation and successful verification, resolved actor, then Diagnosis validation. Default capture shows Confirm diagnosis and Reject diagnosis. The exported tree also contains a rejection form with required Actual cause, optional Additional notes, Cancel and Submit rejection. | Workspace variant absent. `DiagnosticReview` (since removed) implements local P3 decisions and immutable history; the Paper rejection form and P3 are semantically different. |
 | History v1 — Resolved incidents (`FF-0`) | 900 | Search and five facets, newest resolved cue, outcome and duration columns, row instruction to open Workspace in historical view. | [HistoryPage](../../src/pages/history/ui/HistoryPage.tsx), `HistoryTabs`, `IncidentFilters`, `HistoryIncidentsTable`. Current fixture projection is terminal-review-only; D03 target includes every resolved incident. No row navigation. |
 | History — Insights v1 (`OC-0`) | 1316 | Date/repository/pipeline/stage/severity controls, mean diagnosis time, MTTR, diagnosis confirmation rate and resolved count; trend, stage and outcome views; recurring pipeline/stage groups link conceptually to filtered Incidents. | `HistoryInsightsFilters` and `HistoryInsights` render a fixed-window fixture analysis. Filters and recurring-group drill-down are unconnected. D05 defines the contributor-preserving target. |
 | Pipelines — Monitored workflows (`V4-0`) | 900 | Add monitored workflow, search, Criticality / Responsible team / Monitoring filters, inventory rows with repository and environment; choose a workflow to configure it. | [PipelinesPage](../../src/pages/pipelines/ui/PipelinesPage.tsx) provides working fixture search, filters and links to detail and onboarding. |
@@ -31,11 +31,20 @@ The file reports Sora and JetBrains Mono and an empty token collection. Represen
 
 ## Workspace implementation mapping
 
-[IncidentWorkspaceRoute](../../src/pages/incident-workspace/ui/IncidentWorkspaceRoute.tsx) implements the shared Paper destination at `/incidents/:incidentId`. The three tables use accessible incident-ID links. An allowlisted `from` value selects Active Incidents, Needs Validation or History on return and survives reload. Direct entries and invalid origins return to Active. The current lists have no functional incident query state to transfer.
+[IncidentWorkspaceRoute](../../src/pages/incident-workspace/ui/IncidentWorkspaceRoute.tsx) implements the shared Paper destination at `/incidents/:incidentId` with the incident UUID. It reads Pipeline (incident, runs, executions, pipeline) and Recommendation (diagnosis) and keeps the origin-aware Back link (D02).
 
-[FixtureIncident](../../src/pages/incident-workspace/ui/FixtureIncident.tsx) maps the Paper inference, evidence and recommended-action sections into the main column and operational details, timing and activity into the rail. It shows the fixture's own state and review badge. INC-1039 adds explicitly labeled synthetic excerpts and a recommendation from Paper. Other rows show unavailable evidence and recommendation states. The rail only uses supported data, including recorded fixture resolution, and the Workspace omits unverified GitHub links, verification runs and activity actors.
-
-[ReplayDiagnosis](../../src/pages/incident-workspace/ui/ReplayDiagnosis.tsx) reads the existing P3 GET in an explicit development-only mode. It checks both diagnostic and incident UUIDs and reuses the [P3 schema and history renderer](../../src/entities/diagnosis/index.ts). The harness supplies the UUIDs; the response provides a durable diagnosis, observed evidence, scoped citations, recommendation and review history. It provides no authorized Pipeline operational read. No replay data are merged into fixture records. The Workspace has no review writes.
+| Paper element | Implementation | Deviation and reason |
+| --- | --- | --- |
+| `INC-1039 · acme/web-storefront` title | `repo · Run #<runId>`; `INC-<displayNumber>` (or abbreviated UUID) in the subtitle and rail | Agreed: run identity is the stable reference; display number is presentation only |
+| Assigned to / Ownership Change / Assignee column | Responsible team snapshot only | No assignment contract |
+| `88% confidence` | Omitted | The model returns no confidence |
+| Observed evidence with timestamps | `Stage · job file · lines a–b` from the v2 locator; full sanitized excerpt behind View context; "Cited by the diagnosis" tag | Locator, not log timestamps, is the provenance |
+| — | Retrieved knowledge (RAG) section | Added so inferred, observed and retrieved content stay distinct |
+| Related change, View pull request, View full event timeline | Omitted | No PR or event-timeline data |
+| View run in GitHub / Run / Commit links | Built from repository, run id and attempt / commit SHA | Agreed construction |
+| Timing and Timeline | Detected, diagnosis ready, remediation/verification started, resolved — only recorded timestamps | No synthetic events |
+| Start remediation, Verification, Resolve | Not yet in this view | Lifecycle PR |
+| Diagnosis validation (Confirm / Reject form) | Confirm opens a short panel with optional notes; Reject requires actual cause | Confirm asks for one more click to allow a note and avoid accidental confirmation |
 
 ## Interaction and navigation
 
@@ -87,26 +96,7 @@ The incident fixture schema requires `INC-<digits>` and has a display diagnosis 
 
 ## Workspace verification and remaining pilot boundary
 
-Chromium opened Active Incidents, Needs Validation and History rows by keyboard at 1440 px in English and 390 px in Spanish. The verifier checked heading focus, reload, return to the originating view, unknown ID, rejection of an arbitrary return URL and horizontal fit. Optional screenshots are saved by the verifier when `PIPESOR_WORKSPACE_SCREENSHOTS` is set to an output directory.
-
-The E02 PostgreSQL/pgvector owner-chain run passed. The existing P3 verifier recorded all three review decisions through its established test path. After each write it opened the Workspace with the persisted incident and diagnosis UUIDs, reloaded and reauthenticated, and read the decision history there. This exercised the real local 401/404 responses, then an injected browser HTTP 503 and a mismatched incident UUID. The Workspace exposed only read operations. No live GitHub delivery, managed inference or product authorization changes were used.
-
-From the frontend directory, with Playwright and Chromium installed:
-
-```sh
-node tools/verify_incident_workspace.cjs
-```
-
-For E02, follow the Python/Docker and browser setup in the [owner-chain runbook](https://github.com/pipesor-org/pipesor-evidence-correlation-engine/blob/main/docs/local-diagnostic-demo.md). From the workspace root:
-
-```sh
-PIPESOR_DEMO_SCENARIO=E02 PIPESOR_DEMO_RAG_MODE=pgvector-fixture \
-PIPESOR_DEMO_LLM_MODE=fixture PIPESOR_DEMO_REVIEW=1 \
-PIPESOR_DEMO_BROWSER_CHECK="$PWD/pipesor-frontend/tools/verify_local_review.cjs" \
-bash services/pipesor-evidence-correlation-engine/tools/verify_local_owner_chain.sh
-```
-
-The remaining product read path needs the current delegated browser identity for Pipeline's incident/runs APIs, an authorized incident-to-diagnosis/version lookup, and authorization for evidence and review under PD-034. Log/Event's membership check is machine-scoped. P3's scoped local GET is a lookup by diagnosis ID. Neither is an authorized product incident-detail aggregation. Keep Paper's rejection-with-actual-cause and P3's correction-with-actual-cause semantics intact until product decides their mapping.
+The fixture Workspace, the local P3 replay and their Chromium verifiers (`verify_incident_workspace.cjs`, `verify_local_diagnostic.cjs`, `verify_local_review.cjs`) were removed when Operations and the Workspace were integrated with Pipeline and Recommendation. Verification is now a browser walkthrough against the local stack with a real GitHub session, recorded in each Pull Request. The registration pilot (`verify_workflow_registration.cjs`, `PIPESOR_DEMO_*` proxy) remains until Pipelines is integrated.
 
 ## Staged proposal and decision gates
 

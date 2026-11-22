@@ -1,47 +1,42 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import {
-  INCIDENT_SNAPSHOT_AT,
-  IncidentSeverity,
-  IncidentValidationStatus,
-  STAGE_LABEL_KEY,
-  selectNeedsValidationIncidents,
-} from "../../../entities/incident";
+import { DiagnosisStatusLabel, type DiagnosisStatus } from "../../../entities/diagnosis";
+import { IncidentSeverity, STAGE_LABEL_KEY, type IncidentSeverityLevel, type IncidentStage } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
-import { durationMs } from "../../../shared/lib";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 
 import styles from "./NeedsValidationTable.module.css";
 
+export interface PendingValidationRow {
+  id: string;
+  label: string;
+  severity: IncidentSeverityLevel | null;
+  stage: IncidentStage;
+  resolvedAt: string;
+  /** `null` when the pipeline read failed. */
+  pipeline: { repository: string; workflow: string | null } | null;
+  probableCause: string;
+  status: DiagnosisStatus;
+}
+
 const HEADER_CELLS = [
   { key: "severity", labelKey: "table.severity", column: "colSeverity" },
-  {
-    key: "incident",
-    labelKey: "table.incidentWorkflow",
-    column: "colIncident",
-  },
+  { key: "incident", labelKey: "table.incidentWorkflow", column: "colIncident" },
   { key: "stage", labelKey: "table.stage", column: "colStage" },
-  {
-    key: "diagnosis",
-    labelKey: "table.proposedDiagnosis",
-    column: "colDiagnosis",
-  },
+  { key: "diagnosis", labelKey: "table.proposedDiagnosis", column: "colDiagnosis" },
   { key: "resolved", labelKey: "table.resolved", column: "colResolved" },
-  { key: "assignee", labelKey: "table.assignee", column: "colAssignee" },
   { key: "validation", labelKey: "table.validation", column: "colValidation" },
 ] as const;
 
 /**
- * Needs Validation queue table: resolved incidents whose proposed diagnosis is
- * still awaiting human validation. Pending time is derived from each incident's
- * structured resolution timestamp, never from a stored display string.
+ * Needs Validation queue table: resolved incidents whose diagnosis is still
+ * awaiting human review. Pending time is live from `resolvedAt`.
  */
-export function NeedsValidationTable() {
+export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow[]; now: number }) {
   const { t } = useTranslation("operations");
   const { formatDuration, formatTimestamp } = useFormatters();
-  const incidents = selectNeedsValidationIncidents();
 
   return (
     <div className={styles.card}>
@@ -62,88 +57,59 @@ export function NeedsValidationTable() {
         </thead>
 
         <tbody>
-          {incidents.length === 0 ? (
+          {rows.length === 0 ? (
             <tr>
               <td colSpan={HEADER_CELLS.length} className={styles.emptyCell}>
                 <div className={styles.empty}>
-                  <span className={styles.emptyTitle}>
-                    {t("validation.empty.title")}
-                  </span>
-                  <span className={styles.emptyText}>
-                    {t("validation.empty.text")}
-                  </span>
+                  <span className={styles.emptyTitle}>{t("validation.empty.title")}</span>
+                  <span className={styles.emptyText}>{t("validation.empty.text")}</span>
                 </div>
               </td>
             </tr>
           ) : (
-            incidents.map((incident) => (
-              <tr key={incident.id} className={styles.row}>
+            rows.map((row) => (
+              <tr key={row.id} className={styles.row}>
                 <td>
                   <div className={styles.cell}>
-                    <IncidentSeverity severity={incident.severity} />
+                    <IncidentSeverity severity={row.severity} />
                   </div>
                 </td>
-
                 <td>
                   <div className={styles.cell}>
-                    <Link className={styles.incidentId} to={incidentWorkspacePath(incident.id, "validation")}>
-                      {incident.id}
+                    <Link className={styles.incidentId} to={incidentWorkspacePath(row.id, "validation")}>
+                      {row.label}
                     </Link>
-                    <span className={styles.incidentRepository}>
-                      {incident.repository}
-                    </span>
-                    <span className={styles.incidentWorkflow}>
-                      {incident.workflow}
-                    </span>
-                  </div>
-                </td>
-
-                <td>
-                  <div className={styles.cell}>
-                    <span className={styles.stage}>
-                      {t(STAGE_LABEL_KEY[incident.stage])}
-                    </span>
-                  </div>
-                </td>
-
-                <td>
-                  <div className={styles.cell}>
-                    <span className={styles.diagnosisTitle}>
-                      {incident.diagnosis}
-                    </span>
-                  </div>
-                </td>
-
-                <td>
-                  <div className={styles.cell}>
-                    <span className={styles.resolvedAt}>
-                      {formatTimestamp(incident.resolvedAt)}
-                    </span>
-                    <span className={styles.pendingFor}>
-                      {t("validation.pendingFor", {
-                        duration: formatDuration(
-                          durationMs(incident.resolvedAt, INCIDENT_SNAPSHOT_AT),
-                        ),
-                      })}
-                    </span>
-                  </div>
-                </td>
-
-                <td>
-                  <div className={styles.cell}>
-                    {incident.assignee ? (
-                      <span className={styles.assignee}>{incident.assignee}</span>
+                    {row.pipeline ? (
+                      <>
+                        <span className={styles.incidentRepository}>{row.pipeline.repository}</span>
+                        {row.pipeline.workflow && <span className={styles.incidentWorkflow}>{row.pipeline.workflow}</span>}
+                      </>
                     ) : (
-                      <span className={styles.assigneeUnassigned}>
-                        {t("table.unassigned")}
-                      </span>
+                      <span className={styles.incidentWorkflow}>{t("table.pipelineUnavailable")}</span>
                     )}
                   </div>
                 </td>
-
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.stage}>{t(STAGE_LABEL_KEY[row.stage])}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.diagnosisTitle}>{row.probableCause}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    <time className={styles.resolvedAt} dateTime={row.resolvedAt}>{formatTimestamp(row.resolvedAt)}</time>
+                    <span className={styles.pendingFor}>
+                      {t("validation.pendingFor", { duration: formatDuration(Math.max(0, now - Date.parse(row.resolvedAt))) })}
+                    </span>
+                  </div>
+                </td>
                 <td>
                   <div className={`${styles.cell} ${styles.validationCell}`}>
-                    <IncidentValidationStatus status={incident.validationStatus} />
+                    <DiagnosisStatusLabel status={row.status} />
                     <ChevronRightIcon className={styles.validationChevron} />
                   </div>
                 </td>
