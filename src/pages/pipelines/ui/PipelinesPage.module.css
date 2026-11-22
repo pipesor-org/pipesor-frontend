@@ -45,10 +45,10 @@
 .table .repository { font-family: var(--font-mono); font-size: 12px; }
 .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 18px; }
 .status::before { content: ""; flex: 0 0 5px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-.Critical { color: var(--color-critical); }
-.High { color: var(--color-warning); }
-.Medium, .Low, .Paused { color: var(--color-text-secondary); }
-.Active { color: var(--color-success); }
+.CRITICAL { color: var(--color-critical); }
+.HIGH { color: var(--color-warning); }
+.MEDIUM, .LOW, .PAUSED { color: var(--color-text-secondary); }
+.ACTIVE { color: var(--color-success); }
 .monitoringCell { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .monitoringCell svg { flex-shrink: 0; color: var(--color-text-secondary); }
 .table .empty { padding: 32px 16px; text-align: center; color: var(--color-text-secondary); }
@@ -63,3 +63,7 @@
   .actions { align-items: flex-start; max-width: 100%; gap: 12px; }
   .filter { flex-basis: 100%; }
 }
+
+.state { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 16px 0; color: var(--color-text-secondary); font-size: 13px; }
+.state p { margin: 0; }
+.header h1:focus { outline: none; }
