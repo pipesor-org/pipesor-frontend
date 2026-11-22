@@ -4,6 +4,7 @@ The React frontend for Pipesor, an AIOps thesis project for monitoring CI/CD wor
 
 ## Current state
 
+- Signing in is connecting GitHub: `/login` starts Ingestion's GitHub flow and `/auth/complete` exchanges the one-time handoff for a short-lived session (memory + tab `sessionStorage`, no refresh). Every product route requires a session; the profile menu shows the GitHub login and signs out.
 - Operations provides Active Incidents and Needs Validation read views; History provides Incidents and Insights. Pipelines includes local inventory queries, read-only Detail, and an unsaved onboarding draft.
 - The interface supports English/Spanish, light/dark themes, responsive navigation, and a Not Found screen.
 - The standard routes use Zod-validated demonstration fixtures. The development-only [local product replay](docs/local-product-mvp.md) exercises scoped PostgreSQL-backed diagnosis and review in Needs Validation. The Workspace also reads that persisted diagnosis and review through the local P3 endpoint.
@@ -26,7 +27,7 @@ bun run setup:hooks
 bun run dev
 ```
 
-Open the local URL printed by Vite. Hook setup is required once per clone; Lefthook and Commitlint run with Bun without requiring Node.js. Keep personal overrides in ignored `lefthook-local.yml`.
+Open `http://127.0.0.1:5173` — the services only accept that dashboard origin (CORS and the GitHub callback). In development the API origins default to the local stack (Ingestion 8081, Pipeline 8082, Recommendation 8086, see the [runtime manifest](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/development/runtime-manifest.md)); builds read them from `VITE_PIPESOR_*_URL` (see [.env.example](.env.example)) and warn when they are missing. Start Vite with `bun run dev -- --host 127.0.0.1 --port 5173 --strictPort` when your default host differs. Hook setup is required once per clone; Lefthook and Commitlint run with Bun without requiring Node.js. Keep personal overrides in ignored `lefthook-local.yml`.
 
 Paper access and agent tools are optional. Approved screenshots, specifications, and existing components provide design handoffs; request missing details rather than inventing them. Sora and JetBrains Mono load from Google Fonts through `index.html`, so those fonts may be unavailable offline.
 
@@ -53,8 +54,8 @@ The [Quality workflow](.github/workflows/quality.yml) checks PR commits, the PR 
 | --- | --- |
 | `src/app/` | Application setup, routes, global styles, and design tokens |
 | `src/pages/`, `src/widgets/` | Screens and composed UI sections |
-| `src/entities/` | Incident and monitored-pipeline contracts, fixtures, selectors, and domain UI |
-| `src/shared/` | Shared UI, navigation configuration, EN/ES resources, assets, and utilities |
+| `src/entities/` | Session, incident and monitored-pipeline contracts, fixtures, selectors, and domain UI |
+| `src/shared/` | Shared UI, the HTTP client (`shared/api`), navigation and API-origin configuration, EN/ES resources, assets, and utilities |
 | `public/` | Browser-served assets |
 
 The project follows Feature-Sliced Design. No `features/` layer is implemented; introduce one only for an approved business capability under the existing conventions.

@@ -19,6 +19,8 @@
   /* Accent */
   --color-accent: #3157d5;
   --color-accent-hover: #2747b6;
+  /* Text and icons placed on a filled accent surface (primary buttons). */
+  --color-on-accent: #ffffff;
 
   /* Severity */
   --color-info: #2684ff;
@@ -63,6 +65,9 @@
 
   /* Accent */
   --color-accent: #6c8cff;
+  --color-accent-hover: #8aa3ff;
+  /* Dark text keeps AA contrast on the lighter dark-theme accent. */
+  --color-on-accent: #0e1116;
 
   /* Severity */
   --color-success: #32b67a;

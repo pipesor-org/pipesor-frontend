@@ -7,20 +7,11 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
+import { signOut, useSession } from "../../../entities/session";
 import { LanguageSelector } from "../../../shared/i18n";
 import { ThemeToggle } from "../../../shared/ui/theme-toggle";
 
 import styles from "./UserMenu.module.css";
-
-/**
- * Signed-in demo user. Static content for the prototype — this is not an
- * account feature and exposes no real identity.
- */
-const USER = {
-  initials: "MP",
-  name: "Maya Patel",
-  role: "DevOps / SRE",
-} as const;
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -33,8 +24,9 @@ interface UserMenuProps {
 /**
  * User profile control at the bottom of the sidebar.
  *
- * Opens a popover that hosts the language selector — the only interactive
- * content — so no account, settings or sign-out actions are invented. Keyboard
+ * Shows the signed-in GitHub login (the only identity the session provides —
+ * no display name or role is invented) and opens a popover with theme and
+ * language preferences and Sign out. Keyboard
  * behaviour: focus moves into the popover on open and cycles inside it, Escape
  * dismisses and returns focus to the trigger, and a pointer-down outside closes
  * it.
@@ -53,6 +45,10 @@ export function UserMenu({ collapsed }: UserMenuProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const popoverId = useId();
+  const { session } = useSession();
+  const [signingOut, setSigningOut] = useState(false);
+  const login = session?.user.login ?? "";
+  const initials = login.slice(0, 2).toUpperCase();
 
   useEffect(() => {
     if (!open) return;
@@ -112,10 +108,10 @@ export function UserMenu({ collapsed }: UserMenuProps) {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? popoverId : undefined}
-        title={collapsed ? USER.name : undefined}
+        title={collapsed ? login : undefined}
         onClick={() => setOpen((previous) => !previous)}
       >
-        <span className={styles.avatar}>{USER.initials}</span>
+        <span className={styles.avatar} aria-hidden="true">{initials}</span>
         {/*
          * The identity block stays in layout (never `display:none`/visually
          * hidden) and simply shrinks to zero width when the rail is collapsed.
@@ -124,8 +120,8 @@ export function UserMenu({ collapsed }: UserMenuProps) {
          * states, so expanding/collapsing never makes the profile jump.
          */}
         <span className={styles.meta}>
-          <span className={styles.name}>{USER.name}</span>
-          <span className={styles.role}>{USER.role}</span>
+          <span className={styles.name}>{login}</span>
+          <span className={styles.role}>{t("userMenu.signedInWith")}</span>
         </span>
       </button>
 
@@ -139,14 +135,25 @@ export function UserMenu({ collapsed }: UserMenuProps) {
           onKeyDown={handlePopoverKeyDown}
         >
           <div className={styles.identity}>
-            <span className={styles.identityName}>{USER.name}</span>
-            <span className={styles.identityRole}>{USER.role}</span>
+            <span className={styles.identityName}>{login}</span>
+            <span className={styles.identityRole}>{t("userMenu.signedInWith")}</span>
           </div>
           <div className={styles.themeToggleWrapper}>
             <span className={styles.themeLabel}>{t("theme.label")}</span>
             <ThemeToggle />
           </div>
           <LanguageSelector />
+          <button
+            type="button"
+            className={styles.signOut}
+            disabled={signingOut}
+            onClick={() => {
+              setSigningOut(true);
+              void signOut();
+            }}
+          >
+            {t("userMenu.signOut")}
+          </button>
         </div>
       ) : null}
     </div>

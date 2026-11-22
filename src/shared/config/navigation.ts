@@ -145,3 +145,37 @@ export const appDestinations: AppDestination[] = [
     implemented: true,
   },
 ];
+
+/** Unauthenticated entry routes. They never act as a post-sign-in destination. */
+export const authRoutes = {
+  signIn: "/login",
+  complete: "/auth/complete",
+} as const;
+
+/** Query parameter carrying the in-app path to restore after sign-in. */
+export const RETURN_TO_PARAM = "return_to";
+
+/**
+ * Narrows an untrusted value to a same-origin in-app path.
+ *
+ * Accepts only absolute paths (`/…`), never protocol-relative or backslash
+ * forms that a browser could resolve to another origin, and never the sign-in
+ * routes themselves. Returns `null` when the value is not safe.
+ */
+export function safeReturnPath(value: string | null | undefined): string | null {
+  if (!value || value.length > 2048) return null;
+  if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return null;
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (code < 0x20 || code === 0x7f) return null;
+  }
+  const path = value.split(/[?#]/, 1)[0];
+  if (path === authRoutes.signIn || path.startsWith("/auth/")) return null;
+  return value;
+}
+
+/** Sign-in URL that returns to `path` afterwards (when safe). */
+export function signInPath(path?: string | null): string {
+  const safe = safeReturnPath(path);
+  return safe ? `${authRoutes.signIn}?${RETURN_TO_PARAM}=${encodeURIComponent(safe)}` : authRoutes.signIn;
+}

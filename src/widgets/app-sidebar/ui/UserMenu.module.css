@@ -154,3 +154,33 @@
     transition: none;
   }
 }
+
+.signOut {
+  width: 100%;
+  margin-top: 10px;
+  padding: 7px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.signOut:hover:not(:disabled) {
+  background-color: var(--color-surface-subtle);
+}
+
+.signOut:disabled {
+  cursor: progress;
+  color: var(--color-text-secondary);
+}
+
+.signOut:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}

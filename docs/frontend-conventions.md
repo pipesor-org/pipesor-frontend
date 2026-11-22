@@ -87,7 +87,7 @@ ARIA choices should describe the component's actual semantics: use `aria-expande
 
 ## 7. Localization
 
-The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs live under `src/shared/i18n/locales/`. Existing namespaces are `common`, `operations`, `history` and `pipelines`, registered in `config.ts` and bundled for both locales in `resources.ts`. The module initializes bundled resources synchronously (no translation HTTP backend), and the repository's i18next declaration derives typed translation keys from the English resources.
+The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs live under `src/shared/i18n/locales/`. Existing namespaces are `common`, `operations`, `history`, `pipelines` and `auth`, registered in `config.ts` and bundled for both locales in `resources.ts`. The module initializes bundled resources synchronously (no translation HTTP backend), and the repository's i18next declaration derives typed translation keys from the English resources.
 
 - Use `useTranslation("<namespace>")` and semantic translation keys for UI strings, including labels, placeholders, tooltips, accessibility text and empty states. Use the public i18n helpers rather than introducing another translation singleton.
 - Add or update keys in **both** `en` and `es`; English resources define the typed key surface. Keep catalog structure and keys aligned. Check `resources.ts`, `i18next.d.ts`, and `config.ts` before altering initialization, namespaces or locale resolution.
@@ -109,7 +109,7 @@ Test both languages after UI changes. Spanish copy can increase control width; d
 - Zod validates data structure and selected invariants; it does not automatically define backend authorization, cross-record consistency or transition permissions.
 - Preserve observed evidence, AIOps inference, operational lifecycle and human review as separate dimensions. Do not fabricate missing Workspace references, timestamps, actors or actual causes. A successful run does not automatically resolve an incident or confirm its diagnosis; rejection must not overwrite the original hypothesis/evidence/confidence.
 
-The app currently has no backend integration. Do not implement API clients, domain mutations or permission checks by guessing the future microservice, REST or CQRS contracts.
+Services are called directly from the browser through the single client in `shared/api` (`apiRequest`): it adds `Authorization: Bearer` and a fresh `X-Correlation-ID`, maps `application/problem+json` to `ApiError` (status, stable `code`, `correlationId`) and validates every successful body with a Zod schema at that boundary. Origins come from `shared/config` (`VITE_PIPESOR_*_URL`). The app layer injects the session token and the 401 handler, so `shared/api` never imports the session entity. Follow the [MVP HTTP API](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/architecture/contracts/mvp-http-api-v1.md) and each service's `/v3/api-docs`; do not guess shapes, and ask the backend owner for missing fields instead of working around them. Never log tokens, handoff values or response bodies.
 
 ## 9. Review and acceptance
 

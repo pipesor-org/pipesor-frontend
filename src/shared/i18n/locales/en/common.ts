@@ -25,6 +25,8 @@ const common = {
   userMenu: {
     /** Accessible name of the profile popover dialog. */
     label: "Account menu",
+    signedInWith: "GitHub account",
+    signOut: "Sign out",
   },
   language: {
     label: "Language",
