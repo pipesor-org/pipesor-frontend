@@ -74,6 +74,8 @@ jobs:
       VITE_PIPESOR_INGESTION_URL: https://ingestion.bravepond-f9f279f5.westus3.azurecontainerapps.io
       VITE_PIPESOR_PIPELINE_URL: https://pipeline.bravepond-f9f279f5.westus3.azurecontainerapps.io
       VITE_PIPESOR_RECOMMENDATION_URL: https://recommendation.bravepond-f9f279f5.westus3.azurecontainerapps.io
+      # GitHub's own page to install the Pipesor App or change which organizations and repositories it can read.
+      VITE_PIPESOR_GITHUB_APP_INSTALL_URL: https://github.com/apps/pipesor-dev/installations/new
       # Fail the bundle build instead of producing an image that cannot start.
       PIPESOR_REQUIRE_API_ORIGINS: "1"
     steps:
