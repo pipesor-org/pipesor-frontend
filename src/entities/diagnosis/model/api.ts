@@ -43,6 +43,8 @@ export interface ReviewSubmission {
   comment?: string;
   /** Required for `CORRECTED`; must be absent otherwise. */
   actualCause?: string;
+  /** Same UUID for retries of one decision, so a lost response never duplicates it. */
+  idempotencyKey: string;
 }
 
 /**
@@ -62,5 +64,6 @@ export function submitReview(diagnosisId: string, submission: ReviewSubmission):
     path: `/api/v1/diagnoses/${encodeURIComponent(diagnosisId)}/reviews`,
     body,
     schema: reviewViewSchema,
+    idempotencyKey: submission.idempotencyKey,
   });
 }

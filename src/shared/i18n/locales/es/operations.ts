@@ -122,6 +122,7 @@ const operations = {
     notFound: "Incidente no encontrado",
     notFoundText: "Este incidente no existe o no tienes acceso a su pipeline.",
     loadError: "No se pudo cargar el incidente.",
+    unreachable: "No se pudo contactar con el servicio. Inténtalo de nuevo en un momento.",
     retry: "Reintentar",
     runTitle: "Run #{{runId}}",
     attempt: "intento {{attempt}}",
@@ -211,7 +212,7 @@ const operations = {
     },
     verification: {
       pickTitle: "Elige la ejecución de verificación",
-      pickText: "Ejecuciones exitosas de este workflow iniciadas después de comenzar la remediación. La que elijas se registra como verificación.",
+      pickText: "Ejecuciones exitosas de este workflow creadas después de comenzar la remediación, y reintentos de ejecuciones. La que elijas se registra como verificación; debe haberse iniciado después de comenzar la remediación.",
       loadingRuns: "Cargando ejecuciones exitosas…",
       runsError: "No se pudieron cargar las ejecuciones exitosas desde GitHub.",
       noRuns: "Todavía no hay ninguna ejecución exitosa posterior al inicio de la remediación. Vuelve a ejecutar el workflow en GitHub y actualiza.",

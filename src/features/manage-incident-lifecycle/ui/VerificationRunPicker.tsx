@@ -42,8 +42,11 @@ export function VerificationRunPicker({ incidentId, workflow, remediationStarted
   const [phase, setPhase] = useState<AnalysisPhase | "linking" | null>(null);
   const [error, setError] = useState<LifecycleErrorKey | "blocked" | null>(null);
 
+  // `createdAt` is the run's creation time and does not move when a run is
+  // re-run, so later attempts stay candidates; Pipeline checks the attempt's
+  // real start and answers 409 when it precedes the remediation.
   const eligible = runs.state.status === "success"
-    ? runs.state.data.items.filter((run) => Date.parse(run.createdAt) > Date.parse(remediationStartedAt))
+    ? runs.state.data.items.filter((run) => run.attempt > 1 || Date.parse(run.createdAt) > Date.parse(remediationStartedAt))
     : [];
   const choice = eligible.find((run) => `${run.runId}:${run.attempt}` === selected) ?? null;
   const busy = phase !== null;

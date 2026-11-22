@@ -111,7 +111,16 @@ export function IncidentWorkspaceRoute() {
       {notFound && <p>{t("workspace.notFoundText")}</p>}
       {workspace.state.status === "error" && !notFound && (
         <div className={styles.inline}>
-          <p role="alert">{t("workspace.loadError")}</p>
+          <p role="alert">
+            {isApiError(workspace.state.error) && workspace.state.error.kind === "network"
+              ? t("workspace.unreachable")
+              : isApiError(workspace.state.error) && workspace.state.error.correlationId
+                ? t("queue.errorCode", {
+                    code: workspace.state.error.code ?? String(workspace.state.error.status),
+                    reference: workspace.state.error.correlationId,
+                  })
+                : t("queue.error")}
+          </p>
           <Button onClick={workspace.reload}>{t("workspace.retry")}</Button>
         </div>
       )}

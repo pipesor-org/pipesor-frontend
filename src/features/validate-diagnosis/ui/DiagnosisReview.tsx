@@ -71,6 +71,8 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
   const [error, setError] = useState<ErrorKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [recorded, setRecorded] = useState(false);
+  /** One key per opened decision form; retries after a failure reuse it. */
+  const idempotencyKey = useRef(crypto.randomUUID());
   const firstField = useRef<HTMLTextAreaElement>(null);
   /** Which action button gets focus back once the form closes. */
   const [returnFocus, setReturnFocus] = useState<Exclude<Mode, "idle"> | null>(null);
@@ -90,6 +92,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
   }, [mode, returnFocus]);
 
   function open(next: Exclude<Mode, "idle">) {
+    idempotencyKey.current = crypto.randomUUID();
     setMode(next);
     setError(null);
     setRecorded(false);
@@ -119,6 +122,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
         decision: mode === "reject" ? "CORRECTED" : "CONFIRMED",
         comment: comment || undefined,
         actualCause: mode === "reject" ? actualCause : undefined,
+        idempotencyKey: idempotencyKey.current,
       });
       setData(next);
       setMode("idle");
