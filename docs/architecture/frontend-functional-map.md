@@ -1,6 +1,6 @@
 # Pipesor frontend functional architecture map
 
-This is the maintained functional architecture reference for Pipesor. It distinguishes the implemented frontend, agreed target decisions and unresolved contracts. Operations, the Incident Workspace, diagnosis review, the lifecycle and History (Incidents and Insights) are integrated with the services (see *Service integration status* below); Pipelines still reads demo fixtures. Pipelines inventory, read-only Detail and local onboarding draft are implemented; workflow registration and configuration saves are deferred until local API integration. A shared mutable demonstration collection is no longer an approved target.
+This is the maintained functional architecture reference for Pipesor. It distinguishes the implemented frontend, agreed target decisions and unresolved contracts. Every screen is integrated with the services (see *Service integration status* below); no demonstration fixtures remain. Pipelines inventory, read-only Detail and local onboarding draft are implemented; workflow registration and configuration saves are deferred until local API integration. A shared mutable demonstration collection is no longer an approved target.
 
 ## Service integration status
 
@@ -16,7 +16,10 @@ Integration follows the MVP HTTP API v1 and the owner decisions recorded for the
 | Diagnosis review | Integrated (`features/validate-diagnosis`) | Recommendation `GET/POST /diagnoses/{id}/reviews` with `expectedRevision`; Confirm → `CONFIRMED`, Reject → `CORRECTED` with actual cause; notes optional |
 | History — Incidents | Integrated | Pipeline `state=RESOLVED` (all resolved, D03) with diagnosis status; diagnosis time = `diagnosis.createdAt − detectedAt`, resolution time = `resolvedAt − detectedAt`; links open the Workspace with `from=history` |
 | History — Insights | Integrated (client-side) | Same loaded population, last 30 days by `resolvedAt`: mean TMD, MTTR, confirmation rate (`CORRECTED` + `REJECTED` = Rejected, `PENDING` excluded), weekly TMD trend, stage distribution, recurring pipeline + stage groups; the scope line states N of M loaded. D05 drill-down not implemented |
-| Pipelines | Fixtures (pilot for registration) | Pending its PR |
+| Pipelines inventory | Integrated | Pipeline `GET /pipelines` (offset/limit, all pages); search and criticality/team/monitoring filters run in the browser over the complete list and stay in the URL |
+| Add monitored workflow | Integrated (`features/onboard-monitored-workflow`) | Ingestion discovery (`/github/repositories`, `/workflows`) with the user's access; `POST /pipelines` (409 duplicate); pipeline owners omitted (no contract) |
+| Pipeline Detail | Integrated | Pipeline item, grants (per person `tid:oid`) and latest activity; read-only policy (configuration saves stay a non-approved candidate); `features/grant-pipeline-access` grants the caller OPERATE using the subject from Ingestion's discovery context; `features/request-run-analysis` lists failed runs and requests their analysis, following the receipt to the incident |
+| GitHub connection | Integrated (`widgets/github-connection`) | `GET /github/connection`; Reconnect repeats the GitHub sign-in to the same view |
 
 Removed with this integration: search, facets, Mine/Unassigned and the assignee column in Operations and History, the static Insights filters, the incident fixtures and selectors, (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
 

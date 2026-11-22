@@ -1,32 +1,28 @@
-export { monitoredPipelines } from "./model/monitoredPipelines";
-export { selectMonitoredPipelineById } from "./model/selectors";
-export { syntheticWorkflowCatalog } from "./model/syntheticWorkflowCatalog";
+/**
+ * Public API of the `monitored-pipeline` entity: registered GitHub Actions
+ * workflows read from Pipeline, their grants and configuration activity.
+ */
 export {
-  githubWorkflowReferenceSchema,
-  monitoredPipelineSchema,
-  monitoredPipelinesSchema,
-  operationalPolicySchema,
-  pipelineOwnershipSchema,
-  syntheticWorkflowCatalogSchema,
-} from "./model/schema";
-export type {
-  GitHubWorkflowReference,
-  MonitoredPipeline,
-  OperationalEnvironment,
-  OperationalPolicy,
-  PipelineCriticality,
-  PipelineId,
-  PipelineMonitoringStatus,
-  PipelineOwnership,
-} from "./model/schema";
-export {
-  DEMO_OPERATIONAL_ENVIRONMENTS,
+  PIPELINE_CAPABILITIES,
   PIPELINE_CRITICALITIES,
   PIPELINE_MONITORING_STATUSES,
-} from "./model/types";
-export {
-  pilotEnvironments, pilotTeams, pilotError, readPilotCatalog, registrationPilot, registerPilotPipeline, savePilotPolicy, usePilotPipelineRead,
-} from "./model/registrationPilot";
-export type { PersistedPipeline } from "./model/registrationPilot";
-export { getPipeline, invalidatePipeline, pipelineWorkflowLabel } from "./model/api";
-export type { PipelineCapability, PipelineRecord } from "./model/api";
+  fetchLatestActivity,
+  fetchPipeline,
+  fetchPipelineGrants,
+  getPipeline,
+  invalidatePipeline,
+  listPipelines,
+  pipelineGithubLinks,
+  pipelineViewSchema,
+  pipelineWorkflowLabel,
+} from "./model/api";
+export type {
+  PipelineActivity,
+  PipelineCapability,
+  PipelineCriticality,
+  PipelineGrant,
+  PipelineMonitoringStatus,
+  PipelineRecord,
+} from "./model/api";
+export { OPERATIONAL_ENVIRONMENTS, environmentLabel } from "./ui/environmentLabel";
+export type { OperationalEnvironment } from "./ui/environmentLabel";

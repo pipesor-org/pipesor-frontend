@@ -58,6 +58,19 @@ The file reports Sora and JetBrains Mono and an empty token collection. Represen
 | Recurring groups with chevron and "Select a group to filter" hint | Grouped by monitored pipeline + stage, not interactive | D05 drill-down not implemented |
 | "Prototype · Demo data" badge | Removed | Real data |
 
+## Pipelines mapping
+
+| Paper element | Implementation | Deviation and reason |
+| --- | --- | --- |
+| Pipeline title `deploy-production` (slug) | GitHub workflow name | No slug in the contract |
+| Connected badge | `GitHub Actions · Connected` from `GET /github/connection`, plus Reconnect | Agreed |
+| Operational policy editor (criticality select, Active/Paused) | Read-only values | Configuration saves are not an approved capability yet |
+| Pipeline owners, Edit ownership | Responsible team only | No owners contract |
+| Access by team/role | Grants per person (`tid:oid`), "(you)" marker and "Grant me Operate" | Agreed (decision 9); CONFIGURE does not imply OPERATE |
+| Last configuration update / View configuration history | Latest activity (action, time, actor ref); no history link | Full history out of scope |
+| — | Recent failed runs → Analyze → Open incident | Agreed (decision 11) |
+| Add workflow: named owners, required team | Optional free-text responsible team; no owners | No owners contract |
+
 ## Interaction and navigation
 
 Solid arrows are existing browser navigation, currently on fixtures where applicable. Dashed arrows represent design/functional intent or a runtime dependency. The three Workspace artboards are presentations of one incident route under D01. Origin-aware Back follows D02 even when resolution changes queue membership.
@@ -108,7 +121,7 @@ The incident fixture schema requires `INC-<digits>` and has a display diagnosis 
 
 ## Workspace verification and remaining pilot boundary
 
-The fixture Workspace, the local P3 replay and their Chromium verifiers (`verify_incident_workspace.cjs`, `verify_local_diagnostic.cjs`, `verify_local_review.cjs`) were removed when Operations and the Workspace were integrated with Pipeline and Recommendation. Verification is now a browser walkthrough against the local stack with a real GitHub session, recorded in each Pull Request. The registration pilot (`verify_workflow_registration.cjs`, `PIPESOR_DEMO_*` proxy) remains until Pipelines is integrated.
+The fixture Workspace, the local P3 replay and their Chromium verifiers (`verify_incident_workspace.cjs`, `verify_local_diagnostic.cjs`, `verify_local_review.cjs`) were removed when Operations and the Workspace were integrated with Pipeline and Recommendation. Verification is now a browser walkthrough against the local stack with a real GitHub session, recorded in each Pull Request. The registration pilot (`verify_workflow_registration.cjs`, `PIPESOR_DEMO_*` proxy, `loopback-vite.cjs`) was removed when Pipelines was integrated.
 
 ## Staged proposal and decision gates
 

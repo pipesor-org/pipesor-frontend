@@ -1,58 +1,45 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigationType, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
-import { monitoredPipelines, PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES, type PersistedPipeline } from "../../../entities/monitored-pipeline";
+import { PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES, environmentLabel, listPipelines, pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
+import { useApiQuery } from "../../../shared/api";
 import { pipelineDetailPath, routes } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
-import { Badge } from "../../../shared/ui/badge";
+import { Button } from "../../../shared/ui/button";
 import { ChevronRightIcon, SearchIcon } from "../../../shared/ui/icons";
 import { AppSidebar } from "../../../widgets/app-sidebar";
+import { GitHubConnectionStatus } from "../../../widgets/github-connection";
 
-import { isPendingSearchEcho, readInventoryQuery, responsibleTeams, selectInventoryPipelines } from "../model/inventory";
+import { readInventoryQuery, selectInventoryPipelines } from "../model/inventory";
 import styles from "./PipelinesPage.module.css";
 
-export function PipelinesPage({ records }: { records?: readonly PersistedPipeline[] }) {
+/**
+ * Pipelines inventory (`/pipelines`): every registered workflow the caller may
+ * VIEW, read from Pipeline. Search and filters run in the browser over that
+ * complete list and are kept in the URL (REPLACE) so Back from Detail restores
+ * them.
+ */
+export function PipelinesPage() {
   const { t } = useTranslation("pipelines");
   const [params, setParams] = useSearchParams();
-  const teams = records ? [...new Set(records.map(({ ownership }) => ownership.responsibleTeam).filter(Boolean))] : responsibleTeams;
+  const inventory = useApiQuery("pipelines", (signal) => listPipelines(signal));
+  const all = inventory.state.status === "success" ? inventory.state.data : [];
+  const teams = [...new Set(all.map((pipeline) => pipeline.responsibleTeamNameSnapshot).filter((team): team is string => Boolean(team)))].sort();
   const query = readInventoryQuery(params, teams);
-  const [search, setSearch] = useState(query.q);
-  const pendingSearch = useRef<{ latest: string; values: Set<string> } | undefined>(undefined);
-  const { key: locationKey } = useLocation();
-  const navigationType = useNavigationType();
-  const pipelines = selectInventoryPipelines({ ...query, q: search }, records ?? monitoredPipelines);
+  const pipelines = selectInventoryPipelines(query, all);
+  const filtered = Object.values(query).some(Boolean);
+  const returnState = { pipelineSearch: params.toString() };
   const headingRef = useRef<HTMLHeadingElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   useEffect(() => { headingRef.current?.focus(); }, []);
-  useEffect(() => {
-    const pending = pendingSearch.current;
-    // Older URL commits must not replace a newer, immediately rendered keystroke.
-    if (pending && isPendingSearchEcho(navigationType, query.q, pending.values)) {
-      if (pending.latest === query.q) pendingSearch.current = undefined;
-      return;
-    }
-    pendingSearch.current = undefined;
-    setSearch(query.q);
-  }, [query.q, locationKey, navigationType]);
 
   function setCriterion(key: keyof typeof query, value: string) {
     setParams((previous) => {
       const next = new URLSearchParams(previous);
-      if (key !== "q") {
-        if (search) next.set("q", search); else next.delete("q");
-      }
       if (value) next.set(key, value); else next.delete(key);
       return next;
     }, { replace: true });
-  }
-
-  function setSearchDraft(value: string) {
-    const pending = pendingSearch.current ?? { latest: value, values: new Set([query.q]) };
-    pending.latest = value;
-    pending.values.add(value);
-    pendingSearch.current = pending;
-    setSearch(value);
   }
 
   return (
@@ -61,12 +48,10 @@ export function PipelinesPage({ records }: { records?: readonly PersistedPipelin
         <div>
           <h1 ref={headingRef} tabIndex={-1}>{t("inventory.title")}</h1>
           <p className={styles.subtitle}>{t("inventory.subtitle")}</p>
-          <p className={styles.subtitle}>{t(records ? "githubConnection.synthetic" : "githubConnection.unavailable")}</p>
+          <GitHubConnectionStatus />
         </div>
         <div className={styles.actions}>
-          <Badge variant="outline">{t(records ? "pilot.badge" : "demoBadge")}</Badge>
-          <Link className={styles.add} to={routes.addMonitoredWorkflow}
-            state={{ pipelineSearch: new URLSearchParams({ ...query, q: search }).toString() }}>
+          <Link className={styles.add} to={routes.addMonitoredWorkflow} state={returnState}>
             <span aria-hidden="true">+</span>{t("inventory.add")}
           </Link>
         </div>
@@ -74,8 +59,8 @@ export function PipelinesPage({ records }: { records?: readonly PersistedPipelin
       <div className={styles.filters}>
         <label className={styles.search}>
           <span className={styles.srOnly}>{t("inventory.search")}</span><SearchIcon />
-          <input ref={searchRef} type="search" value={search} placeholder={t("inventory.search")}
-            onChange={(event) => { setSearchDraft(event.target.value); setCriterion("q", event.target.value); }} />
+          <input ref={searchRef} type="search" value={query.q} placeholder={t("inventory.search")}
+            onChange={(event) => setCriterion("q", event.target.value)} />
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.criticality")}</span>
@@ -101,37 +86,48 @@ export function PipelinesPage({ records }: { records?: readonly PersistedPipelin
       </div>
       <div className={styles.heading}>
         <h2 id="monitored-workflows">{t("inventory.heading")}</h2>
-        {[search, query.criticality, query.team, query.monitoring].some(Boolean) && <button type="button" className={styles.reset}
-          onClick={() => { setSearchDraft(""); setParams({}, { replace: true }); searchRef.current?.focus(); }}>{t("inventory.reset")}</button>}
+        {filtered && <button type="button" className={styles.reset}
+          onClick={() => { setParams({}, { replace: true }); searchRef.current?.focus(); }}>{t("inventory.reset")}</button>}
       </div>
-      <p className={styles.srOnly} role="status">{t("inventory.results", { count: pipelines.length })}</p>
-      <div className={styles.tableScroll} role="region" aria-labelledby="monitored-workflows" tabIndex={0}>
-        <table className={styles.table}>
-          <colgroup><col /><col /><col /><col /><col /><col /></colgroup>
-          <thead><tr>
-            <th scope="col">{t("inventory.workflow")}</th><th scope="col">{t("inventory.repository")}</th>
-            <th scope="col">{t("inventory.environment")}</th><th scope="col">{t("inventory.criticality")}</th>
-            <th scope="col">{t("inventory.team")}</th><th scope="col">{t("inventory.monitoring")}</th>
-          </tr></thead>
-          <tbody>{pipelines.length ? pipelines.map((pipeline) => (
-            <tr key={pipeline.id}>
-              <th scope="row"><Link className={styles.pipelineLink} to={pipelineDetailPath(pipeline.id)}
-                state={{ pipelineSearch: new URLSearchParams({ ...query, q: search }).toString() }}>
-                <span className={styles.slug}>{pipeline.slug}</span>
-                <span className={styles.workflow}>{pipeline.github.workflowName}</span>
-              </Link></th>
-              <td className={styles.repository}>{pipeline.github.repository}</td>
-              <td>{"environment" in pipeline ? pipeline.environment ?? t("policy.unspecified") : pipeline.policy.operationalEnvironment ? t(`environment.${pipeline.policy.operationalEnvironment}`) : t("policy.unspecified")}</td>
-              <td><span className={`${styles.status} ${styles[pipeline.policy.criticality]}`}>{t(`criticality.${pipeline.policy.criticality}`)}</span></td>
-              <td>{pipeline.ownership.responsibleTeam || t("ownership.unspecified")}</td>
-              <td><div className={styles.monitoringCell}>
-                <span className={`${styles.status} ${styles[pipeline.policy.monitoringStatus]}`}>{t(`monitoring.${pipeline.policy.monitoringStatus}`)}</span>
-                <ChevronRightIcon width={12} height={12} aria-hidden="true" />
-              </div></td>
-            </tr>
-          )) : <tr><td colSpan={6} className={styles.empty}>{t("inventory.empty")}</td></tr>}</tbody>
-        </table>
-      </div>
+
+      {inventory.state.status === "loading" && <p className={styles.state} role="status">{t("inventory.loading")}</p>}
+      {inventory.state.status === "error" && (
+        <div className={styles.state}>
+          <p role="alert">{t("inventory.error")}</p>
+          <Button onClick={inventory.reload}>{t("retry")}</Button>
+        </div>
+      )}
+      {inventory.state.status === "success" && (
+        <>
+          <p className={styles.srOnly} role="status">{t("inventory.results", { count: pipelines.length })}</p>
+          <div className={styles.tableScroll} role="region" aria-labelledby="monitored-workflows" tabIndex={0}>
+            <table className={styles.table}>
+              <colgroup><col /><col /><col /><col /><col /><col /></colgroup>
+              <thead><tr>
+                <th scope="col">{t("inventory.workflow")}</th><th scope="col">{t("inventory.repository")}</th>
+                <th scope="col">{t("inventory.environment")}</th><th scope="col">{t("inventory.criticality")}</th>
+                <th scope="col">{t("inventory.team")}</th><th scope="col">{t("inventory.monitoring")}</th>
+              </tr></thead>
+              <tbody>{pipelines.length ? pipelines.map((pipeline) => (
+                <tr key={pipeline.id}>
+                  <th scope="row"><Link className={styles.pipelineLink} to={pipelineDetailPath(pipeline.id)} state={returnState}>
+                    <span className={styles.slug}>{pipelineWorkflowLabel(pipeline) ?? pipeline.githubWorkflowId}</span>
+                    {pipeline.workflowFile && <span className={styles.workflow}>{pipeline.workflowFile.split("/").pop()}</span>}
+                  </Link></th>
+                  <td className={styles.repository}>{pipeline.fullName}</td>
+                  <td>{environmentLabel(t, pipeline.environment)}</td>
+                  <td><span className={`${styles.status} ${styles[pipeline.criticality]}`}>{t(`criticality.${pipeline.criticality}`)}</span></td>
+                  <td>{pipeline.responsibleTeamNameSnapshot || t("ownership.unspecified")}</td>
+                  <td><div className={styles.monitoringCell}>
+                    <span className={`${styles.status} ${styles[pipeline.monitoringStatus]}`}>{t(`monitoring.${pipeline.monitoringStatus}`)}</span>
+                    <ChevronRightIcon width={12} height={12} aria-hidden="true" />
+                  </div></td>
+                </tr>
+              )) : <tr><td colSpan={6} className={styles.empty}>{t(all.length ? "inventory.empty" : "inventory.none")}</td></tr>}</tbody>
+            </table>
+          </div>
+        </>
+      )}
     </AppLayout>
   );
 }

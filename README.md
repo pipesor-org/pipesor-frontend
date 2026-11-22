@@ -9,7 +9,7 @@ The React frontend for Pipesor, an AIOps thesis project for monitoring CI/CD wor
 - The interface supports English/Spanish, light/dark themes, responsive navigation, and a Not Found screen.
 - Operations reads Pipeline's incident queues (`OPEN`; `RESOLVED` joined with diagnosis `PENDING` for Needs Validation) and Recommendation's diagnosis per visible row. The Incident Workspace (`/incidents/<uuid>`) shows the incident, its original run, the diagnosis (inference, observed evidence, retrieved knowledge, recommendation) and records the human review (Confirm / Reject with actual cause).
 - History lists every resolved incident with its review status, diagnosis time and resolution time, and opens the Workspace. Insights computes mean diagnosis time, MTTR, confirmation rate (Corrected and Rejected count as rejected) and stage/pipeline groupings in the browser over the resolved incidents loaded in the last 30 days, stating how many it covers.
-- Pipelines still uses Zod-validated demonstration fixtures and the development registration pilot until its integration. The Workspace records remediation, verification (a successful rerun captured through Ingestion) and resolution. Assignment is not implemented.
+- Pipelines lists the monitored workflows, registers new ones from GitHub discovery, shows grants per person with "Grant me Operate", and lists recent failed runs with "Analyze" (capture → incident). Policy is read-only. The Workspace records remediation, verification (a successful rerun captured through Ingestion) and resolution. Assignment is not implemented.
 - The diagnosis-confirmation rate reflects human reviews, not model accuracy.
 
 See the [functional architecture map](docs/architecture/frontend-functional-map.md) for implemented routes, domain boundaries, agreed targets, and open contracts. Documented targets do not authorize new behavior or architecture.
@@ -55,7 +55,7 @@ The [Quality workflow](.github/workflows/quality.yml) checks PR commits, the PR 
 | --- | --- |
 | `src/app/` | Application setup, routes, global styles, and design tokens |
 | `src/pages/`, `src/widgets/` | Screens and composed UI sections |
-| `src/entities/` | Session, incident, diagnosis, workflow-run and monitored-pipeline contracts and domain UI (Pipelines fixtures until its integration) |
+| `src/entities/` | Session, incident, diagnosis, workflow-run, github-access and monitored-pipeline contracts and domain UI |
 | `src/shared/` | Shared UI, the HTTP client (`shared/api`), navigation and API-origin configuration, EN/ES resources, assets, and utilities |
 | `public/` | Browser-served assets |
 
