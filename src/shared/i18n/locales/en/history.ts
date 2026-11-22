@@ -1,14 +1,12 @@
 /**
  * `history` namespace — English.
  *
- * History workspace copy: header, view switcher, both views' filters and the
- * Insights summary. Values preserve the copy authored in the Paper source
- * ("History v1 — Resolved incidents", "History — Insights v1").
+ * History workspace copy: header, view switcher, the resolved-incident table
+ * and Insights.
  */
 const history = {
   title: "History",
   subtitle: "Resolved CI/CD incidents and diagnosis outcomes.",
-  demoBadge: "Prototype · Demo data",
 
   tabs: {
     ariaLabel: "History views",
@@ -21,20 +19,12 @@ const history = {
     sort: "Sorted by Resolved ↓",
   },
 
-  searchPlaceholder: "Search incidents",
-
-  filters: {
-    dateRange: "Date range",
-    dateRangeValue: "Date range: {{range}}",
-    repository: "Repository",
-    pipeline: "Pipeline",
-    stage: "Stage",
-    validation: "Validation",
-    assignee: "Assignee",
-    severity: "Severity",
-  },
+  settling: "Loading diagnoses for the resolved incidents…",
+  loadMore: "Load more resolved incidents",
 
   insights: {
+    scope_one: "Last {{days}} days ({{range}}) · Calculated over {{countFormatted}} resolved incident of {{loaded}} loaded.",
+    scope_other: "Last {{days}} days ({{range}}) · Calculated over {{countFormatted}} resolved incidents of {{loaded}} loaded.",
     summary: {
       meanDiagnosis: "Mean diagnosis time",
       meanResolution: "Mean time to resolution (MTTR)",
@@ -56,15 +46,20 @@ const history = {
       validated_one: "{{countFormatted}} validated diagnosis",
       validated_other: "{{countFormatted}} validated diagnoses",
       value: "{{incidents}} · {{percent}}",
-      note: "Confirmation rate reflects diagnoses marked Confirmed by operators. Percentages are rounded.",
+      rejected: "Rejected",
+      note: "Confirmation rate counts human reviews: Rejected includes rejections with an actual cause; pending reviews are excluded. It is not a model-accuracy measure. Percentages are rounded.",
     },
     recurring: {
       title: "Incident concentration by pipeline",
       caption: "Grouped by pipeline and stage",
       captionTruncated:
         "Grouped by pipeline and stage · Showing {{shown}} of {{total}}",
+      pipelineUnavailable: "Pipeline details unavailable",
     },
-    hint: "Select a group to filter Incidents by pipeline and stage.",
+  },
+
+  filters: {
+    pipeline: "Pipeline",
   },
 
   columns: {
@@ -72,17 +67,14 @@ const history = {
     stage: "Stage",
     diagnosis: "Diagnosis",
     validation: "Validation",
-    assignee: "Assignee",
     diagnosisTime: "Diagnosis\ntime",
     resolutionTime: "Resolution\ntime",
     resolved: "Resolved",
   },
 
-  hint: "Select a row to open its Incident Workspace in historical view.",
-
-  unassigned: "Unassigned",
-
-  empty: "No resolved incidents.",
+  hint: "Select an incident to open its Incident Workspace in historical view.",
+  noDiagnosis: "No diagnosis",
+  empty: "No resolved incidents yet.",
 } as const;
 
 export default history;

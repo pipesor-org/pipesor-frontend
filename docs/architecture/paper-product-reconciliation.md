@@ -46,6 +46,18 @@ The file reports Sora and JetBrains Mono and an empty token collection. Represen
 | Start remediation, Verification, Resolve | One "Remediation and verification" section: Start remediation → choose the successful verification run → Resolve incident | Paper shows a static verification run; the operator now chooses it, since only a captured run can be linked |
 | Diagnosis validation (Confirm / Reject form) | Confirm opens a short panel with optional notes; Reject requires actual cause | Confirm asks for one more click to allow a note and avoid accidental confirmation |
 
+## History and Insights mapping
+
+| Paper element | Implementation | Deviation and reason |
+| --- | --- | --- |
+| Search, Date range, Repository, Stage, Validation, Assignee (History); Date range, Repository, Pipeline, Stage, Severity (Insights) | Omitted | No server-side criteria; owner decision |
+| Assignee column | Omitted | No assignment contract |
+| Validation column (Confirmed / Rejected) | Review status from Recommendation, including Pending and "Rejected · corrected" | All resolved incidents are listed (D03) |
+| Diagnosis / Resolution time | Computed from `diagnosis.createdAt`, `detectedAt` and `resolvedAt` | No stored durations |
+| KPI strip, trend, stage and outcome panels | Computed in the browser over the loaded resolved incidents of the last 30 days, with a scope line "calculated over N of M loaded" | No analytics API; Corrected and Rejected count as Rejected |
+| Recurring groups with chevron and "Select a group to filter" hint | Grouped by monitored pipeline + stage, not interactive | D05 drill-down not implemented |
+| "Prototype · Demo data" badge | Removed | Real data |
+
 ## Interaction and navigation
 
 Solid arrows are existing browser navigation, currently on fixtures where applicable. Dashed arrows represent design/functional intent or a runtime dependency. The three Workspace artboards are presentations of one incident route under D01. Origin-aware Back follows D02 even when resolution changes queue membership.

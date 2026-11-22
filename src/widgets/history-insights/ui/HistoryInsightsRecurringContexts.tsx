@@ -1,38 +1,28 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  STAGE_LABEL_KEY,
-  selectRecurringContexts,
-} from "../../../entities/incident";
+import { STAGE_LABEL_KEY } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
-import { ChevronRightIcon } from "../../../shared/ui/icons";
 
+import type { RecurringContext } from "../model/insights";
 import styles from "./HistoryInsightsRecurringContexts.module.css";
 
-/**
- * The frame shows three recurring groups. The demo population has seven, so the
- * table keeps the frame's height with the deterministic top three produced by
- * `selectRecurringContexts` and the caption states how many are omitted.
- */
+/** The frame shows three recurring groups; the caption states how many are omitted. */
 const RECURRING_GROUP_LIMIT = 3;
 
 /**
  * Recurring incident groups.
  *
- * Groups come from the incident entity (repository + workflow + stage, highest
- * count first). This is a deterministic demo grouping, not a root-cause
- * taxonomy. The table is presentational, like the History table: the frame's
- * hover affordance and chevron are rendered, but no navigation or filtering is
- * wired up, because the corresponding interaction is not part of this view.
+ * Groups are monitored pipeline + stage, highest count first. This is a
+ * grouping, not a root-cause taxonomy. Drill-down to History (D05) is not
+ * implemented, so rows are not interactive and show no chevron.
  */
-export function HistoryInsightsRecurringContexts() {
+export function HistoryInsightsRecurringContexts({ groups: allGroups }: { groups: RecurringContext[] }) {
   const { t } = useTranslation("history");
   const { t: tOperations } = useTranslation("operations");
   const { formatNumber } = useFormatters();
   const titleId = useId();
 
-  const allGroups = selectRecurringContexts();
   const groups = allGroups.slice(0, RECURRING_GROUP_LIMIT);
   const isTruncated = allGroups.length > groups.length;
 
@@ -90,15 +80,15 @@ export function HistoryInsightsRecurringContexts() {
             ) : (
               groups.map((group) => (
                 <tr
-                  key={`${group.repository}\u0000${group.workflow}\u0000${group.stage}`}
+                  key={`${group.pipelineId}:${group.stage}`}
                   className={styles.row}
                 >
                   <td>
                     <div className={styles.stack}>
                       <span className={styles.repository}>
-                        {group.repository}
+                        {group.repository ?? t("insights.recurring.pipelineUnavailable")}
                       </span>
-                      <span className={styles.workflow}>{group.workflow}</span>
+                      {group.workflow && <span className={styles.workflow}>{group.workflow}</span>}
                     </div>
                   </td>
                   <td>
@@ -111,9 +101,7 @@ export function HistoryInsightsRecurringContexts() {
                       {formatNumber(group.count)}
                     </span>
                   </td>
-                  <td className={styles.actionCell} aria-hidden="true">
-                    <ChevronRightIcon className={styles.chevron} />
-                  </td>
+                  <td className={styles.actionCell} aria-hidden="true" />
                 </tr>
               ))
             )}

@@ -12,7 +12,7 @@ Follow the dependency direction `app → pages → widgets → features → enti
 | `pages` | Navigable views and screen composition | Operations, History, Not Found |
 | `widgets` | Meaningful UI compositions and local query/presentation state | Operations tabs, summaries, tables, filters, History table, sidebar |
 | `features` | Cohesive business actions with their UI and interaction model | Deferred; no feature slices implemented yet |
-| `entities` | Reusable domain data, schema, selectors and representations | `src/entities/incident/` |
+| `entities` | Reusable domain contracts, service reads and representations | `src/entities/incident/`, `diagnosis`, `session` |
 | `shared` | Domain-agnostic building blocks and cross-cutting services | `ui`, `i18n`, `config`, `lib`, `assets` |
 
 **Decision rule:** a button, tab, search field, or dropdown is not automatically a feature. Place presentation and query interactions with the screen/widget that owns them. Introduce a feature when an approved, meaningful user capability has its own behavior or business consequence. A widget does not have to be reused by multiple pages to be valid.
@@ -47,7 +47,7 @@ The existing typography uses **Sora** for UI and **JetBrains Mono** for technica
 
 ## 4. Component reuse and presentation
 
-Before creating a component, inspect existing `src/shared/ui/` primitives and any relevant entity UI exports. In particular, check `shared/ui/badge`, `shared/ui/icons`, and `shared/ui/app-layout`; incident-specific representations such as `IncidentSeverity` and `IncidentValidationStatus` belong in `entities/incident/ui`. Consume their public APIs rather than duplicating their markup or importing internal files. Extend the existing icon collection/public API when appropriate instead of redrawing an equivalent icon.
+Before creating a component, inspect existing `src/shared/ui/` primitives and any relevant entity UI exports. In particular, check `shared/ui/badge`, `shared/ui/icons`, and `shared/ui/app-layout`; incident-specific representations such as `IncidentSeverity` belong in `entities/incident/ui`, and `DiagnosisStatusLabel` in `entities/diagnosis/ui`. Consume their public APIs rather than duplicating their markup or importing internal files. Extend the existing icon collection/public API when appropriate instead of redrawing an equivalent icon.
 
 Prefer one coherent implementation over visually similar, duplicated badges, icons or controls. Use shared primitives for genuinely generic UI; use entity UI when a component represents domain concepts (for example severity and diagnosis-validation labels). Promote a new shared primitive when its responsibility is demonstrably generic, not merely because it may be reused someday.
 
@@ -98,14 +98,14 @@ The current i18n setup is in `src/shared/i18n/`; English and Spanish catalogs li
 
 Test both languages after UI changes. Spanish copy can increase control width; do not fix overflow by truncating crucial content without an explicit design decision.
 
-## 8. Incident domain and demo data
+## 8. Incident domain and service data
 
-`src/entities/incident/model/types.ts` defines canonical vocabulary (literal arrays/objects); `schema.ts` builds **Zod 4 discriminated unions** from that vocabulary, with TypeScript types inferred from the schemas. Its strict lifecycle branches prevent unresolved records from carrying resolution-only fields, and require resolution data for resolved incidents. `incidents.ts` owns demo fixtures (now read only by History and Insights) and validates them on load; `model/api.ts` maps Pipeline incident reads onto the same vocabulary. `selectors.ts` owns queue membership and derived summary values. Domain-label mappings in `src/entities/incident/ui/labels.ts` are intended to be exhaustive over the corresponding union values.
+`src/entities/incident/model/types.ts` defines the canonical vocabulary (severity, stage, lifecycle status); `model/api.ts` validates Pipeline incident, run and execution reads with Zod and maps wire tokens (`CRITICAL`, `IN_REMEDIATION`, …) onto it. Diagnosis contracts and review status live in `entities/diagnosis`; pipelines in `entities/monitored-pipeline`; GitHub runs and analysis receipts in `entities/workflow-run`. Domain-label mappings in `src/entities/incident/ui/labels.ts` are exhaustive over their unions. Queue rows (incident + pipeline + diagnosis) are assembled by `widgets/incident-queue`; History — Insights aggregates them in `widgets/history-insights/model`.
 
-- The current demo dataset contains six unresolved, seven resolved/pending-validation and eight resolved/terminal-validation incidents. History currently selects only the eight terminal records; its agreed all-resolved target would include 15 before date/filter criteria, but is not implemented. **These are fixture counts, not constants to duplicate**; selectors and fixture data remain authoritative for current behavior.
+- Counts and metrics describe what was loaded; say so in the UI (`N+`, "calculated over N") instead of presenting a partial load as a total.
 - Lifecycle status, diagnosis-validation outcome, incident severity, pipeline criticality and ownership/assignment are distinct concepts. Do not merge them for UI convenience.
-- Keep timestamps and elapsed durations structured; format at the presentation boundary. Respect the fixed demo snapshot (`INCIDENT_SNAPSHOT_AT`) rather than pretending that fixture metrics are live. Never synthesize a timestamp when the design only supplies a duration.
-- Prefer domain selectors for derived view data. Do not embed hardcoded metrics in widgets or infer business conditions from translated labels.
+- Keep timestamps and elapsed durations structured; format at the presentation boundary. Compute durations only from recorded timestamps and never synthesize a missing one; a value the service does not provide (for example severity) is shown as unavailable, not guessed.
+- Derive view data from structured values; do not embed hardcoded metrics in widgets or infer business conditions from translated labels.
 - Zod validates data structure and selected invariants; it does not automatically define backend authorization, cross-record consistency or transition permissions.
 - Preserve observed evidence, AIOps inference, operational lifecycle and human review as separate dimensions. Do not fabricate missing Workspace references, timestamps, actors or actual causes. A successful run does not automatically resolve an incident or confirm its diagnosis; rejection must not overwrite the original hypothesis/evidence/confidence.
 
@@ -123,7 +123,7 @@ Use the checks applicable to the change:
 | Navigation, sidebar or popover | Back/forward, keyboard focus, Escape and link semantics |
 | New UI text | Both EN/ES, long labels, appropriate `Intl` formatting |
 | Branding or shared UI | Verify existing asset imports, public APIs, and all consuming views |
-| Domain/Zod/fixtures | Valid and invalid schema cases, selector invariants, queue totals |
+| Domain/Zod contracts | Compare with the service OpenAPI; valid and invalid responses (contract errors surface as `ApiError` kind `contract`) |
 | Documentation | Referenced paths, scripts, links and statements match actual code |
 
 Browser and Paper comparisons are **not** established by TypeScript, ESLint or build success. State explicitly what was checked and what could not be checked. Keep each task independently reviewable and stop at the requested boundary.

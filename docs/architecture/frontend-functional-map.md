@@ -1,6 +1,6 @@
 # Pipesor frontend functional architecture map
 
-This is the maintained functional architecture reference for Pipesor. It distinguishes the implemented frontend, agreed target decisions and unresolved contracts. Operations, the Incident Workspace and diagnosis review are integrated with Pipeline and Recommendation (see *Service integration status* below); History — Incidents and History — Insights still read demo fixtures. Pipelines inventory, read-only Detail and local onboarding draft are implemented; workflow registration and configuration saves are deferred until local API integration. A shared mutable demonstration collection is no longer an approved target.
+This is the maintained functional architecture reference for Pipesor. It distinguishes the implemented frontend, agreed target decisions and unresolved contracts. Operations, the Incident Workspace, diagnosis review, the lifecycle and History (Incidents and Insights) are integrated with the services (see *Service integration status* below); Pipelines still reads demo fixtures. Pipelines inventory, read-only Detail and local onboarding draft are implemented; workflow registration and configuration saves are deferred until local API integration. A shared mutable demonstration collection is no longer an approved target.
 
 ## Service integration status
 
@@ -14,9 +14,11 @@ Integration follows the MVP HTTP API v1 and the owner decisions recorded for the
 | Incident Workspace | Integrated | Pipeline incident, runs and executions; Recommendation diagnosis. Title `repo · Run #<runId>`; `INC-<displayNumber>` when present, else the abbreviated UUID |
 | Incident lifecycle | Integrated (`features/manage-incident-lifecycle`) | Pipeline `POST /incidents/{id}/remediation`, `/verification` and `/resolve` (OPERATE). Verification: the operator picks a successful run (`GET …/runs?conclusion=success`); Ingestion captures it (`POST …/analysis`, polled until `PUBLISHED`) and its `executionId` is linked. Retry-remediation (failed verification) is not offered because only successful runs are linked |
 | Diagnosis review | Integrated (`features/validate-diagnosis`) | Recommendation `GET/POST /diagnoses/{id}/reviews` with `expectedRevision`; Confirm → `CONFIRMED`, Reject → `CORRECTED` with actual cause; notes optional |
-| History, Insights, Pipelines | Fixtures (pilot for registration) | Pending their PRs |
+| History — Incidents | Integrated | Pipeline `state=RESOLVED` (all resolved, D03) with diagnosis status; diagnosis time = `diagnosis.createdAt − detectedAt`, resolution time = `resolvedAt − detectedAt`; links open the Workspace with `from=history` |
+| History — Insights | Integrated (client-side) | Same loaded population, last 30 days by `resolvedAt`: mean TMD, MTTR, confirmation rate (`CORRECTED` + `REJECTED` = Rejected, `PENDING` excluded), weekly TMD trend, stage distribution, recurring pipeline + stage groups; the scope line states N of M loaded. D05 drill-down not implemented |
+| Pipelines | Fixtures (pilot for registration) | Pending its PR |
 
-Removed with this integration: search, facets, Mine/Unassigned and the assignee column in Operations (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
+Removed with this integration: search, facets, Mine/Unassigned and the assignee column in Operations and History, the static Insights filters, the incident fixtures and selectors, (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
 
 ## How to read this map
 

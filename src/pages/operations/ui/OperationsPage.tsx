@@ -11,14 +11,13 @@ import {
 import { useNow } from "../../../shared/lib";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { AppSidebar } from "../../../widgets/app-sidebar";
+import { LoadMore, QueueStatus, useIncidentQueue, type QueueRow } from "../../../widgets/incident-queue";
 import { IncidentsTable, type ActiveIncidentRow } from "../../../widgets/incidents-table";
 import { NeedsValidationTable, type PendingValidationRow } from "../../../widgets/needs-validation-table";
 import { OperationsHeader } from "../../../widgets/operations-header";
 import { OperationsSummary } from "../../../widgets/operations-summary";
 import { OperationsTabs } from "../../../widgets/operations-tabs";
 
-import { useIncidentQueue, type QueueRow } from "../model/useIncidentQueue";
-import { LoadMore, QueueStatus } from "./QueueStatus";
 import styles from "./OperationsPage.module.css";
 
 const SEVERITY_ORDER = { Critical: 0, High: 1, Medium: 2, Low: 3 } as const;
