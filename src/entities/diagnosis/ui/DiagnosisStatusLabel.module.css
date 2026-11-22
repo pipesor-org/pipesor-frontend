@@ -1,0 +1,39 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 18px;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.success.dot {
+  background-color: var(--color-success);
+}
+
+.critical {
+  color: var(--color-critical);
+}
+
+.critical.dot {
+  background-color: var(--color-critical);
+}
+
+.warning {
+  color: var(--color-text-primary);
+}
+
+.warning.dot {
+  background-color: var(--color-warning);
+}

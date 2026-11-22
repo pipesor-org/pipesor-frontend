@@ -1,13 +1,11 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
 
 import {
   IncidentValidationStatus,
   STAGE_LABEL_KEY,
   selectHistoryIncidents,
 } from "../../../entities/incident";
-import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 
@@ -105,9 +103,8 @@ export function HistoryIncidentsTable() {
                 <tr key={incident.id} className={styles.row}>
                   <td>
                     <div className={styles.stack}>
-                      <Link className={styles.incidentId} to={incidentWorkspacePath(incident.id, "history")}>
-                        {incident.id}
-                      </Link>
+                      {/* Fixture IDs have no Workspace; links return when History reads Pipeline. */}
+                      <span className={styles.incidentId}>{incident.id}</span>
                       <span className={styles.incidentRepository}>
                         {incident.repository}
                       </span>

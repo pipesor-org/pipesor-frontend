@@ -1,89 +1,76 @@
 import { useTranslation } from "react-i18next";
 
-import {
-  INCIDENT_SNAPSHOT_AT,
-  selectActiveIncidentSummary,
-  selectNeedsValidationSummary,
-} from "../../../entities/incident";
-import { durationMs } from "../../../shared/lib";
 import { useFormatters } from "../../../shared/i18n";
 
 import styles from "./OperationsSummary.module.css";
 
-type OperationsSummaryVariant = "active" | "validation";
-
-interface OperationsSummaryProps {
-  /** Selects the queue-specific metrics to display. */
-  variant: OperationsSummaryVariant;
+interface Freshness {
+  /** When the queue was read; `null` while loading. */
+  loadedAt: number | null;
+  onRefresh: () => void;
 }
 
+export type OperationsSummaryProps = Freshness &
+  (
+    | { variant: "active"; total: number; more: boolean; critical: number; high: number; analyzing: number }
+    | { variant: "validation"; pending: number; more: boolean; oldestPendingMs: number | null }
+  );
+
 /**
- * Compact summary strip shown under the queue tabs. All counts come from the
- * canonical selectors; only their rendering is locale-aware.
+ * Summary strip under the queue tabs. Counts describe the incidents loaded so
+ * far (`N+` when more pages exist); the page derives them from the queue.
  */
-export function OperationsSummary({ variant }: OperationsSummaryProps) {
+export function OperationsSummary(props: OperationsSummaryProps) {
   const { t } = useTranslation("operations");
   const { formatDuration, formatNumber, formatTimestamp } = useFormatters();
-  const snapshot = t("snapshot", {
-    timestamp: formatTimestamp(INCIDENT_SNAPSHOT_AT),
-  });
+  const count = (value: number, more: boolean) =>
+    more ? t("queue.moreAvailable", { value: formatNumber(value) }) : formatNumber(value);
 
-  if (variant === "validation") {
-    const { pending, oldestPendingAt } = selectNeedsValidationSummary();
-    const oldestPending = oldestPendingAt
-      ? formatDuration(durationMs(oldestPendingAt, INCIDENT_SNAPSHOT_AT))
-      : "—";
+  const freshness = (
+    <div className={styles.snapshot}>
+      {props.loadedAt !== null && <span>{t("queue.updated", { time: formatTimestamp(new Date(props.loadedAt).toISOString()) })}</span>}
+      <button type="button" className={styles.refresh} onClick={props.onRefresh}>
+        {t("queue.refresh")}
+      </button>
+    </div>
+  );
 
+  if (props.variant === "validation") {
     return (
-      <section
-        className={styles.summary}
-        aria-label={t("validation.summary.ariaLabel", { count: pending })}
-      >
+      <section className={styles.summary} aria-label={t("validation.summary.ariaLabel", { count: props.pending })}>
         <div className={styles.cell}>
-          <span className={styles.value}>{formatNumber(pending)}</span>
+          <span className={styles.value}>{count(props.pending, props.more)}</span>
           <span className={styles.label}>{t("validation.summary.pending")}</span>
         </div>
-
         <div className={`${styles.cell} ${styles.cellDivided}`}>
-          <span className={styles.valueMono}>{oldestPending}</span>
-          <span className={styles.label}>
-            {t("validation.summary.oldestPending")}
-          </span>
+          <span className={styles.valueMono}>{props.oldestPendingMs === null ? "—" : formatDuration(props.oldestPendingMs)}</span>
+          <span className={styles.label}>{t("validation.summary.oldestPending")}</span>
         </div>
-
-        <div className={styles.snapshot}>{snapshot}</div>
+        {freshness}
       </section>
     );
   }
 
-  const { total, critical, high, analyzing } = selectActiveIncidentSummary();
-
   return (
-    <section
-      className={styles.summary}
-      aria-label={t("active.summary.ariaLabel", { count: total })}
-    >
+    <section className={styles.summary} aria-label={t("active.summary.ariaLabel", { count: props.total })}>
       <div className={styles.cell}>
-        <span className={styles.value}>{formatNumber(total)}</span>
+        <span className={styles.value}>{count(props.total, props.more)}</span>
         <span className={styles.label}>{t("active.summary.active")}</span>
       </div>
-
       <div className={`${styles.cell} ${styles.cellDivided}`}>
         <span className={styles.severityGroup}>
-          <span className={styles.value}>{formatNumber(critical)}</span>
+          <span className={styles.value}>{formatNumber(props.critical)}</span>
           <span className={styles.label}>{t("severity.critical")}</span>
           <span className={styles.label}>·</span>
-          <span className={styles.value}>{formatNumber(high)}</span>
+          <span className={styles.value}>{formatNumber(props.high)}</span>
           <span className={styles.label}>{t("severity.high")}</span>
         </span>
       </div>
-
       <div className={`${styles.cell} ${styles.cellDivided}`}>
-        <span className={styles.value}>{formatNumber(analyzing)}</span>
+        <span className={styles.value}>{formatNumber(props.analyzing)}</span>
         <span className={styles.label}>{t("active.summary.analyzing")}</span>
       </div>
-
-      <div className={styles.snapshot}>{snapshot}</div>
+      {freshness}
     </section>
   );
 }

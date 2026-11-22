@@ -15,12 +15,20 @@ const TONE_BY_SEVERITY: Record<IncidentSeverityLevel, SeverityTone> = {
 };
 
 interface IncidentSeverityProps {
-  severity: IncidentSeverityLevel;
+  /** `null` when the incident has not been classified; shown as such, never guessed. */
+  severity: IncidentSeverityLevel | null;
 }
 
 /** Colored dot + label describing an incident's severity. */
 export function IncidentSeverity({ severity }: IncidentSeverityProps) {
   const { t } = useTranslation("operations");
+  if (severity === null) {
+    return (
+      <span className={styles.root}>
+        <span className={`${styles.label} ${styles.neutral}`}>{t("severity.unclassified")}</span>
+      </span>
+    );
+  }
   const tone = TONE_BY_SEVERITY[severity];
 
   return (

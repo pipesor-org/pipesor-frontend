@@ -28,3 +28,5 @@ export {
   pilotEnvironments, pilotTeams, pilotError, readPilotCatalog, registrationPilot, registerPilotPipeline, savePilotPolicy, usePilotPipelineRead,
 } from "./model/registrationPilot";
 export type { PersistedPipeline } from "./model/registrationPilot";
+export { getPipeline, invalidatePipeline, pipelineWorkflowLabel } from "./model/api";
+export type { PipelineCapability, PipelineRecord } from "./model/api";

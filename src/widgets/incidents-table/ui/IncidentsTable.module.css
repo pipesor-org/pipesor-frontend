@@ -5,7 +5,7 @@
    * horizontally inside the card instead of crushing its columns.
    */
   container-type: inline-size;
-  --table-min-width: 972px;
+  --table-min-width: 860px;
 
   display: flex;
   flex-direction: column;
@@ -44,7 +44,7 @@
 
 .row td {
   height: 64px;
-  padding: 0;
+  padding: 10px 12px 10px 0;
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
   vertical-align: middle;
@@ -84,6 +84,7 @@
 }
 
 .incidentRepository {
+  overflow-wrap: anywhere;
   color: var(--color-text-primary);
   font-family: var(--font-mono);
   font-size: 12px;
@@ -103,9 +104,13 @@
 }
 
 .diagnosisTitle {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
   color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: var(--font-weight-medium);
+  font-size: 13px;
+  font-weight: var(--font-weight-regular);
   line-height: 20px;
 }
 
@@ -122,36 +127,9 @@
   line-height: 20px;
 }
 
-.assignee {
-  color: var(--color-text-primary);
-  font-size: 13px;
-  line-height: 20px;
-}
 
-.assigneeUnassigned {
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 20px;
-}
 
-.assignAction {
-  position: absolute;
-  top: 20px;
-  left: 0;
-  width: 130px;
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: var(--font-weight-medium);
-  line-height: 18px;
-  opacity: 0;
-  transition: opacity 120ms ease;
-  pointer-events: none;
-}
 
-.row:hover .assignAction {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 .elapsedRow {
   display: flex;
@@ -183,7 +161,7 @@
 }
 
 .colIncident {
-  width: clamp(192px, calc(22.981366cqw - 48.26087px), 222px);
+  width: clamp(220px, 24cqw, 320px);
 }
 
 .colStage {
@@ -198,10 +176,43 @@
   width: clamp(120px, calc(15.113872cqw - 31.73913px), 146px);
 }
 
-.colAssignee {
-  width: clamp(120px, calc(15.320911cqw - 32.173913px), 148px);
-}
 
 .colElapsed {
   width: 104px;
+}
+
+.placeholder {
+  display: block;
+  width: 120px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-subtle);
+}
+
+.emptyCell {
+  padding: 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 32px 16px;
+}
+
+.emptyTitle {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+}
+
+.emptyText {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.incidentId:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }

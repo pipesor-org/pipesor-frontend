@@ -18,19 +18,7 @@ export type {
   InsightsSummary,
   InsightsWindow,
 } from "./model/insights";
-export {
-  isOperationallyResolved,
-  selectActiveIncidents,
-  selectActiveIncidentSummary,
-  selectDemoIncident,
-  selectHistoryIncidents,
-  selectNeedsValidationIncidents,
-  selectNeedsValidationSummary,
-} from "./model/selectors";
-export type {
-  ActiveIncidentSummary,
-  NeedsValidationSummary,
-} from "./model/selectors";
+export { isOperationallyResolved, selectHistoryIncidents } from "./model/selectors";
 export {
   incidentSchema,
   incidentsSchema,
@@ -51,3 +39,13 @@ export type {
 export { IncidentSeverity } from "./ui/IncidentSeverity";
 export { IncidentValidationStatus } from "./ui/IncidentValidationStatus";
 export { STAGE_LABEL_KEY, STATUS_LABEL_KEY } from "./ui/labels";
+export {
+  fetchExecution,
+  fetchIncident,
+  fetchIncidentQueue,
+  fetchIncidentRuns,
+  githubCommitUrl,
+  githubRunUrl,
+  incidentLabel,
+} from "./model/api";
+export type { Execution, IncidentPage, IncidentQueueState, IncidentRecord, IncidentRun } from "./model/api";

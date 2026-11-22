@@ -26,8 +26,9 @@ export const INCIDENT_SNAPSHOT_AT = "2026-09-30T10:30:00Z";
  *   (Needs Validation), and
  * - resolved incidents with a terminal validation outcome (History).
  *
- * See `selectActiveIncidents` / `selectNeedsValidationIncidents` /
- * `selectHistoryIncidents`.
+ * Only History still reads these fixtures (`selectHistoryIncidents` and the
+ * Insights selectors); Operations and the Workspace read Pipeline and
+ * Recommendation. The fixtures are removed when History is integrated.
  */
 const rawIncidents = [
   // --- Active Incidents: operationally unresolved ---

@@ -5,30 +5,41 @@ import {
   IncidentSeverity,
   STAGE_LABEL_KEY,
   STATUS_LABEL_KEY,
-  selectActiveIncidents,
+  type IncidentSeverityLevel,
+  type IncidentStage,
+  type IncidentStatus,
 } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 import styles from "./IncidentsTable.module.css";
 
+/** Row state for a value that is read separately from the incident itself. */
+export type Deferred<T> = { kind: "loading" } | { kind: "error" } | { kind: "ready"; value: T };
+
+export interface ActiveIncidentRow {
+  id: string;
+  label: string;
+  severity: IncidentSeverityLevel | null;
+  stage: IncidentStage;
+  status: IncidentStatus;
+  detectedAt: string;
+  pipeline: Deferred<{ repository: string; workflow: string | null }>;
+  /** `absent` while the analysis has not produced a diagnosis yet. */
+  diagnosis: Deferred<string> | { kind: "absent" };
+}
+
 const HEADER_CELLS = [
   { key: "severity", labelKey: "table.severity", column: "colSeverity" },
-  {
-    key: "incident",
-    labelKey: "table.incidentWorkflow",
-    column: "colIncident",
-  },
+  { key: "incident", labelKey: "table.incidentWorkflow", column: "colIncident" },
   { key: "stage", labelKey: "table.stage", column: "colStage" },
   { key: "diagnosis", labelKey: "table.diagnosis", column: "colDiagnosis" },
   { key: "status", labelKey: "table.status", column: "colStatus" },
-  { key: "assignee", labelKey: "table.assignee", column: "colAssignee" },
   { key: "elapsed", labelKey: "table.elapsed", column: "colElapsed" },
 ] as const;
 
-const MS_PER_MINUTE = 60_000;
-
-export function IncidentsTable() {
+/** Active Incidents queue table. Elapsed time is live from `detectedAt`. */
+export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: number }) {
   const { t } = useTranslation("operations");
   const { formatDuration } = useFormatters();
 
@@ -51,82 +62,76 @@ export function IncidentsTable() {
         </thead>
 
         <tbody>
-          {selectActiveIncidents().map((incident) => (
-            <tr key={incident.id} className={styles.row}>
-              <td>
-                <div className={styles.cell}>
-                  <IncidentSeverity severity={incident.severity} />
-                </div>
-              </td>
-
-              <td>
-                <div className={styles.cell}>
-                  <Link className={styles.incidentId} to={incidentWorkspacePath(incident.id, "active")}>
-                    {incident.id}
-                  </Link>
-                  <span className={styles.incidentRepository}>
-                    {incident.repository}
-                  </span>
-                  <span className={styles.incidentWorkflow}>{incident.workflow}</span>
-                </div>
-              </td>
-
-              <td>
-                <div className={styles.cell}>
-                  <span className={styles.stage}>
-                    {t(STAGE_LABEL_KEY[incident.stage])}
-                  </span>
-                </div>
-              </td>
-
-              <td>
-                <div className={styles.cell}>
-                  <span className={styles.diagnosisTitle}>{incident.diagnosis}</span>
-                  {incident.diagnosisNote ? (
-                    <span className={styles.diagnosisNote}>
-                      {incident.diagnosisNote}
-                    </span>
-                  ) : null}
-                </div>
-              </td>
-
-              <td>
-                <div className={styles.cell}>
-                  <span className={styles.status}>
-                    {t(STATUS_LABEL_KEY[incident.status])}
-                  </span>
-                </div>
-              </td>
-
-              <td>
-                <div className={styles.cell}>
-                  {incident.assignee ? (
-                    <span className={styles.assignee}>{incident.assignee}</span>
-                  ) : (
-                    <>
-                      <span className={styles.assigneeUnassigned}>
-                        {t("table.unassigned")}
-                      </span>
-                      <span className={styles.assignAction}>
-                        {t("table.assignToMe")}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </td>
-
-              <td>
-                <div className={styles.cell}>
-                  <span className={styles.elapsedRow}>
-                    <span className={styles.elapsedValue}>
-                      {formatDuration(incident.elapsedMinutes * MS_PER_MINUTE)}
-                    </span>
-                    <ChevronRightIcon className={styles.elapsedChevron} />
-                  </span>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={HEADER_CELLS.length} className={styles.emptyCell}>
+                <div className={styles.empty}>
+                  <span className={styles.emptyTitle}>{t("active.empty.title")}</span>
+                  <span className={styles.emptyText}>{t("active.empty.text")}</span>
                 </div>
               </td>
             </tr>
-          ))}
+          ) : (
+            rows.map((row) => (
+              <tr key={row.id} className={styles.row}>
+                <td>
+                  <div className={styles.cell}>
+                    <IncidentSeverity severity={row.severity} />
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    <Link className={styles.incidentId} to={incidentWorkspacePath(row.id, "active")}>
+                      {row.label}
+                    </Link>
+                    {row.pipeline.kind === "ready" ? (
+                      <>
+                        <span className={styles.incidentRepository}>{row.pipeline.value.repository}</span>
+                        {row.pipeline.value.workflow && <span className={styles.incidentWorkflow}>{row.pipeline.value.workflow}</span>}
+                      </>
+                    ) : row.pipeline.kind === "error" ? (
+                      <span className={styles.incidentWorkflow}>{t("table.pipelineUnavailable")}</span>
+                    ) : (
+                      <span className={styles.placeholder} aria-hidden="true" />
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.stage}>{t(STAGE_LABEL_KEY[row.stage])}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    {row.diagnosis.kind === "ready" ? (
+                      <span className={styles.diagnosisTitle}>{row.diagnosis.value}</span>
+                    ) : (
+                      <span className={styles.diagnosisNote}>
+                        {row.diagnosis.kind === "absent"
+                          ? t("diagnosis.analyzing")
+                          : row.diagnosis.kind === "error"
+                            ? t("diagnosis.unavailable")
+                            : t("diagnosis.loading")}
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.status}>{t(STATUS_LABEL_KEY[row.status])}</span>
+                  </div>
+                </td>
+                <td>
+                  <div className={styles.cell}>
+                    <span className={styles.elapsedRow}>
+                      <span className={styles.elapsedValue}>{formatDuration(Math.max(0, now - Date.parse(row.detectedAt)))}</span>
+                      <ChevronRightIcon className={styles.elapsedChevron} />
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

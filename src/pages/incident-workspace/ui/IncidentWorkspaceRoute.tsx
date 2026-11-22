@@ -1,68 +1,138 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
+import { DiagnosisStatusLabel, fetchIncidentDiagnosis, type DiagnosisStatus } from "../../../entities/diagnosis";
 import {
   IncidentSeverity,
   STAGE_LABEL_KEY,
   STATUS_LABEL_KEY,
-  selectDemoIncident,
+  githubRunUrl,
+  incidentLabel,
 } from "../../../entities/incident";
+import { pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
+import { isApiError, useApiQuery } from "../../../shared/api";
 import { historyViewPath, isOperationsQueue, operationsQueuePath } from "../../../shared/config";
+import { useNow } from "../../../shared/lib";
 import { AppLayout } from "../../../shared/ui/app-layout";
-import { Badge } from "../../../shared/ui/badge";
-import { OperationalPilot } from "../../../widgets/operational-pilot";
+import { Button } from "../../../shared/ui/button";
 import { AppSidebar } from "../../../widgets/app-sidebar";
-import { FixtureIncident } from "./FixtureIncident";
-import { ReplayDiagnosis } from "./ReplayDiagnosis";
+
+import { loadWorkspace } from "../model/loadWorkspace";
+import { DetailsRail } from "./DetailsRail";
+import { DiagnosisSections } from "./DiagnosisSections";
 import styles from "./IncidentWorkspace.module.css";
 
-const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * Incident Workspace at `/incidents/:incidentId` (UUID identity).
+ *
+ * Operational facts come from Pipeline; the diagnosis comes from
+ * Recommendation and loads independently, so "analysis in progress" or a
+ * diagnosis failure never hides the incident. Return navigation follows the
+ * allowlisted `from` origin (D02).
+ */
 export function IncidentWorkspaceRoute() {
   const { t } = useTranslation("operations");
   const { incidentId = "" } = useParams();
   const [search] = useSearchParams();
   const origin = search.get("from");
-  const reviewId = search.get("replay");
-  const pilot = import.meta.env.DEV && search.get("pilot") === "1";
-  const validPilot = pilot && uuid.test(incidentId);
-  const replay = !pilot && import.meta.env.DEV && reviewId !== null &&
-    uuid.test(reviewId) && uuid.test(incidentId);
-  const incident = !pilot && reviewId === null ? selectDemoIncident(incidentId) : undefined;
-  const backTo = pilot ? `${operationsQueuePath("active")}&pilot=1` : origin === "history" ? historyViewPath("incidents")
-    : operationsQueuePath(isOperationsQueue(origin) ? origin : "active");
+  const validId = UUID.test(incidentId);
+  const now = useNow();
   const heading = useRef<HTMLHeadingElement>(null);
+  const workspace = useApiQuery(validId ? incidentId : null, (signal) => loadWorkspace(incidentId, signal));
+  const diagnosisQuery = useApiQuery(validId ? incidentId : null, (signal) => fetchIncidentDiagnosis(incidentId, signal));
+  const [reviewedStatus, setReviewedStatus] = useState<DiagnosisStatus | null>(null);
 
-  useEffect(() => { heading.current?.focus(); }, [incidentId, reviewId]);
+  const backTo = origin === "history" ? historyViewPath("incidents") : operationsQueuePath(isOperationsQueue(origin) ? origin : "active");
+  const loaded = workspace.state.status === "success" ? workspace.state.data : null;
+  const notFound = !validId || (workspace.state.status === "error" && isApiError(workspace.state.error) && workspace.state.error.status === 404);
+  const diagnosis = diagnosisQuery.state.status === "success" && diagnosisQuery.state.data.kind === "ready" ? diagnosisQuery.state.data.diagnosis : null;
+  const diagnosisStatus = reviewedStatus ?? diagnosis?.status ?? null;
+
+  useEffect(() => {
+    setReviewedStatus(null);
+  }, [incidentId]);
+
+  useEffect(() => {
+    if (loaded || notFound || workspace.state.status === "error") heading.current?.focus();
+  }, [incidentId, loaded, notFound, workspace.state.status]);
+
+  let title: string = t("workspace.loading");
+  if (notFound) title = t("workspace.notFound");
+  else if (workspace.state.status === "error") title = t("workspace.loadError");
+  else if (loaded) {
+    const repo = loaded.pipeline?.fullName;
+    const run = loaded.origin ? t("workspace.runTitle", { runId: loaded.origin.githubRunId }) : null;
+    title = [repo, run].filter(Boolean).join(" · ") || incidentLabel(loaded.incident);
+  }
+  const runUrl = loaded?.pipeline && loaded.origin ? githubRunUrl(loaded.pipeline.fullName, loaded.origin) : null;
 
   return (
     <AppLayout sidebar={<AppSidebar section={origin === "history" ? "history" : "operations"} />}>
       <div className={styles.context}>
-        <Link to={backTo}>{t(!pilot && origin === "history" ? "workspace.backHistory" : "workspace.backOperations")}</Link>
-        {incident && <Badge variant="outline">{t("demoBadge")}</Badge>}
-        {pilot && <Badge variant="outline">{t("pilot.badge")}</Badge>}
-        {replay && <Badge variant="outline">{t("workspace.replay")}</Badge>}
+        <Link className={styles.back} to={backTo}>← {t(origin === "history" ? "workspace.backHistory" : "workspace.backOperations")}</Link>
       </div>
+
       <header className={styles.header}>
-        <h1 ref={heading} tabIndex={-1}>
-          {incident ? `${incident.id} · ${incident.repository}` : replay || validPilot ? incidentId : t("workspace.notFound")}
-        </h1>
-        {incident && <>
-          <p>{incident.workflow}</p>
-          <div className={styles.metadata}>
-            <IncidentSeverity severity={incident.severity} />
-            <span>{t(STATUS_LABEL_KEY[incident.status])}</span>
-            <span>{t(STAGE_LABEL_KEY[incident.stage])}</span>
-            <span>{incident.assignee ?? t("table.unassigned")}</span>
-          </div>
-        </>}
-        {replay && <p>{t("workspace.replayDescription")}</p>}
+        <h1 ref={heading} tabIndex={-1} aria-live="polite">{title}</h1>
+        {loaded && (
+          <>
+            <p className={styles.subtitle}>
+              <span className={styles.mono}>{incidentLabel(loaded.incident)}</span>
+              {loaded.pipeline && pipelineWorkflowLabel(loaded.pipeline) && <> · {pipelineWorkflowLabel(loaded.pipeline)}</>}
+              {loaded.incident.summary && <> · {loaded.incident.summary}</>}
+            </p>
+            <div className={styles.metaRow}>
+              <div className={styles.metadata}>
+                <IncidentSeverity severity={loaded.incident.severity} />
+                <span>{t(STATUS_LABEL_KEY[loaded.incident.status])}</span>
+                <span>{t(STAGE_LABEL_KEY[loaded.incident.stage])}</span>
+                {diagnosisStatus && <DiagnosisStatusLabel status={diagnosisStatus} />}
+              </div>
+              {runUrl && (
+                <a className={styles.external} href={runUrl} target="_blank" rel="noreferrer noopener">
+                  {t("workspace.viewRun")} ↗<span className={styles.srOnly}> {t("workspace.opensInNewTab")}</span>
+                </a>
+              )}
+            </div>
+          </>
+        )}
       </header>
-      {incident && <FixtureIncident incident={incident} />}
-      {replay && <ReplayDiagnosis key={`${incidentId}/${reviewId}`} incidentId={incidentId} reviewId={reviewId} />}
-      {validPilot && <OperationalPilot key={incidentId} incidentId={incidentId} />}
-      {!incident && !replay && !validPilot && <p>{t("workspace.notFoundDescription")}</p>}
+
+      {notFound && <p>{t("workspace.notFoundText")}</p>}
+      {workspace.state.status === "error" && !notFound && (
+        <div className={styles.inline}>
+          <p role="alert">{t("workspace.loadError")}</p>
+          <Button onClick={workspace.reload}>{t("workspace.retry")}</Button>
+        </div>
+      )}
+
+      {loaded && (
+        <div className={styles.columns}>
+          <article className={styles.surface}>
+            {diagnosisQuery.state.status === "loading" && (
+              <section><p className={styles.muted} role="status">{t("diagnosis.loading")}</p></section>
+            )}
+            {diagnosisQuery.state.status === "error" && (
+              <section className={styles.inline}>
+                <p role="alert">{t("workspace.analysis.error")}</p>
+                <Button onClick={diagnosisQuery.reload}>{t("workspace.retry")}</Button>
+              </section>
+            )}
+            {diagnosisQuery.state.status === "success" && diagnosisQuery.state.data.kind === "absent" && (
+              <section>
+                <h2>{t("workspace.analysis.title")}</h2>
+                <p>{t("workspace.analysis.text")}</p>
+                <Button onClick={diagnosisQuery.reload}>{t("queue.refresh")}</Button>
+              </section>
+            )}
+            {diagnosis && <DiagnosisSections diagnosis={diagnosis} onReviewed={(view) => setReviewedStatus(view.status)} />}
+          </article>
+          <DetailsRail data={loaded} diagnosis={diagnosis} now={now} />
+        </div>
+      )}
     </AppLayout>
   );
 }

@@ -2,10 +2,6 @@ import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
-  selectActiveIncidents,
-  selectNeedsValidationIncidents,
-} from "../../../entities/incident";
-import {
   OPERATIONS_QUEUE_PARAM,
   operationsQueuePath,
   parseOperationsQueue,
@@ -22,9 +18,15 @@ import styles from "./OperationsTabs.module.css";
  * `?queue=` URL and the active tab is derived from the URL rather than local
  * state. `NavLink` cannot distinguish two links that share a pathname, so the
  * active state is computed from the query value and exposed with `aria-current`.
- * Counts are canonical queue lengths.
+ * Counts describe the incidents loaded so far; `null` hides a count that is
+ * not known yet, and `more` renders `N+` when further pages exist.
  */
-export function OperationsTabs() {
+export interface QueueCount {
+  value: number;
+  more: boolean;
+}
+
+export function OperationsTabs({ counts }: { counts: Record<"active" | "validation", QueueCount | null> }) {
   const { t } = useTranslation("operations");
   const { formatNumber } = useFormatters();
   const [searchParams] = useSearchParams();
@@ -37,13 +39,13 @@ export function OperationsTabs() {
       queue: "active",
       label: t("tabs.activeIncidents"),
       to: operationsQueuePath("active"),
-      count: selectActiveIncidents().length,
+      count: counts.active,
     },
     {
       queue: "validation",
       label: t("tabs.needsValidation"),
       to: operationsQueuePath("validation"),
-      count: selectNeedsValidationIncidents().length,
+      count: counts.validation,
     },
   ] as const;
 
@@ -60,9 +62,11 @@ export function OperationsTabs() {
             aria-current={isActive ? "page" : undefined}
           >
             <span className={styles.tabLabel}>{label}</span>
-            <Badge tone={isActive ? "accent" : "neutral"}>
-              {formatNumber(count)}
-            </Badge>
+            {count && (
+              <Badge tone={isActive ? "accent" : "neutral"}>
+                {count.more ? t("queue.moreAvailable", { value: formatNumber(count.value) }) : formatNumber(count.value)}
+              </Badge>
+            )}
           </Link>
         );
       })}

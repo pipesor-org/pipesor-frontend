@@ -1,6 +1,21 @@
 # Pipesor frontend functional architecture map
 
-This is the maintained functional architecture reference for Pipesor. It distinguishes the implemented frontend, agreed target decisions and unresolved contracts. Operations and the History — Incidents and History — Insights read views are implemented; their incident links open the read-only Workspace using demo fixtures. Pipelines inventory, read-only Detail and local onboarding draft are implemented; workflow registration and configuration saves are deferred until local API integration. A shared mutable demonstration collection is no longer an approved target.
+This is the maintained functional architecture reference for Pipesor. It distinguishes the implemented frontend, agreed target decisions and unresolved contracts. Operations, the Incident Workspace and diagnosis review are integrated with Pipeline and Recommendation (see *Service integration status* below); History — Incidents and History — Insights still read demo fixtures. Pipelines inventory, read-only Detail and local onboarding draft are implemented; workflow registration and configuration saves are deferred until local API integration. A shared mutable demonstration collection is no longer an approved target.
+
+## Service integration status
+
+Integration follows the MVP HTTP API v1 and the owner decisions recorded for the deployed MVP (2026-11-22). Where a section below still describes fixture behaviour for Operations or the Workspace, this table supersedes it.
+
+| Area | Status | Contract |
+| --- | --- | --- |
+| Sign-in / session | Integrated | Ingestion `auth/github/start`, `auth/session`, `auth/logout` |
+| Operations — Active | Integrated | Pipeline `GET /incidents?state=OPEN` (every unresolved incident), pipeline read per distinct pipeline, Recommendation diagnosis per loaded row (max 6 concurrent; `404 diagnosis_absent` = Analyzing) |
+| Operations — Needs Validation | Integrated | Pipeline `state=RESOLVED` joined with diagnosis `status = PENDING` (D03); built from the resolved pages loaded, which the view states |
+| Incident Workspace | Integrated, lifecycle pending | Pipeline incident, runs and executions; Recommendation diagnosis. Title `repo · Run #<runId>`; `INC-<displayNumber>` when present, else the abbreviated UUID |
+| Diagnosis review | Integrated (`features/validate-diagnosis`) | Recommendation `GET/POST /diagnoses/{id}/reviews` with `expectedRevision`; Confirm → `CONFIRMED`, Reject → `CORRECTED` with actual cause; notes optional |
+| History, Insights, Pipelines | Fixtures (pilot for registration) | Pending their PRs |
+
+Removed with this integration: search, facets, Mine/Unassigned and the assignee column in Operations (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
 
 ## How to read this map
 
