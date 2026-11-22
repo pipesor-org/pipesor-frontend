@@ -1,0 +1,83 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import type { GitHubRepository } from "../../../entities/github-access";
+import { githubAppInstallUrl } from "../../../shared/config";
+import { Button } from "../../../shared/ui/button";
+
+import styles from "./RegisterWorkflowForm.module.css";
+
+type SetupReturn = "install" | "update" | null;
+
+/**
+ * Step before choosing a workflow: which repositories Pipesor can see, and the
+ * way to widen that. Repository and organization selection happens on
+ * GitHub's own installation page for the Pipesor GitHub App; the dashboard
+ * only links there and refreshes discovery afterwards.
+ *
+ * When the App's Setup URL points back here, GitHub appends
+ * `installation_id` and `setup_action`; they are acknowledged once and
+ * removed from the address bar (they grant nothing on their own).
+ */
+export function RepositoryAccessStep({
+  repositories,
+  loading,
+  onRefresh,
+}: {
+  repositories: readonly GitHubRepository[];
+  loading: boolean;
+  onRefresh: () => void;
+}) {
+  const { t } = useTranslation("pipelines");
+  const navigate = useNavigate();
+  const { pathname, search, state } = useLocation();
+  const [setupReturn, setSetupReturn] = useState<SetupReturn>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    const action = params.get("setup_action");
+    if (!params.has("installation_id") && !action) return;
+    setSetupReturn(action === "install" || action === "update" ? action : "update");
+    params.delete("installation_id");
+    params.delete("setup_action");
+    navigate({ pathname, search: params.size ? `?${params}` : "" }, { replace: true, state });
+  }, [navigate, pathname, search, state]);
+
+  const accounts = [...new Set(repositories.map((repository) => repository.fullName.split("/")[0]))].sort();
+
+  return (
+    <section aria-labelledby="repository-access-title">
+      <h2 id="repository-access-title">{t("onboarding.access.title")}</h2>
+      <p className={styles.note}>{t("onboarding.access.description")}</p>
+
+      {setupReturn && (
+        <p className={styles.notice} role="status">{t(`onboarding.access.returned.${setupReturn}`)}</p>
+      )}
+
+      {!loading && (
+        <p>
+          {repositories.length === 0
+            ? t("onboarding.access.none")
+            : t("onboarding.access.available", {
+                count: repositories.length,
+                accounts: accounts.join(", "),
+              })}
+        </p>
+      )}
+
+      <div className={styles.inline}>
+        {githubAppInstallUrl ? (
+          <a className={styles.primaryLink} href={githubAppInstallUrl} target="_blank" rel="noreferrer noopener">
+            {t("onboarding.access.choose")} ↗<span className={styles.srOnly}> {t("opensInNewTab")}</span>
+          </a>
+        ) : (
+          <p className={styles.note}>{t("onboarding.access.installUnavailable")}</p>
+        )}
+        <Button onClick={onRefresh} disabled={loading}>{t("onboarding.access.refresh")}</Button>
+      </div>
+
+      <p className={styles.note}>{t("onboarding.access.admission")}</p>
+    </section>
+  );
+}

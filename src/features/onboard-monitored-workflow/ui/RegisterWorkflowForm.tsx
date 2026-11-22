@@ -12,10 +12,10 @@ import {
   type PipelineRecord,
 } from "../../../entities/monitored-pipeline";
 import { isApiError, useApiQuery } from "../../../shared/api";
-import { githubAppInstallUrl } from "../../../shared/config";
 import { Button } from "../../../shared/ui/button";
 
 import { registerPipeline } from "../api/register";
+import { RepositoryAccessStep } from "./RepositoryAccessStep";
 import styles from "./RegisterWorkflowForm.module.css";
 
 const TEAM_MAX = 120;
@@ -88,6 +88,11 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
 
   return (
     <form className={styles.surface} onSubmit={(event) => void submit(event)} noValidate>
+      <RepositoryAccessStep
+        repositories={repositoryList}
+        loading={repositories.state.status === "loading" || (repositories.state.status === "success" && Boolean(repositories.state.refreshing))}
+        onRefresh={repositories.reload}
+      />
       <section aria-labelledby={`${ids.repository}-title`}>
         <h2 id={`${ids.repository}-title`}>{t("onboarding.workflowTitle")}</h2>
         <p className={styles.note}>{t("onboarding.workflowDescription")}</p>
@@ -98,9 +103,6 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
             <p role="alert">{t("onboarding.repositoriesError")}</p>
             <Button onClick={repositories.reload}>{t("retry")}</Button>
           </div>
-        )}
-        {repositories.state.status === "success" && repositoryList.length === 0 && (
-          <p className={styles.notice}>{t("onboarding.noRepositories")}</p>
         )}
 
         {repositoryList.length > 0 && (
@@ -161,11 +163,6 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
           </div>
         )}
         <p className={styles.note}>{t("onboarding.readOnly")}</p>
-        {githubAppInstallUrl && (
-          <a className={styles.link} href={githubAppInstallUrl} target="_blank" rel="noreferrer noopener">
-            {t("onboarding.manageAccess")} ↗<span className={styles.srOnly}> {t("opensInNewTab")}</span>
-          </a>
-        )}
       </section>
 
       <section aria-labelledby={`${ids.criticality}-title`}>
