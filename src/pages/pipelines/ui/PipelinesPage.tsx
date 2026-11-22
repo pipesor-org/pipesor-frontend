@@ -59,26 +59,26 @@ export function PipelinesPage() {
       <div className={styles.filters}>
         <label className={styles.search}>
           <span className={styles.srOnly}>{t("inventory.search")}</span><SearchIcon />
-          <input ref={searchRef} type="search" value={query.q} placeholder={t("inventory.search")}
+          <input ref={searchRef} type="search" name="q" value={query.q} placeholder={t("inventory.search")}
             onChange={(event) => setCriterion("q", event.target.value)} />
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.criticality")}</span>
-          <select value={query.criticality} onChange={(event) => setCriterion("criticality", event.target.value)}>
+          <select name="criticality" value={query.criticality} onChange={(event) => setCriterion("criticality", event.target.value)}>
             <option value="">{t("inventory.criticality")}</option>
             {PIPELINE_CRITICALITIES.map((value) => <option key={value} value={value}>{t(`criticality.${value}`)}</option>)}
           </select>
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.team")}</span>
-          <select value={query.team} onChange={(event) => setCriterion("team", event.target.value)}>
+          <select name="team" value={query.team} onChange={(event) => setCriterion("team", event.target.value)}>
             <option value="">{t("inventory.team")}</option>
             {teams.map((team) => <option key={team} value={team}>{team}</option>)}
           </select>
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.monitoring")}</span>
-          <select value={query.monitoring} onChange={(event) => setCriterion("monitoring", event.target.value)}>
+          <select name="monitoring" value={query.monitoring} onChange={(event) => setCriterion("monitoring", event.target.value)}>
             <option value="">{t("inventory.monitoring")}</option>
             {PIPELINE_MONITORING_STATUSES.map((value) => <option key={value} value={value}>{t(`monitoring.${value}`)}</option>)}
           </select>
