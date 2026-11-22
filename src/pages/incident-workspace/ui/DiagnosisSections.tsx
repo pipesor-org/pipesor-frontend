@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import type { Diagnosis, ReviewView } from "../../../entities/diagnosis";
-import { DiagnosisReview } from "../../../features/validate-diagnosis";
+import type { Diagnosis } from "../../../entities/diagnosis";
 import { useFormatters } from "../../../shared/i18n";
 
 import { EvidenceItem } from "./EvidenceItem";
@@ -10,9 +9,9 @@ import styles from "./IncidentWorkspace.module.css";
 /**
  * The diagnosis read in three explicitly labelled kinds of content — model
  * inference, observed evidence and retrieved knowledge — followed by the
- * recommendation and its human validation.
+ * recommendation.
  */
-export function DiagnosisSections({ diagnosis, onReviewed }: { diagnosis: Diagnosis; onReviewed: (view: ReviewView) => void }) {
+export function DiagnosisSections({ diagnosis }: { diagnosis: Diagnosis }) {
   const { t } = useTranslation("operations");
   const { formatTimestamp } = useFormatters();
   const { hypothesis } = diagnosis;
@@ -79,7 +78,6 @@ export function DiagnosisSections({ diagnosis, onReviewed }: { diagnosis: Diagno
         <p className={styles.footnote}>{t("workspace.recommendation.note")}</p>
       </section>
 
-      <DiagnosisReview diagnosis={diagnosis} onReviewed={onReviewed} />
     </>
   );
 }
