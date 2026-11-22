@@ -67,6 +67,9 @@ A breaking change commits the author to explaining the migration path in the bod
   even when they already appear in individual commits. CI checks the title and the
   combined squash message, including after edits to the PR. Preserve that message
   when merging; the final commit is checked again on `main`.
+- Keep PR titles within **65 characters**: the squash commit appends ` (#NN)`, and the
+  72-character header limit is enforced again on `main`. A longer header fails the `main`
+  run before the dashboard image is built and published (as happened with #39).
 - Pass the repository's required checks and prefer squash merging. Do not force-push shared branches or branches under review by others.
 - Do not commit build output, credentials, `.env` files, or machine-specific configuration.
 
