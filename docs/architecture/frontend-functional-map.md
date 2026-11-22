@@ -11,7 +11,8 @@ Integration follows the MVP HTTP API v1 and the owner decisions recorded for the
 | Sign-in / session | Integrated | Ingestion `auth/github/start`, `auth/session`, `auth/logout` |
 | Operations — Active | Integrated | Pipeline `GET /incidents?state=OPEN` (every unresolved incident), pipeline read per distinct pipeline, Recommendation diagnosis per loaded row (max 6 concurrent; `404 diagnosis_absent` = Analyzing) |
 | Operations — Needs Validation | Integrated | Pipeline `state=RESOLVED` joined with diagnosis `status = PENDING` (D03); built from the resolved pages loaded, which the view states |
-| Incident Workspace | Integrated, lifecycle pending | Pipeline incident, runs and executions; Recommendation diagnosis. Title `repo · Run #<runId>`; `INC-<displayNumber>` when present, else the abbreviated UUID |
+| Incident Workspace | Integrated | Pipeline incident, runs and executions; Recommendation diagnosis. Title `repo · Run #<runId>`; `INC-<displayNumber>` when present, else the abbreviated UUID |
+| Incident lifecycle | Integrated (`features/manage-incident-lifecycle`) | Pipeline `POST /incidents/{id}/remediation`, `/verification` and `/resolve` (OPERATE). Verification: the operator picks a successful run (`GET …/runs?conclusion=success`); Ingestion captures it (`POST …/analysis`, polled until `PUBLISHED`) and its `executionId` is linked. Retry-remediation (failed verification) is not offered because only successful runs are linked |
 | Diagnosis review | Integrated (`features/validate-diagnosis`) | Recommendation `GET/POST /diagnoses/{id}/reviews` with `expectedRevision`; Confirm → `CONFIRMED`, Reject → `CORRECTED` with actual cause; notes optional |
 | History, Insights, Pipelines | Fixtures (pilot for registration) | Pending their PRs |
 

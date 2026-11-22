@@ -46,6 +46,8 @@ interface DiagnosisReviewProps {
   diagnosis: Pick<Diagnosis, "diagnosisId" | "version">;
   /** Called with the server's view after a review is recorded. */
   onReviewed?: (view: ReviewView) => void;
+  /** Whether the caller holds OPERATE on the pipeline; the service still enforces it. */
+  canReview?: boolean;
 }
 
 /**
@@ -57,7 +59,7 @@ interface DiagnosisReviewProps {
  * refreshed history is shown instead of silently overwriting it. The reviewer
  * is the session subject; eligibility (OPERATE) is enforced by the service.
  */
-export function DiagnosisReview({ diagnosis, onReviewed }: DiagnosisReviewProps) {
+export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: DiagnosisReviewProps) {
   const { t } = useTranslation("operations");
   const { formatTimestamp } = useFormatters();
   const { state, reload, setData } = useApiQuery(`${diagnosis.diagnosisId}:${diagnosis.version}`, (signal) =>
@@ -69,6 +71,8 @@ export function DiagnosisReview({ diagnosis, onReviewed }: DiagnosisReviewProps)
   const [error, setError] = useState<ErrorKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [recorded, setRecorded] = useState(false);
+  /** One key per opened decision form; retries after a failure reuse it. */
+  const idempotencyKey = useRef(crypto.randomUUID());
   const firstField = useRef<HTMLTextAreaElement>(null);
   /** Which action button gets focus back once the form closes. */
   const [returnFocus, setReturnFocus] = useState<Exclude<Mode, "idle"> | null>(null);
@@ -88,6 +92,7 @@ export function DiagnosisReview({ diagnosis, onReviewed }: DiagnosisReviewProps)
   }, [mode, returnFocus]);
 
   function open(next: Exclude<Mode, "idle">) {
+    idempotencyKey.current = crypto.randomUUID();
     setMode(next);
     setError(null);
     setRecorded(false);
@@ -117,6 +122,7 @@ export function DiagnosisReview({ diagnosis, onReviewed }: DiagnosisReviewProps)
         decision: mode === "reject" ? "CORRECTED" : "CONFIRMED",
         comment: comment || undefined,
         actualCause: mode === "reject" ? actualCause : undefined,
+        idempotencyKey: idempotencyKey.current,
       });
       setData(next);
       setMode("idle");
@@ -164,9 +170,10 @@ export function DiagnosisReview({ diagnosis, onReviewed }: DiagnosisReviewProps)
             <>
               <p className={styles.muted}>{t("review.intro")}</p>
               <p>{t("review.question")}</p>
+              {!canReview && <p className={styles.notice}>{t("review.errors.forbidden")}</p>}
               <div className={styles.actions}>
-                <Button ref={confirmButton} variant="primary" onClick={() => open("confirm")}>{t("review.confirm")}</Button>
-                <Button ref={rejectButton} onClick={() => open("reject")}>{t("review.reject")}</Button>
+                <Button ref={confirmButton} variant="primary" disabled={!canReview} onClick={() => open("confirm")}>{t("review.confirm")}</Button>
+                <Button ref={rejectButton} disabled={!canReview} onClick={() => open("reject")}>{t("review.reject")}</Button>
               </div>
             </>
           )}

@@ -33,6 +33,8 @@ export interface ApiRequest<T> {
   body?: unknown;
   /** Response contract. `null` for routes without a body (204). */
   schema: z.ZodType<T> | null;
+  /** `Idempotency-Key` for commands whose service supports it (a UUID reused on retry). */
+  idempotencyKey?: string;
   /** Send the session bearer token. Defaults to `true`. */
   authenticated?: boolean;
   signal?: AbortSignal;
@@ -65,6 +67,7 @@ export async function apiRequest<T>(service: ApiService, request: ApiRequest<T>)
   const authenticated = request.authenticated ?? true;
   const headers: Record<string, string> = { Accept: "application/json, application/problem+json", "X-Correlation-ID": correlationId };
   if (request.body !== undefined) headers["Content-Type"] = "application/json";
+  if (request.idempotencyKey) headers["Idempotency-Key"] = request.idempotencyKey;
   if (authenticated) {
     const token = authHooks.getAccessToken();
     if (!token) {

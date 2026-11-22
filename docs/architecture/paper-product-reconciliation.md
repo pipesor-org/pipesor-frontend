@@ -43,7 +43,7 @@ The file reports Sora and JetBrains Mono and an empty token collection. Represen
 | Related change, View pull request, View full event timeline | Omitted | No PR or event-timeline data |
 | View run in GitHub / Run / Commit links | Built from repository, run id and attempt / commit SHA | Agreed construction |
 | Timing and Timeline | Detected, diagnosis ready, remediation/verification started, resolved — only recorded timestamps | No synthetic events |
-| Start remediation, Verification, Resolve | Not yet in this view | Lifecycle PR |
+| Start remediation, Verification, Resolve | One "Remediation and verification" section: Start remediation → choose the successful verification run → Resolve incident | Paper shows a static verification run; the operator now chooses it, since only a captured run can be linked |
 | Diagnosis validation (Confirm / Reject form) | Confirm opens a short panel with optional notes; Reject requires actual cause | Confirm asks for one more click to allow a note and avoid accidental confirmation |
 
 ## Interaction and navigation

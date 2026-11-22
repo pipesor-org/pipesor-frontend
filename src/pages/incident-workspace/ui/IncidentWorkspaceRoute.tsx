@@ -11,6 +11,8 @@ import {
   incidentLabel,
 } from "../../../entities/incident";
 import { pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
+import { IncidentLifecycle } from "../../../features/manage-incident-lifecycle";
+import { DiagnosisReview } from "../../../features/validate-diagnosis";
 import { isApiError, useApiQuery } from "../../../shared/api";
 import { historyViewPath, isOperationsQueue, operationsQueuePath } from "../../../shared/config";
 import { useNow } from "../../../shared/lib";
@@ -55,9 +57,14 @@ export function IncidentWorkspaceRoute() {
     setReviewedStatus(null);
   }, [incidentId]);
 
+  // Focus the heading once per incident when its outcome is known, not on every refresh.
+  const focusedFor = useRef<string | null>(null);
+  const settled = loaded !== null || notFound || workspace.state.status === "error";
   useEffect(() => {
-    if (loaded || notFound || workspace.state.status === "error") heading.current?.focus();
-  }, [incidentId, loaded, notFound, workspace.state.status]);
+    if (!settled || focusedFor.current === incidentId) return;
+    focusedFor.current = incidentId;
+    heading.current?.focus();
+  }, [incidentId, settled]);
 
   let title: string = t("workspace.loading");
   if (notFound) title = t("workspace.notFound");
@@ -104,7 +111,16 @@ export function IncidentWorkspaceRoute() {
       {notFound && <p>{t("workspace.notFoundText")}</p>}
       {workspace.state.status === "error" && !notFound && (
         <div className={styles.inline}>
-          <p role="alert">{t("workspace.loadError")}</p>
+          <p role="alert">
+            {isApiError(workspace.state.error) && workspace.state.error.kind === "network"
+              ? t("workspace.unreachable")
+              : isApiError(workspace.state.error) && workspace.state.error.correlationId
+                ? t("queue.errorCode", {
+                    code: workspace.state.error.code ?? String(workspace.state.error.status),
+                    reference: workspace.state.error.correlationId,
+                  })
+                : t("queue.error")}
+          </p>
           <Button onClick={workspace.reload}>{t("workspace.retry")}</Button>
         </div>
       )}
@@ -128,7 +144,20 @@ export function IncidentWorkspaceRoute() {
                 <Button onClick={diagnosisQuery.reload}>{t("queue.refresh")}</Button>
               </section>
             )}
-            {diagnosis && <DiagnosisSections diagnosis={diagnosis} onReviewed={(view) => setReviewedStatus(view.status)} />}
+            {diagnosis && <DiagnosisSections diagnosis={diagnosis} />}
+            <IncidentLifecycle
+              incident={loaded.incident}
+              pipeline={loaded.pipeline}
+              verifications={loaded.verifications}
+              onChanged={workspace.reload}
+            />
+            {diagnosis && (
+              <DiagnosisReview
+                diagnosis={diagnosis}
+                canReview={loaded.pipeline ? loaded.pipeline.effectiveCapabilities.includes("OPERATE") : true}
+                onReviewed={(view) => setReviewedStatus(view.status)}
+              />
+            )}
           </article>
           <DetailsRail data={loaded} diagnosis={diagnosis} now={now} />
         </div>
