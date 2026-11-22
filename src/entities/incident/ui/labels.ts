@@ -1,5 +1,4 @@
 import type {
-  DiagnosisValidationStatus,
   IncidentSeverityLevel,
   IncidentStage,
   IncidentStatus,
@@ -36,10 +35,3 @@ export const STAGE_LABEL_KEY = {
   Container: "stage.container",
   Build: "stage.build",
 } as const satisfies Record<IncidentStage, string>;
-
-export const VALIDATION_STATUS_LABEL_KEY = {
-  NOT_APPLICABLE: "validationStatus.notApplicable",
-  PENDING: "validationStatus.pending",
-  CONFIRMED: "validationStatus.confirmed",
-  REJECTED: "validationStatus.rejected",
-} as const satisfies Record<DiagnosisValidationStatus, string>;

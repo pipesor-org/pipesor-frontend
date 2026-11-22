@@ -1,11 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import {
-  selectDiagnosisTimeSeries,
-  type InsightsDiagnosisBucket,
-} from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 
+import type { DiagnosisBucket, InsightsWindow } from "../model/insights";
 import styles from "./HistoryInsightsDiagnosisTrend.module.css";
 
 /**
@@ -48,7 +45,7 @@ function xPercent(index: number, count: number): number {
  * Diagnosis-time trend.
  *
  * A single-series line chart drawn with inline SVG (no chart dependency). Points
- * are weekly means from the incident entity. A bucket without a measurement is
+ * are weekly means of the loaded population. A bucket without a measurement is
  * never bridged: the line breaks, the value lane says "No data", and the point is
  * omitted, so three empty weeks cannot read as a flat or interpolated line.
  *
@@ -56,7 +53,7 @@ function xPercent(index: number, count: number): number {
  * exposed as a plain list of periods below it, which keeps the chart's geometry
  * out of the accessibility tree.
  */
-export function HistoryInsightsDiagnosisTrend() {
+export function HistoryInsightsDiagnosisTrend({ trend, window }: { trend: DiagnosisBucket[]; window: InsightsWindow }) {
   const { t } = useTranslation("history");
   const {
     formatDuration,
@@ -64,9 +61,8 @@ export function HistoryInsightsDiagnosisTrend() {
     formatShortDate,
     formatShortDateRange,
   } = useFormatters();
-  const series = selectDiagnosisTimeSeries();
 
-  const maxMs = series.buckets.reduce(
+  const maxMs = trend.reduce(
     (max, bucket) =>
       bucket.meanDiagnosisMs === null
         ? max
@@ -80,12 +76,12 @@ export function HistoryInsightsDiagnosisTrend() {
   const yFor = (valueMs: number) =>
     PLOT_BASELINE - (valueMs / topMs) * (PLOT_BASELINE - PLOT_TOP);
 
-  const points: (PlotPoint | null)[] = series.buckets.map((bucket, index) =>
+  const points: (PlotPoint | null)[] = trend.map((bucket, index) =>
     bucket.meanDiagnosisMs === null
       ? null
       : {
           index,
-          x: xPercent(index, series.buckets.length),
+          x: xPercent(index, trend.length),
           y: yFor(bucket.meanDiagnosisMs),
           valueMs: bucket.meanDiagnosisMs,
         },
@@ -105,8 +101,8 @@ export function HistoryInsightsDiagnosisTrend() {
   }
   if (run.length > 0) runs.push(run);
 
-  const range = formatShortDateRange(series.window.start, series.window.end);
-  const bucketValue = (bucket: InsightsDiagnosisBucket) =>
+  const range = formatShortDateRange(window.start, window.end);
+  const bucketValue = (bucket: DiagnosisBucket) =>
     bucket.meanDiagnosisMs === null
       ? t("insights.summary.noData")
       : formatPreciseDuration(bucket.meanDiagnosisMs);
@@ -174,14 +170,14 @@ export function HistoryInsightsDiagnosisTrend() {
               ),
             )}
 
-            {series.buckets.map((bucket, index) => {
+            {trend.map((bucket, index) => {
               const point = points[index];
 
               return point === null ? (
                 <span
                   key={`value-${bucket.start}`}
                   className={styles.noDataLabel}
-                  style={{ left: `${xPercent(index, series.buckets.length)}%` }}
+                  style={{ left: `${xPercent(index, trend.length)}%` }}
                 >
                   {t("insights.summary.noData")}
                 </span>
@@ -199,11 +195,11 @@ export function HistoryInsightsDiagnosisTrend() {
               );
             })}
 
-            {series.buckets.map((bucket, index) => (
+            {trend.map((bucket, index) => (
               <span
                 key={`axis-${bucket.start}`}
                 className={styles.axisTick}
-                style={{ left: `${xPercent(index, series.buckets.length)}%` }}
+                style={{ left: `${xPercent(index, trend.length)}%` }}
               >
                 {formatShortDate(bucket.start)}
               </span>
@@ -212,7 +208,7 @@ export function HistoryInsightsDiagnosisTrend() {
         </div>
 
         <ul className={styles.srOnly}>
-          {series.buckets.map((bucket) => (
+          {trend.map((bucket) => (
             <li key={bucket.start}>
               {t("insights.trend.bucket", {
                 date: formatShortDate(bucket.start),

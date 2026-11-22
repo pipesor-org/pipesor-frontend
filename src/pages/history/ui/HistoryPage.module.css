@@ -1,0 +1,5 @@
+.status {
+  margin: 16px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}

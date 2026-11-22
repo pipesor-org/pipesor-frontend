@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import { selectInsightsSummary } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 
+import type { InsightsSummary } from "../model/insights";
 import styles from "./HistoryInsightsSummary.module.css";
 
 /**
@@ -14,10 +14,9 @@ import styles from "./HistoryInsightsSummary.module.css";
  * strip is a description list so each value keeps its label in the accessibility
  * tree.
  */
-export function HistoryInsightsSummary() {
+export function HistoryInsightsSummary({ summary }: { summary: InsightsSummary }) {
   const { t } = useTranslation("history");
   const { formatNumber, formatPercent, formatPreciseDuration } = useFormatters();
-  const summary = selectInsightsSummary();
 
   const metrics = [
     {

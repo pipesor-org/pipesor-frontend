@@ -1,34 +1,28 @@
 import { useTranslation } from "react-i18next";
 
-import {
-  STAGE_LABEL_KEY,
-  selectInsightsSummary,
-  selectStageDistribution,
-} from "../../../entities/incident";
+import { STAGE_LABEL_KEY } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 
+import type { InsightsSummary, StageCount } from "../model/insights";
 import styles from "./HistoryInsightsStageOutcome.module.css";
 
 /**
  * Stage concentration and diagnosis outcomes.
  *
  * Both panels read the same resolved-incident population as the rest of
- * Insights. Stage labels reuse the entity's canonical translation map (the same
- * vocabulary as the incident tables), and outcome labels reuse the domain
- * validation status copy; only the section titles are new.
+ * Insights. Stage labels reuse the entity's canonical translation map. The
+ * "Rejected" outcome groups `CORRECTED` and `REJECTED` reviews.
  *
  * The bars are decorative: every stage row states its count in text, and the
  * outcome rows state `count · percent`, so no value is conveyed by bar length or
  * colour alone. A population without stage data or validated diagnoses renders
  * an explicit no-data message instead of an empty or zero-valued graphic.
  */
-export function HistoryInsightsStageOutcome() {
+export function HistoryInsightsStageOutcome({ stages, summary }: { stages: StageCount[]; summary: InsightsSummary }) {
   const { t } = useTranslation("history");
   const { t: tOperations } = useTranslation("operations");
   const { formatNumber, formatPercent } = useFormatters();
 
-  const stages = selectStageDistribution();
-  const summary = selectInsightsSummary();
 
   const validated = summary.confirmed + summary.rejected;
   const maxCount = stages[0]?.count ?? 0;
@@ -114,7 +108,7 @@ export function HistoryInsightsStageOutcome() {
                       className={`${styles.dot} ${styles.rejectedDot}`}
                       aria-hidden="true"
                     />
-                    {tOperations("validationStatus.rejected")}
+                    {t("insights.outcome.rejected")}
                   </dt>
                   <dd className={styles.value}>
                     {t("insights.outcome.value", {

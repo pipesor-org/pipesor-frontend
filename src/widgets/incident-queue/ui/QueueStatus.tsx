@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { isApiError } from "../../../shared/api";
 import { Button } from "../../../shared/ui/button";
 
-import styles from "./OperationsPage.module.css";
+import styles from "./QueueStatus.module.css";
 
 /** Loading and failure states of a queue, with a retry and a safe error reference. */
 export function QueueStatus({ status, error, onRetry }: { status: "loading" | "error"; error: unknown; onRetry: () => void }) {

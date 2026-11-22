@@ -8,8 +8,9 @@ The React frontend for Pipesor, an AIOps thesis project for monitoring CI/CD wor
 - Operations provides Active Incidents and Needs Validation read views; History provides Incidents and Insights. Pipelines includes local inventory queries, read-only Detail, and an unsaved onboarding draft.
 - The interface supports English/Spanish, light/dark themes, responsive navigation, and a Not Found screen.
 - Operations reads Pipeline's incident queues (`OPEN`; `RESOLVED` joined with diagnosis `PENDING` for Needs Validation) and Recommendation's diagnosis per visible row. The Incident Workspace (`/incidents/<uuid>`) shows the incident, its original run, the diagnosis (inference, observed evidence, retrieved knowledge, recommendation) and records the human review (Confirm / Reject with actual cause).
-- History and Pipelines still use Zod-validated demonstration fixtures (Pipelines also keeps the development registration pilot) until their integration. History rows do not link to the Workspace meanwhile. The Workspace records remediation, verification (a successful rerun captured through Ingestion) and resolution. Assignment is not implemented.
-- Insights uses provisional, fixed-window demo metrics. Its controls do not recompute results, and the diagnosis-confirmation rate is not a model-accuracy measurement.
+- History lists every resolved incident with its review status, diagnosis time and resolution time, and opens the Workspace. Insights computes mean diagnosis time, MTTR, confirmation rate (Corrected and Rejected count as rejected) and stage/pipeline groupings in the browser over the resolved incidents loaded in the last 30 days, stating how many it covers.
+- Pipelines still uses Zod-validated demonstration fixtures and the development registration pilot until its integration. The Workspace records remediation, verification (a successful rerun captured through Ingestion) and resolution. Assignment is not implemented.
+- The diagnosis-confirmation rate reflects human reviews, not model accuracy.
 
 See the [functional architecture map](docs/architecture/frontend-functional-map.md) for implemented routes, domain boundaries, agreed targets, and open contracts. Documented targets do not authorize new behavior or architecture.
 
@@ -54,14 +55,14 @@ The [Quality workflow](.github/workflows/quality.yml) checks PR commits, the PR 
 | --- | --- |
 | `src/app/` | Application setup, routes, global styles, and design tokens |
 | `src/pages/`, `src/widgets/` | Screens and composed UI sections |
-| `src/entities/` | Session, incident and monitored-pipeline contracts, fixtures, selectors, and domain UI |
+| `src/entities/` | Session, incident, diagnosis, workflow-run and monitored-pipeline contracts and domain UI (Pipelines fixtures until its integration) |
 | `src/shared/` | Shared UI, the HTTP client (`shared/api`), navigation and API-origin configuration, EN/ES resources, assets, and utilities |
 | `public/` | Browser-served assets |
 
 The project follows Feature-Sliced Design. No `features/` layer is implemented; introduce one only for an approved business capability under the existing conventions.
 
 - [Agent and engineering guidance](AGENTS.md): scope, approval boundaries, and required verification.
-- [Frontend conventions](docs/frontend-conventions.md): implementation patterns, styling, localization, accessibility, and fixture invariants.
+- [Frontend conventions](docs/frontend-conventions.md): implementation patterns, styling, localization, accessibility, and service-data rules.
 - [Functional architecture map](docs/architecture/frontend-functional-map.md): detailed behavior, routes, current limitations, and target decisions.
 - [Frontend Git workflow](docs/git-workflow.md): local commit constraints, PR checks, and release status.
 

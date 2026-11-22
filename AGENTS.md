@@ -4,7 +4,7 @@ Shared, version-controlled instructions for developers and AI coding agents. Rea
 
 ## Product and scope
 
-Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend includes the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), Pipelines inventory/read-only Detail/draft onboarding, and a Not Found screen. GitHub sign-in (`shared/api`, `entities/session`), Operations, the Incident Workspace and diagnosis review (`features/validate-diagnosis`) are integrated with the services. History, Insights and Pipelines still read local demonstration fixtures until their screens are integrated; the Workspace records lifecycle steps (`features/manage-incident-lifecycle`); configuration saves and assignment are not implemented.
+Pipesor is an AIOps interface for monitoring CI/CD workflows, triaging incidents, and reviewing diagnoses. The currently implemented frontend includes the **Operations** workspace (Active Incidents and Needs Validation), the **History** read views (**Incidents** and **Insights**), Pipelines inventory/read-only Detail/draft onboarding, and a Not Found screen. GitHub sign-in (`shared/api`, `entities/session`), Operations, the Incident Workspace and diagnosis review (`features/validate-diagnosis`) are integrated with the services. History and Insights read the resolved queue (Insights is computed in the browser over the loaded incidents); Pipelines still reads local demonstration fixtures until its integration; the Workspace records lifecycle steps (`features/manage-incident-lifecycle`); configuration saves and assignment are not implemented.
 
 - Preserve approved product behavior and visual design. Paper is a design reference **when accessible**, not a prerequisite for working on this repository.
 - Without Paper access, work from approved screenshots, specifications, and existing components. Ask when essential behavior or design details are missing; do not invent them.
@@ -47,8 +47,8 @@ See the [frontend functional architecture map](docs/architecture/frontend-functi
 - Internationalize user-facing UI copy with the existing `common`, `operations`, `history`, `pipelines` and `auth` namespaces. Add keys to **both** English and Spanish; introduce another namespace only when required by an implemented screen.
 - Keep domain values, IDs, GitHub names, logs, and evidence separate from translated UI labels. Do not automatically translate user- or system-generated technical content.
 - Use the existing `shared/i18n` formatting utilities for locale-sensitive presentation. Never sort, filter, or calculate with formatted display strings.
-- Zod contracts in `entities/incident/model/schema.ts` and inferred TypeScript types govern incident fixture shape. Validate new data at its boundary, not in every presentational component.
-- Derive incident queue membership, counts, and metrics through domain selectors; do not duplicate them as UI literals.
+- Zod schemas in each entity's `model/api.ts` validate service responses at the boundary (`shared/api`), not in every presentational component.
+- Derive queue membership, counts and metrics from loaded service data; do not duplicate them as UI literals, and state when a figure covers only the loaded pages.
 
 Preserve these domain distinctions: incident lifecycle vs. diagnosis validation; pipeline criticality vs. incident severity; workflow ownership vs. incident assignee. GitHub access is read-only, and starting remediation records human work; it does not execute an automated fix.
 
