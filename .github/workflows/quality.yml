@@ -74,6 +74,8 @@ jobs:
       VITE_PIPESOR_INGESTION_URL: https://ingestion.bravepond-f9f279f5.westus3.azurecontainerapps.io
       VITE_PIPESOR_PIPELINE_URL: https://pipeline.bravepond-f9f279f5.westus3.azurecontainerapps.io
       VITE_PIPESOR_RECOMMENDATION_URL: https://recommendation.bravepond-f9f279f5.westus3.azurecontainerapps.io
+      # Fail the bundle build instead of producing an image that cannot start.
+      PIPESOR_REQUIRE_API_ORIGINS: "1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -87,7 +89,9 @@ jobs:
         shell: bash
         run: |
           image="ghcr.io/${GITHUB_REPOSITORY,,}:sha-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          docker build --platform linux/amd64 --build-arg "VCS_REF=$GITHUB_SHA" --tag "$image" .
+          connect_src="$VITE_PIPESOR_INGESTION_URL $VITE_PIPESOR_PIPELINE_URL $VITE_PIPESOR_RECOMMENDATION_URL"
+          docker build --platform linux/amd64 --build-arg "VCS_REF=$GITHUB_SHA" \
+            --build-arg "PIPESOR_CONNECT_SRC=$connect_src" --tag "$image" .
           test "$(docker image inspect "$image" --format '{{.Config.User}}')" = "101:101"
           test "$(docker image inspect "$image" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$GITHUB_SHA"
           container="$(docker run --detach --publish 18080:8080 "$image")"
@@ -97,6 +101,18 @@ jobs:
           # Client-side routes fall back to the SPA shell with 200.
           test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/incidents/00000000-0000-0000-0000-000000000000)" = 200
           test "$(curl -sI http://127.0.0.1:18080/ | tr -d '\r' | grep -i '^cache-control:')" = "Cache-Control: no-store"
+          # Security headers on the shell and on hashed assets; the CSP allows exactly the baked API origins.
+          shell_headers="$(curl -sI http://127.0.0.1:18080/ | tr -d '\r')"
+          asset="$(curl -fsS http://127.0.0.1:18080/ | grep -o '/assets/[^"]*\.js' | head -n1)"
+          asset_headers="$(curl -sI "http://127.0.0.1:18080${asset}" | tr -d '\r')"
+          for headers in "$shell_headers" "$asset_headers"; do
+            grep -qi "^content-security-policy:.*connect-src 'self' ${connect_src};" <<<"$headers"
+            grep -qi '^strict-transport-security: max-age=' <<<"$headers"
+            grep -qi '^referrer-policy: no-referrer' <<<"$headers"
+            grep -qi '^x-frame-options: DENY' <<<"$headers"
+            grep -qi '^x-content-type-options: nosniff' <<<"$headers"
+          done
+          test "$(grep -ci '^content-security-policy:' <<<"$shell_headers")" = 1
           echo "IMAGE=$image" >> "$GITHUB_ENV"
       - name: Save the tested image for publication
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -8,8 +8,10 @@ export default defineConfig(({ command, mode }) => {
       .map((name) => `VITE_PIPESOR_${name}_URL`)
       .filter((name) => !origins[name]);
     if (missing.length) {
-      // Origins are baked in at build time; this bundle will refuse to start.
-      console.warn(`[pipesor] ${missing.join(", ")} not set: this build is not deployable.`);
+      const message = `[pipesor] ${missing.join(", ")} not set: this build is not deployable.`;
+      // Origins are baked in at build time; a deployable (image) build must not proceed without them.
+      if (loadEnv(mode, ".", "PIPESOR_REQUIRE_").PIPESOR_REQUIRE_API_ORIGINS === "1") throw new Error(message);
+      console.warn(message);
     }
   }
 
