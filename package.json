@@ -7,8 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "typecheck": "tsc",
+    "typecheck": "tsc && tsc -p tsconfig.node.json && tsc -p tsconfig.test.json",
     "lint": "eslint .",
+    "test": "bun test",
     "preview": "vite preview",
     "setup:hooks": "lefthook install",
     "commitlint": "bun ./node_modules/@commitlint/cli/cli.js",
@@ -26,6 +27,7 @@
     "@commitlint/cli": "21.2.4",
     "@commitlint/config-conventional": "21.2.4",
     "@eslint/js": "^9.19.0",
+    "@types/bun": "1.4.3",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",

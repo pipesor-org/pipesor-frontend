@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import type { GitHubRepository } from "../../../entities/github-access";
+import { clearInstallReturn, rememberInstallReturn } from "../../../entities/session";
 import { githubAppInstallUrl } from "../../../shared/config";
 import { Button, buttonClassName } from "../../../shared/ui/button";
 
@@ -15,6 +16,11 @@ type SetupReturn = "install" | "update" | null;
  * way to widen that. Repository and organization selection happens on
  * GitHub's own installation page for the Pipesor GitHub App; the dashboard
  * only links there and refreshes discovery afterwards.
+ *
+ * The installation opens in this tab: the session lives in this tab's
+ * `sessionStorage`, which a new tab would not have (GitHub's redirect would
+ * then land signed out). The onboarding path is saved before leaving so a
+ * sign-in on return still continues here.
  *
  * When the App's Setup URL points back here, GitHub appends
  * `installation_id` and `setup_action`; they are acknowledged once and
@@ -33,6 +39,9 @@ export function RepositoryAccessStep({
   const navigate = useNavigate();
   const { pathname, search, state } = useLocation();
   const [setupReturn, setSetupReturn] = useState<SetupReturn>(null);
+
+  // Back in the onboarding flow: the saved return path has done its job.
+  useEffect(() => clearInstallReturn(), []);
 
   useEffect(() => {
     const params = new URLSearchParams(search);
@@ -68,8 +77,8 @@ export function RepositoryAccessStep({
 
       <div className={styles.inline}>
         {githubAppInstallUrl ? (
-          <a className={buttonClassName({ variant: "secondary" })} href={githubAppInstallUrl} target="_blank" rel="noreferrer noopener">
-            {t("onboarding.access.choose")} ↗<span className={styles.srOnly}> {t("opensInNewTab")}</span>
+          <a className={buttonClassName({ variant: "secondary" })} href={githubAppInstallUrl} rel="noreferrer" onClick={() => rememberInstallReturn(pathname)}>
+            {t("onboarding.access.choose")} ↗
           </a>
         ) : (
           <p className={styles.note}>{t("onboarding.access.installUnavailable")}</p>

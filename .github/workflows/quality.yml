@@ -53,6 +53,7 @@ jobs:
         if: github.event_name == 'push'
         run: bun run commitlint --last
       - run: bun run typecheck
+      - run: bun run test
       - run: bun run lint
       - run: bun run build
       - name: Store verified frontend build

@@ -39,11 +39,12 @@ Before opening a PR, run the [frontend Git workflow](docs/git-workflow.md) check
 ```sh
 bun run test:hooks
 bun run typecheck
+bun run test
 bun run lint
 bun run build
 ```
 
-These validate accepted/rejected commit messages, TypeScript, ESLint, and the production bundle. There is no established automated application test runner; `test:hooks` covers commit-message validation only.
+These validate accepted/rejected commit messages, TypeScript (application, Vite config and tests), unit tests of pure logic (Bun's built-in runner, `*.test.ts` next to the code), ESLint, and the production bundle. There are no component or browser tests; screens are verified manually.
 
 After building, use `bun run preview` for manual browser verification. Follow [AGENTS.md](AGENTS.md) for the applicable navigation, EN/ES, keyboard, responsive, and design checks; build success does not establish those results.
 

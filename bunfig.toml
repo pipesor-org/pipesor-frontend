@@ -1,0 +1,4 @@
+# Unit tests (`bun run test`): pure logic next to the code, as `*.test.ts`.
+[test]
+root = "./src"
+preload = ["./src/test/env.ts"]

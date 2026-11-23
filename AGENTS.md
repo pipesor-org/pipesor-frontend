@@ -60,7 +60,7 @@ Preserve these domain distinctions: incident lifecycle vs. diagnosis validation;
 4. For UI changes, verify navigation, both locales, keyboard accessibility, responsive behavior, and visual fidelity where relevant. For domain/schema changes, verify valid and invalid data cases.
 5. Report changed files, checks passed/failed, any browser or design comparisons **not performed**, and open decisions. Do not claim verification you did not perform.
 
-The repository has no established application test runner. Run `bun run test:hooks` for hook or Commitlint changes; the Quality workflow also runs these hook cases, commit validation, typecheck, lint, and build. Do not claim automated application test coverage.
+Unit tests use Bun's built-in runner: `bun run test` runs `*.test.ts` files placed next to the code they cover. They cover pure logic (rules, mappings, storage helpers, polling); there are no React component or browser tests, so UI behavior is still verified in the browser. Keep logic you need to test free of I/O (inject storage, clocks or fetchers) rather than mocking modules. Tests type-check with `tsconfig.test.json` (Bun types); application code type-checks without Node or Bun globals, and `vite.config.ts` has its own `tsconfig.node.json`. Run `bun run test:hooks` for hook or Commitlint changes. The Quality workflow runs the hook cases, commit validation, typecheck, unit tests, lint and build.
 
 ## Git workflow
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { completeSignIn, startGitHubSignIn } from "../../../entities/session";
+import { completeSignIn, signInDestination, startGitHubSignIn } from "../../../entities/session";
 import { isApiError, safeErrorCode } from "../../../shared/api";
 import { DEFAULT_OPERATIONS_QUEUE, authRoutes, operationsQueuePath } from "../../../shared/config";
 import { Button } from "../../../shared/ui/button";
@@ -17,7 +17,9 @@ type Failure = { kind: "missing" } | { kind: "network" } | { kind: "rejected"; c
  *
  * The one-time handoff is captured once, removed from the address bar and
  * browser history immediately, and exchanged for a session. On success the
- * user continues to the server-confirmed, re-sanitized `returnTo`. A callback
+ * user continues to the server-confirmed, re-sanitized `returnTo`, or, when
+ * none was requested (the server answers `/`), to where a GitHub App
+ * installation started in this tab. A callback
  * failure (`?error=`) is forwarded to the sign-in screen.
  */
 export function AuthCompletePage() {
@@ -44,7 +46,7 @@ export function AuthCompletePage() {
     let active = true;
     completeSignIn(handoff).then(
       (returnTo) => {
-        if (active) navigate(returnTo ?? operationsQueuePath(DEFAULT_OPERATIONS_QUEUE), { replace: true });
+        if (active) navigate(signInDestination(returnTo) ?? operationsQueuePath(DEFAULT_OPERATIONS_QUEUE), { replace: true });
       },
       (error: unknown) => {
         if (!active) return;

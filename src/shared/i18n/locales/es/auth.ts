@@ -11,11 +11,10 @@ const auth = {
     redirecting: "Redirigiendo a GitHub…",
     points: {
       readOnly: "Solo lectura: Pipesor nunca modifica tu código, workflows, secretos ni permisos de GitHub.",
-      repositories: "Verás los repositorios donde está instalada la GitHub App de Pipesor y que tu organización ha habilitado en Pipesor.",
+      repositories: "Cualquier cuenta de GitHub puede entrar. Los repositorios aparecen cuando su administrador los selecciona en la GitHub App de Pipesor, y solo ves los que puedes leer en GitHub.",
       session: "Tu sesión dura como máximo una hora y solo se conserva en esta pestaña del navegador.",
     },
-    manageAccess: "Gestionar el acceso a repositorios en GitHub",
-    opensInNewTab: "(se abre en una pestaña nueva)",
+    manageAccess: "Instalar la GitHub App o gestionar el acceso a repositorios",
     preferences: "Preferencias de visualización",
   },
   ended: {

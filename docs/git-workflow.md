@@ -87,4 +87,4 @@ git pull --ff-only
 git switch -c feature/incident-queue-filters
 ```
 
-Run `bun run test:hooks`, `bun run typecheck`, `bun run lint`, and `bun run build` before opening the PR. The Quality workflow runs these checks on PRs and pushes to `main`.
+Run `bun run test:hooks`, `bun run typecheck`, `bun run test`, `bun run lint`, and `bun run build` before opening the PR. The Quality workflow runs these checks on PRs and pushes to `main`.
