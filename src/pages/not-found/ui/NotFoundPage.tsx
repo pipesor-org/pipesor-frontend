@@ -5,6 +5,8 @@ import {
   DEFAULT_OPERATIONS_QUEUE,
   operationsQueuePath,
 } from "../../../shared/config";
+import { buttonClassName } from "../../../shared/ui/button";
+import { StandalonePage } from "../../../shared/ui/standalone-page";
 
 import styles from "./NotFoundPage.module.css";
 
@@ -19,18 +21,15 @@ export function NotFoundPage() {
   const { t } = useTranslation("common");
 
   return (
-    <main className={styles.page}>
-      <div className={styles.card}>
+    <StandalonePage>
+      <div className={styles.heading}>
         <p className={styles.code}>404</p>
         <h1 className={styles.title}>{t("notFound.title")}</h1>
         <p className={styles.text}>{t("notFound.text")}</p>
-        <Link
-          className={styles.link}
-          to={operationsQueuePath(DEFAULT_OPERATIONS_QUEUE)}
-        >
-          {t("notFound.backToOperations")}
-        </Link>
       </div>
-    </main>
+      <Link className={buttonClassName({ variant: "primary" })} to={operationsQueuePath(DEFAULT_OPERATIONS_QUEUE)}>
+        {t("notFound.backToOperations")}
+      </Link>
+    </StandalonePage>
   );
 }

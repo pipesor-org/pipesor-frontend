@@ -6,6 +6,7 @@ import { completeSignIn, signInDestination, startGitHubSignIn } from "../../../e
 import { isApiError, safeErrorCode } from "../../../shared/api";
 import { DEFAULT_OPERATIONS_QUEUE, authRoutes, operationsQueuePath } from "../../../shared/config";
 import { Button } from "../../../shared/ui/button";
+import { StandalonePage } from "../../../shared/ui/standalone-page";
 
 import { Brand } from "./Brand";
 import styles from "./SignIn.module.css";
@@ -64,29 +65,27 @@ export function AuthCompletePage() {
   }, [failure]);
 
   return (
-    <main className={styles.page}>
-      <div className={styles.card}>
-        <Brand />
-        {failure ? (
-          <>
-            <div className={styles.heading}>
-              <h1 className={styles.title} ref={heading} tabIndex={-1}>{t("complete.failedTitle")}</h1>
-              <p className={styles.text} role="alert">
-                {failure.kind === "missing" ? t("complete.missing") : failure.kind === "network" ? t("complete.network") : t("complete.failedText")}
-                {failure.kind === "rejected" && failure.code ? (
-                  <> <span className={styles.code}>{t("complete.reference", { code: failure.code })}</span></>
-                ) : null}
-              </p>
-            </div>
-            <Button variant="primary" size="lg" block onClick={() => startGitHubSignIn(null)}>
-              {t("complete.tryAgain")}
-            </Button>
-          </>
-        ) : (
-          <p className={styles.text} role="status">{t("complete.working")}</p>
-        )}
-      </div>
-    </main>
+    <StandalonePage>
+      <Brand />
+      {failure ? (
+        <>
+          <div className={styles.heading}>
+            <h1 className={styles.title} ref={heading} tabIndex={-1}>{t("complete.failedTitle")}</h1>
+            <p className={styles.text} role="alert">
+              {failure.kind === "missing" ? t("complete.missing") : failure.kind === "network" ? t("complete.network") : t("complete.failedText")}
+              {failure.kind === "rejected" && failure.code ? (
+                <> <span className={styles.code}>{t("complete.reference", { code: failure.code })}</span></>
+              ) : null}
+            </p>
+          </div>
+          <Button variant="primary" size="lg" block onClick={() => startGitHubSignIn(null)}>
+            {t("complete.tryAgain")}
+          </Button>
+        </>
+      ) : (
+        <p className={styles.text} role="status">{t("complete.working")}</p>
+      )}
+    </StandalonePage>
   );
 }
 

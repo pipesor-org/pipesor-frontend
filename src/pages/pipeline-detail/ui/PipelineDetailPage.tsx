@@ -21,6 +21,7 @@ import { isApiError, useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button } from "../../../shared/ui/button";
+import { dataTable } from "../../../shared/ui/data-table";
 import { ChevronLeftIcon } from "../../../shared/ui/icons";
 import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
@@ -137,8 +138,9 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
               {grants === null ? (
                 <p className={styles.note}>{t("access.unavailable")}</p>
               ) : (
-                <div className={styles.tableScroll} role="region" tabIndex={0} aria-labelledby="pipeline-access">
-                  <table className={styles.accessTable}>
+                <div className={dataTable.frame} role="region" tabIndex={0} aria-labelledby="pipeline-access">
+                  <table className={`${dataTable.table} ${styles.accessTable}`}>
+                    <colgroup><col className={styles.colPerson} /><col className={styles.colCapabilities} /><col /></colgroup>
                     <thead><tr>
                       <th scope="col">{t("access.person")}</th>
                       <th scope="col">{t("access.capabilities")}</th>
@@ -150,7 +152,7 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
                         <tr key={ref}>
                           <th scope="row"><span className={styles.mono} title={ref}>{shortRef(ref)}</span>{ref === selfRef && <span className={styles.you}> {t("access.you")}</span>}</th>
                           <td>{held.map((cap) => t(`access.capability.${cap}`)).join(" · ")}</td>
-                          <td>{held.map((cap) => t(`access.capabilityDescription.${cap}`)).join(" ")}</td>
+                          <td><span className={dataTable.muted}>{held.map((cap) => t(`access.capabilityDescription.${cap}`)).join(" ")}</span></td>
                         </tr>
                       );
                     })}</tbody>

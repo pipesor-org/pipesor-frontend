@@ -110,7 +110,7 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
       case "done":
         // Every BLOCKED receipt is final: explain why and offer no retry of the same attempt.
         if (state.analysis.phase === "BLOCKED") {
-          return <span className={styles.error}>{t(`runs.blocked.${analysisBlock(state.analysis) ?? "other"}`)}</span>;
+          return <span className={styles.blocked}>{t(`runs.blocked.${analysisBlock(state.analysis) ?? "other"}`)}</span>;
         }
         if (state.analysis.phase !== "PUBLISHED") {
           return (

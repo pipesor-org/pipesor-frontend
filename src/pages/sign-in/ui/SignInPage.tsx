@@ -14,6 +14,9 @@ import {
 } from "../../../shared/config";
 import { LanguageSelector } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
+import { CheckIcon } from "../../../shared/ui/icons";
+import { Notice } from "../../../shared/ui/notice";
+import { StandalonePage } from "../../../shared/ui/standalone-page";
 import { ThemeToggle } from "../../../shared/ui/theme-toggle";
 
 import { Brand } from "./Brand";
@@ -42,52 +45,50 @@ export function SignInPage() {
   if (session) return <Navigate to={returnTo ?? readInstallReturn() ?? operationsQueuePath(DEFAULT_OPERATIONS_QUEUE)} replace />;
 
   return (
-    <main className={styles.page}>
-      <div className={styles.card}>
-        <Brand />
-        <div className={styles.heading}>
-          <h1 className={styles.title}>{t("signIn.title")}</h1>
-          <p className={styles.lead}>{t("signIn.lead")}</p>
-        </div>
-
-        {errorCode ? (
-          <p className={`${styles.notice} ${styles.noticeError}`} role="alert">
-            {t("complete.failedText")} <span className={styles.code}>{t("complete.reference", { code: errorCode })}</span>
-          </p>
-        ) : endReason ? (
-          <p className={styles.notice} role="status">{t(`ended.${endReason}`)}</p>
-        ) : null}
-
-        <Button
-          variant="primary"
-          size="lg"
-          block
-          disabled={redirecting}
-          onClick={() => {
-            setRedirecting(true);
-            startGitHubSignIn(returnTo);
-          }}
-        >
-          {redirecting ? t("signIn.redirecting") : t("signIn.continue")}
-        </Button>
-
-        <ul className={styles.points}>
-          <li>{t("signIn.points.readOnly")}</li>
-          <li>{t("signIn.points.repositories")}</li>
-          <li>{t("signIn.points.session")}</li>
-        </ul>
-
-        {githubAppInstallUrl ? (
-          <a className={styles.link} href={githubAppInstallUrl} rel="noreferrer" onClick={() => rememberInstallReturn(routes.addMonitoredWorkflow)}>
-            {t("signIn.manageAccess")} ↗
-          </a>
-        ) : null}
-
-        <section className={styles.preferences} aria-label={t("signIn.preferences")}>
-          <LanguageSelector />
-          <ThemeToggle />
-        </section>
+    <StandalonePage>
+      <Brand />
+      <div className={styles.heading}>
+        <h1 className={styles.title}>{t("signIn.title")}</h1>
+        <p className={styles.lead}>{t("signIn.lead")}</p>
       </div>
-    </main>
+
+      {errorCode ? (
+        <Notice tone="critical" role="alert">
+          {t("complete.failedText")} <span className={styles.code}>{t("complete.reference", { code: errorCode })}</span>
+        </Notice>
+      ) : endReason ? (
+        <Notice tone="info" role="status">{t(`ended.${endReason}`)}</Notice>
+      ) : null}
+
+      <Button
+        variant="primary"
+        size="lg"
+        block
+        disabled={redirecting}
+        onClick={() => {
+          setRedirecting(true);
+          startGitHubSignIn(returnTo);
+        }}
+      >
+        {redirecting ? t("signIn.redirecting") : t("signIn.continue")}
+      </Button>
+
+      <ul className={styles.points}>
+        {(["readOnly", "repositories", "session"] as const).map((point) => (
+          <li key={point}><CheckIcon />{t(`signIn.points.${point}`)}</li>
+        ))}
+      </ul>
+
+      {githubAppInstallUrl ? (
+        <a className={styles.link} href={githubAppInstallUrl} rel="noreferrer" onClick={() => rememberInstallReturn(routes.addMonitoredWorkflow)}>
+          {t("signIn.manageAccess")} ↗
+        </a>
+      ) : null}
+
+      <section className={styles.preferences} aria-label={t("signIn.preferences")}>
+        <LanguageSelector />
+        <ThemeToggle />
+      </section>
+    </StandalonePage>
   );
 }

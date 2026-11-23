@@ -12,6 +12,7 @@ import { isApiError, useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
 import { Textarea } from "../../../shared/ui/field";
+import { Notice } from "../../../shared/ui/notice";
 
 import styles from "./DiagnosisReview.module.css";
 
@@ -171,7 +172,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
             <>
               <p className={styles.muted}>{t("review.intro")}</p>
               <p>{t("review.question")}</p>
-              {!canReview && <p className={styles.notice}>{t("review.errors.forbidden")}</p>}
+              {!canReview && <Notice tone="warning">{t("review.errors.forbidden")}</Notice>}
               <div className={styles.actions}>
                 <Button ref={confirmButton} variant="primary" disabled={!canReview} onClick={() => open("confirm")}>{t("review.confirm")}</Button>
                 <Button ref={rejectButton} disabled={!canReview} onClick={() => open("reject")}>{t("review.reject")}</Button>

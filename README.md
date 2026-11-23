@@ -30,7 +30,7 @@ bun run dev
 
 Open `http://127.0.0.1:5173` — the services only accept that dashboard origin (CORS and the GitHub callback). In development the API origins default to the local stack (Ingestion 8081, Pipeline 8082, Recommendation 8086, see the [runtime manifest](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/development/runtime-manifest.md)); deployed images read them at runtime from `/config.js`, which the container renders from its `PIPESOR_*_URL` environment; `VITE_PIPESOR_*_URL` (see [.env.example](.env.example)) remains a local override. Start Vite with `bun run dev -- --host 127.0.0.1 --port 5173 --strictPort` when your default host differs. Hook setup is required once per clone; Lefthook and Commitlint run with Bun without requiring Node.js. Keep personal overrides in ignored `lefthook-local.yml`.
 
-Paper access and agent tools are optional. Approved screenshots, specifications, and existing components provide design handoffs; request missing details rather than inventing them. Sora and JetBrains Mono load from Google Fonts through `index.html`, so those fonts may be unavailable offline.
+Paper access and agent tools are optional. Approved screenshots, specifications, and existing components provide design handoffs; request missing details rather than inventing them. Geist and Geist Mono load from Google Fonts through `index.html` (the CSP allows only that font source), so those fonts may be unavailable offline; the visual language is described in the [design system](docs/design-system.md).
 
 ## Verification
 
