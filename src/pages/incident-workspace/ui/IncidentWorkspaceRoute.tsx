@@ -25,6 +25,7 @@ import { AppSidebar } from "../../../widgets/app-sidebar";
 import { loadWorkspace } from "../model/loadWorkspace";
 import { DetailsRail } from "./DetailsRail";
 import { DiagnosisSections } from "./DiagnosisSections";
+import { DiagnosisSkeleton, WorkspaceSkeleton } from "./WorkspaceSkeleton";
 import styles from "./IncidentWorkspace.module.css";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -113,6 +114,7 @@ export function IncidentWorkspaceRoute() {
         )}
       />
 
+      {validId && workspace.state.status === "loading" && <WorkspaceSkeleton />}
       {notFound && <p>{t("workspace.notFoundText")}</p>}
       {workspace.state.status === "error" && !notFound && (
         <div className={styles.inline}>
@@ -135,7 +137,10 @@ export function IncidentWorkspaceRoute() {
           <div className={styles.main}>
             <article className={styles.card}>
               {diagnosisQuery.state.status === "loading" && (
-                <section><p className={styles.muted} role="status">{t("diagnosis.loading")}</p></section>
+                <section className={styles.inference} role="status">
+                  <span className={styles.srOnly}>{t("diagnosis.loading")}</span>
+                  <DiagnosisSkeleton />
+                </section>
               )}
               {diagnosisQuery.state.status === "error" && (
                 <section className={styles.inline}>

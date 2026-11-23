@@ -15,9 +15,10 @@ import { useApiQuery } from "../../../shared/api";
 import { pipelineDetailPath, routes } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button, buttonClassName } from "../../../shared/ui/button";
-import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
+import { TableEmptyRow, TableSkeleton, dataTable } from "../../../shared/ui/data-table";
 import { Select, TextInput } from "../../../shared/ui/field";
-import { ChevronRightIcon, PlusIcon, SearchIcon } from "../../../shared/ui/icons";
+import { Notice } from "../../../shared/ui/notice";
+import { ChevronRightIcon, PipelinesIcon, PlusIcon, SearchIcon } from "../../../shared/ui/icons";
 import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
@@ -100,12 +101,17 @@ export function PipelinesPage() {
           onClick={() => { setParams({}, { replace: true }); searchRef.current?.focus(); }}>{t("inventory.reset")}</Button>}
       </div>
 
-      {inventory.state.status === "loading" && <p className={styles.state} role="status">{t("inventory.loading")}</p>}
-      {inventory.state.status === "error" && (
-        <div className={styles.state}>
-          <p role="alert">{t("inventory.error")}</p>
-          <Button onClick={inventory.reload}>{t("retry")}</Button>
+      {inventory.state.status === "loading" && (
+        <div className={styles.loading} role="status">
+          <span className={styles.srOnly}>{t("inventory.loading")}</span>
+          <TableSkeleton rows={3} />
         </div>
+      )}
+      {inventory.state.status === "error" && (
+        <Notice tone="critical" role="alert" className={styles.state}>
+          <p>{t("inventory.error")}</p>
+          <Button size="sm" onClick={inventory.reload}>{t("retry")}</Button>
+        </Notice>
       )}
       {inventory.state.status === "success" && (
         <>
@@ -135,7 +141,20 @@ export function PipelinesPage() {
                     <ChevronRightIcon className={dataTable.chevron} />
                   </span></td>
                 </tr>
-              )) : <TableEmptyRow colSpan={6} text={t(all.length ? "inventory.empty" : "inventory.none")} />}</tbody>
+              )) : all.length ? (
+                <TableEmptyRow colSpan={6} text={t("inventory.empty")} />
+              ) : (
+                <TableEmptyRow
+                  colSpan={6}
+                  icon={<PipelinesIcon />}
+                  text={t("inventory.none")}
+                  action={
+                    <Link className={buttonClassName({ variant: "primary" })} to={routes.addMonitoredWorkflow} state={returnState}>
+                      <PlusIcon />{t("inventory.add")}
+                    </Link>
+                  }
+                />
+              )}</tbody>
             </table>
           </div>
         </>

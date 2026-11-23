@@ -65,6 +65,7 @@ export function SignInPage() {
         size="lg"
         block
         disabled={redirecting}
+        loading={redirecting}
         onClick={() => {
           setRedirecting(true);
           startGitHubSignIn(returnTo);

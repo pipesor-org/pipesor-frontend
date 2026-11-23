@@ -70,6 +70,14 @@
   border-color: var(--color-ink);
   background-color: var(--color-ink);
   color: var(--color-on-ink);
+  animation: step-in var(--duration-slow) var(--ease-out);
+}
+
+/* The step an incident has just reached settles in with a short pop. */
+@keyframes step-in {
+  from {
+    transform: scale(0.8);
+  }
 }
 
 .current .label {

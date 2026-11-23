@@ -13,6 +13,7 @@ import {
 import { useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
+import { Spinner } from "../../../shared/ui/spinner";
 
 import { startVerification } from "../api/commands";
 import { lifecycleErrorKey, type LifecycleErrorKey } from "./errors";
@@ -142,7 +143,8 @@ export function VerificationRunPicker({ incidentId, workflow, remediationStarted
       )}
 
       {phase && (
-        <p className={styles.muted} role="status">
+        <p className={`${styles.muted} ${styles.progress}`} role="status">
+          <Spinner />
           {phase === "linking" ? t("lifecycle.verification.linking") : t(`lifecycle.verification.phase.${phase}`)}
         </p>
       )}
@@ -150,7 +152,7 @@ export function VerificationRunPicker({ incidentId, workflow, remediationStarted
 
       {eligible.length > 0 && (
         <div className={styles.actions}>
-          <Button variant="primary" onClick={() => void record()} disabled={!choice || busy || disabled}>
+          <Button variant="primary" loading={busy} onClick={() => void record()} disabled={!choice || busy || disabled}>
             {busy ? t("lifecycle.submitting") : t("lifecycle.verification.record")}
           </Button>
         </div>

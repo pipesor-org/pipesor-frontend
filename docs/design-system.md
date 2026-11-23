@@ -87,6 +87,14 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - **Messages.** Use `Notice` with a tone: `critical` for failures, `warning` for blocked or limited actions (missing capability, a blocked capture), `success` for a completed step, `info` or `neutral` for context. A notice that appears after an action gets `role="status"` or `role="alert"`.
 - **Screens outside the shell.** Sign-in, sign-in completion and Not Found use `StandalonePage`: one elevated card (`--radius-xl`, `--shadow-md`) over a dotted canvas in a border tone that fades out toward the edges. The canvas is decorative.
 
+## Loading, empty and confirmation states
+
+- **Loading.** A region that loads shows a skeleton of its final shape (`TableSkeleton` for tables, skeleton lines for cards and the Workspace) and announces itself with a visually hidden `role="status"` message. Never show `0` or another figure before it is known: `Stat` takes `loading` (placeholder) and an unavailable figure is an em dash.
+- **Busy actions.** `Button loading` shows a spinner and `aria-busy`, keeps the button at full strength and keeps its label saying what happens ("Recording…"). A running capture shows the spinner beside its phase.
+- **Empty.** `TableEmptyRow` explains what the absence means. When nothing needs attention it is reassuring (`tone="success"` with a check); when the table is empty because nothing exists yet it offers the action that fills it (for example "Add monitored workflow").
+- **Confirmation.** A recorded change appears as a success `Notice` inside a live region that is always rendered, so it is announced. Notices settle in with a short fade, and the lifecycle step just reached settles with a small scale. All of it collapses under `prefers-reduced-motion`.
+- **Errors loading a view.** A critical `Notice` with the error reference, when there is one, and a retry button.
+
 ## Components (`src/shared/ui`)
 
 | Primitive | Use |
@@ -96,10 +104,11 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 | `StatusBadge` (`tone`, `soft` or `dot`, `live`) | The only way to show a status. `soft` (tinted pill) for statuses that must stand out (severity, review); `dot` for dense lists and secondary facts (lifecycle, criticality, monitoring, connection). `live` pulses the dot for ongoing processes. Domain mappings live in entities: `IncidentSeverity`, `IncidentStatusBadge`, `DiagnosisStatusLabel`, `CriticalityBadge`, `MonitoringBadge`. |
 | `TextInput` (`icon`), `Select`, `Textarea` | Form fields share the control height, a ≥ 3:1 outline (`--color-border-input`), an accent border plus halo on focus and a critical border when `aria-invalid`. `Select` keeps the native element with a token-styled chevron. |
 | `Skeleton` (`width`, `height`, `shape`) | Placeholder while content loads; decorative (`aria-hidden`). The loading region still announces itself with `role="status"`. |
+| `Spinner` | Activity ring in the current text color; used by `Button loading` and running captures. |
 | `Badge` | Count pill next to tab and navigation labels only. |
 | `PageHeader` (`title`, `subtitle`, `back`, `meta`, `actions`, `divider`, `headingRef`) | The title block of every navigable screen. `headingRef` makes the `h1` a programmatic focus target after navigation. |
 | `TabNav` + `tabClassName(active)` | Tab bar for views of one screen; the page supplies router links. |
-| `dataTable` (class names) + `TableEmptyRow` | The table system above. Widgets keep only column widths and domain cells. |
+| `dataTable` (class names) + `TableEmptyRow` (`icon`, `tone`, `action`) + `TableSkeleton` | The table system above. Widgets keep only column widths and domain cells. |
 | `StatGroup` + `Stat` (`label`, `value`, `tone`, `live`, `mono`) | Key figures of a view, as a description list. |
 | `Notice` (`tone`) | Inline message with a tinted background and a vivid leading edge; pass `role` when it follows an action. |
 | `StandalonePage` | Frame for screens without the app shell. |

@@ -19,6 +19,8 @@ import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { forEachWithConcurrency } from "../../../shared/lib";
 import { Button } from "../../../shared/ui/button";
+import { Skeleton } from "../../../shared/ui/skeleton";
+import { Spinner } from "../../../shared/ui/spinner";
 
 import styles from "./FailedRuns.module.css";
 
@@ -99,7 +101,7 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
       case "idle":
         return <Button onClick={() => void analyze(run)}>{t("runs.analyze")}</Button>;
       case "running":
-        return <span className={styles.muted} role="status">{t(`runs.phase.${state.phase}`)}</span>;
+        return <span className={`${styles.muted} ${styles.inline}`} role="status"><Spinner />{t(`runs.phase.${state.phase}`)}</span>;
       case "error":
         return (
           <span className={styles.inline}>
@@ -130,7 +132,19 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
 
   return (
     <div className={styles.root}>
-      {runs.state.status === "loading" && <p className={styles.muted} role="status">{t("runs.loading")}</p>}
+      {runs.state.status === "loading" && (
+        <div role="status">
+          <span className={styles.srOnly}>{t("runs.loading")}</span>
+          <ul className={styles.list} aria-hidden="true">
+            {["44%", "36%", "40%"].map((width, index) => (
+              <li key={index} className={styles.row}>
+                <span className={styles.run}><Skeleton width="120px" /><Skeleton width={width} /></span>
+                <Skeleton width="72px" height="28px" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {runs.state.status === "error" && (
         <div className={styles.inline}>
           <p role="alert">{t("runs.loadError")}</p>

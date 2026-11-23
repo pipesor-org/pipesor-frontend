@@ -13,6 +13,7 @@ import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
 import { Textarea } from "../../../shared/ui/field";
 import { Notice } from "../../../shared/ui/notice";
+import { Skeleton } from "../../../shared/ui/skeleton";
 
 import styles from "./DiagnosisReview.module.css";
 
@@ -80,7 +81,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
   const [returnFocus, setReturnFocus] = useState<Exclude<Mode, "idle"> | null>(null);
   const confirmButton = useRef<HTMLButtonElement>(null);
   const rejectButton = useRef<HTMLButtonElement>(null);
-  const status = useRef<HTMLParagraphElement>(null);
+  const status = useRef<HTMLDivElement>(null);
   const ids = { cause: useId(), causeHint: useId(), notes: useId(), notesHint: useId(), error: useId(), title: useId() };
 
   useEffect(() => {
@@ -152,7 +153,13 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
         {view && <DiagnosisStatusLabel status={view.status} />}
       </div>
 
-      {state.status === "loading" && <p className={styles.muted} role="status">{t("review.loading")}</p>}
+      {state.status === "loading" && (
+        <div className={styles.loading} role="status">
+          <span className={styles.srOnly}>{t("review.loading")}</span>
+          <Skeleton width="70%" />
+          <Skeleton width="160px" height="36px" />
+        </div>
+      )}
       {state.status === "error" && (
         <div className={styles.inline}>
           <p role="alert">{t("review.loadError")}</p>
@@ -162,9 +169,9 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
 
       {view && (
         <>
-          <p ref={status} tabIndex={-1} className={styles.recorded} role="status">
-            {recorded ? t("review.recorded") : ""}
-          </p>
+          <div ref={status} tabIndex={-1} className={styles.recorded} role="status">
+            {recorded && <Notice tone="success">{t("review.recorded")}</Notice>}
+          </div>
 
           {error && mode === "idle" && <p className={styles.error} role="alert">{t(`review.errors.${error}`, { max: MAX_TEXT })}</p>}
 
@@ -222,7 +229,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
                 </p>
               )}
               <div className={styles.actions}>
-                <Button type="submit" variant="primary" disabled={submitting}>
+                <Button type="submit" variant="primary" loading={submitting} disabled={submitting}>
                   {submitting ? t("review.submitting") : t(mode === "reject" ? "review.submitReject" : "review.submitConfirm")}
                 </Button>
                 <Button onClick={close} disabled={submitting}>{t("review.cancel")}</Button>

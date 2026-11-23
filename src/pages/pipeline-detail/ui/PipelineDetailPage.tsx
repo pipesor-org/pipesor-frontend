@@ -22,6 +22,7 @@ import { useFormatters } from "../../../shared/i18n";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button } from "../../../shared/ui/button";
 import { dataTable } from "../../../shared/ui/data-table";
+import { Skeleton } from "../../../shared/ui/skeleton";
 import { ChevronLeftIcon } from "../../../shared/ui/icons";
 import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
@@ -85,6 +86,15 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
         meta={loaded && <><span className={styles.repository}>{loaded.pipeline.fullName}</span><GitHubConnectionStatus /></>}
       />
 
+      {validId && detail.state.status === "loading" && (
+        <div className={styles.surface} aria-hidden="true">
+          {[["28%", "64%", "52%", "58%"], ["32%", "44%", "40%"], ["26%", "70%"]].map((widths, index) => (
+            <section key={index}>
+              {widths.map((width, line) => <Skeleton key={line} width={width} height={line === 0 ? "16px" : undefined} />)}
+            </section>
+          ))}
+        </div>
+      )}
       {notFound && <p>{t("detail.notFoundText")}</p>}
       {detail.state.status === "error" && !notFound && <Button onClick={detail.reload}>{t("retry")}</Button>}
 
