@@ -52,3 +52,14 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - `global.css` provides a single ring (`--focus-ring-width` in `--color-focus`, `--focus-ring-offset`) on `:focus-visible` for every element. Components only adjust the offset when space is tight.
 - Programmatic focus targets (page headings with `tabIndex={-1}`) suppress the outline with `:focus { outline: none }`. They are not interactive.
 - Keep the existing semantics: native tables, buttons for actions, links for navigation, `aria-live` for asynchronous confirmations.
+
+## Components (`src/shared/ui`)
+
+| Primitive | Use |
+| --- | --- |
+| `Button` (`primary`, `secondary`, `ghost`, `link`; `sm`, `md`, `lg`; `block`) | `primary` is ink, for the main action of a section (at most one per section). `secondary` for alternatives, `ghost` for low emphasis in dense UI, `link` for inline text actions (Refresh, View context, Reconnect). Press feedback (`--press-scale`) and transitions are built in. |
+| `buttonClassName()` | The same styles for elements that must remain links (router `Link`, external `<a>`). |
+| `StatusBadge` (`tone`, `soft` or `dot`, `live`) | The only way to show a status. `soft` (tinted pill) for statuses that must stand out (severity, review); `dot` for dense lists and secondary facts (lifecycle, criticality, monitoring, connection). `live` pulses the dot for ongoing processes. Domain mappings live in entities: `IncidentSeverity`, `IncidentStatusBadge`, `DiagnosisStatusLabel`, `CriticalityBadge`, `MonitoringBadge`. |
+| `TextInput` (`icon`), `Select`, `Textarea` | Form fields share the control height, a ≥ 3:1 outline (`--color-border-input`), an accent border plus halo on focus and a critical border when `aria-invalid`. `Select` keeps the native element with a token-styled chevron. |
+| `Skeleton` (`width`, `height`, `shape`) | Placeholder while content loads; decorative (`aria-hidden`). The loading region still announces itself with `role="status"`. |
+| `Badge` | Count pill next to tab and navigation labels only. |

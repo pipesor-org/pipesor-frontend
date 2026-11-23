@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import type { GitHubRepository } from "../../../entities/github-access";
 import { githubAppInstallUrl } from "../../../shared/config";
-import { Button } from "../../../shared/ui/button";
+import { Button, buttonClassName } from "../../../shared/ui/button";
 
 import styles from "./RegisterWorkflowForm.module.css";
 
@@ -68,7 +68,7 @@ export function RepositoryAccessStep({
 
       <div className={styles.inline}>
         {githubAppInstallUrl ? (
-          <a className={styles.primaryLink} href={githubAppInstallUrl} target="_blank" rel="noreferrer noopener">
+          <a className={buttonClassName({ variant: "secondary" })} href={githubAppInstallUrl} target="_blank" rel="noreferrer noopener">
             {t("onboarding.access.choose")} ↗<span className={styles.srOnly}> {t("opensInNewTab")}</span>
           </a>
         ) : (

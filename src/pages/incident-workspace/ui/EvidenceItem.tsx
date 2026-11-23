@@ -2,6 +2,7 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { parseEvidenceLocator, type DiagnosisEvidence } from "../../../entities/diagnosis";
+import { Button } from "../../../shared/ui/button";
 
 import styles from "./IncidentWorkspace.module.css";
 
@@ -35,15 +36,15 @@ export function EvidenceItem({ evidence, cited }: { evidence: DiagnosisEvidence;
       <div className={styles.evidenceHead}>
         <span className={styles.evidenceMeta}>{parts.join(" · ")}</span>
         {expandable && (
-          <button
-            type="button"
-            className={styles.linkButton}
+          <Button
+            variant="link"
+            className={styles.contextToggle}
             aria-expanded={expanded}
             aria-controls={contentId}
             onClick={() => setExpanded((value) => !value)}
           >
             {expanded ? t("workspace.evidence.hideContext") : t("workspace.evidence.viewContext")}
-          </button>
+          </Button>
         )}
       </div>
       {cited && <span className={styles.tag}>{t("workspace.evidence.cited")}</span>}

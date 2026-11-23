@@ -12,6 +12,7 @@ import {
   safeReturnPath,
 } from "../../../shared/config";
 import { LanguageSelector } from "../../../shared/i18n";
+import { Button } from "../../../shared/ui/button";
 import { ThemeToggle } from "../../../shared/ui/theme-toggle";
 
 import { Brand } from "./Brand";
@@ -52,9 +53,10 @@ export function SignInPage() {
           <p className={styles.notice} role="status">{t(`ended.${endReason}`)}</p>
         ) : null}
 
-        <button
-          type="button"
-          className={styles.primary}
+        <Button
+          variant="primary"
+          size="lg"
+          block
           disabled={redirecting}
           onClick={() => {
             setRedirecting(true);
@@ -62,7 +64,7 @@ export function SignInPage() {
           }}
         >
           {redirecting ? t("signIn.redirecting") : t("signIn.continue")}
-        </button>
+        </Button>
 
         <ul className={styles.points}>
           <li>{t("signIn.points.readOnly")}</li>

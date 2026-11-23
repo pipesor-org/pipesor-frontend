@@ -1,13 +1,10 @@
 import { useTranslation } from "react-i18next";
 
+import { StatusBadge, type StatusTone } from "../../../shared/ui/status-badge";
 import type { IncidentSeverityLevel } from "../model/types";
 import { SEVERITY_LABEL_KEY } from "./labels";
 
-import styles from "./IncidentSeverity.module.css";
-
-type SeverityTone = "critical" | "warning" | "neutral";
-
-const TONE_BY_SEVERITY: Record<IncidentSeverityLevel, SeverityTone> = {
+const TONE_BY_SEVERITY: Record<IncidentSeverityLevel, StatusTone> = {
   Critical: "critical",
   High: "warning",
   Medium: "neutral",
@@ -19,24 +16,9 @@ interface IncidentSeverityProps {
   severity: IncidentSeverityLevel | null;
 }
 
-/** Colored dot + label describing an incident's severity. */
+/** Incident severity as a status pill; the label always carries the meaning. */
 export function IncidentSeverity({ severity }: IncidentSeverityProps) {
   const { t } = useTranslation("operations");
-  if (severity === null) {
-    return (
-      <span className={styles.root}>
-        <span className={`${styles.label} ${styles.neutral}`}>{t("severity.unclassified")}</span>
-      </span>
-    );
-  }
-  const tone = TONE_BY_SEVERITY[severity];
-
-  return (
-    <span className={styles.root}>
-      <span className={`${styles.dot} ${styles[tone]}`} />
-      <span className={`${styles.label} ${styles[tone]}`}>
-        {t(SEVERITY_LABEL_KEY[severity])}
-      </span>
-    </span>
-  );
+  if (severity === null) return <StatusBadge tone="neutral">{t("severity.unclassified")}</StatusBadge>;
+  return <StatusBadge tone={TONE_BY_SEVERITY[severity]}>{t(SEVERITY_LABEL_KEY[severity])}</StatusBadge>;
 }

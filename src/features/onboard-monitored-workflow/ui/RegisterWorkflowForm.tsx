@@ -13,6 +13,7 @@ import {
 } from "../../../entities/monitored-pipeline";
 import { isApiError, useApiQuery } from "../../../shared/api";
 import { Button } from "../../../shared/ui/button";
+import { Select, TextInput } from "../../../shared/ui/field";
 
 import { registerPipeline } from "../api/register";
 import { RepositoryAccessStep } from "./RepositoryAccessStep";
@@ -110,7 +111,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
             <div className={styles.field}>
               <label htmlFor={ids.repository}>{t("onboarding.repository")}{required}</label>
               <div className={styles.control}>
-                <select
+                <Select
                   id={ids.repository}
                   value={repositoryId}
                   required
@@ -120,7 +121,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
                 >
                   <option value="">{t("onboarding.selectRepository")}</option>
                   {repositoryList.map((item) => <option key={item.repositoryId} value={item.repositoryId}>{item.fullName}</option>)}
-                </select>
+                </Select>
                 {fieldError(missing.repository, `${ids.repository}-error`)}
               </div>
             </div>
@@ -128,7 +129,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
             <div className={styles.field}>
               <label htmlFor={ids.workflow}>{t("onboarding.workflow")}{required}</label>
               <div className={styles.control}>
-                <select
+                <Select
                   id={ids.workflow}
                   value={workflowId}
                   required
@@ -139,7 +140,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
                 >
                   <option value="">{t("onboarding.selectWorkflow")}</option>
                   {workflowList.map((item) => <option key={item.workflowId} value={item.workflowId}>{item.name}</option>)}
-                </select>
+                </Select>
                 <p className={styles.note} id={`${ids.workflow}-hint`}>
                   {!repositoryId
                     ? t("onboarding.selectRepositoryFirst")
@@ -172,7 +173,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
           <div className={styles.field}>
             <label htmlFor={ids.criticality}>{t("policy.criticality")}{required}</label>
             <div className={styles.control}>
-              <select
+              <Select
                 id={ids.criticality}
                 value={criticality}
                 required
@@ -182,7 +183,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
               >
                 <option value="">{t("onboarding.selectCriticality")}</option>
                 {PIPELINE_CRITICALITIES.map((value) => <option key={value} value={value}>{t(`criticality.${value}`)}</option>)}
-              </select>
+              </Select>
               <p className={styles.note} id={`${ids.criticality}-hint`}>{t("onboarding.criticalityHelp")}</p>
               {fieldError(missing.criticality, `${ids.criticality}-error`)}
             </div>
@@ -190,10 +191,10 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
           <div className={styles.field}>
             <label htmlFor={ids.environment}>{t("policy.environment")}</label>
             <div className={styles.control}>
-              <select id={ids.environment} value={environment} aria-describedby={`${ids.environment}-hint`} onChange={(event) => setEnvironment(event.target.value)}>
+              <Select id={ids.environment} value={environment} aria-describedby={`${ids.environment}-hint`} onChange={(event) => setEnvironment(event.target.value)}>
                 <option value="">{t("policy.unspecified")}</option>
                 {OPERATIONAL_ENVIRONMENTS.map((value) => <option key={value} value={value}>{t(`environment.${value}`)}</option>)}
-              </select>
+              </Select>
               <p className={styles.note} id={`${ids.environment}-hint`}>{t("onboarding.environmentHelp")}</p>
             </div>
           </div>
@@ -220,7 +221,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
           <div className={styles.field}>
             <label htmlFor={ids.team}>{t("ownership.team")}</label>
             <div className={styles.control}>
-              <input
+              <TextInput
                 id={ids.team}
                 type="text"
                 value={team}
