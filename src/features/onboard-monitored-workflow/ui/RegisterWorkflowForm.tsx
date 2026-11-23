@@ -42,7 +42,7 @@ function errorKey(error: unknown): ErrorKey {
 export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (pipeline: PipelineRecord) => void; cancel: ReactNode }) {
   const { t } = useTranslation("pipelines");
   const ids = { repository: useId(), workflow: useId(), criticality: useId(), environment: useId(), team: useId(), error: useId() };
-  const repositories = useApiQuery("github-repositories", (signal) => fetchRepositories(signal));
+  const repositories = useApiQuery("github-repositories", () => fetchRepositories());
   const [repositoryId, setRepositoryId] = useState("");
   const workflows = useApiQuery(repositoryId ? `github-workflows:${repositoryId}` : null, (signal) => fetchWorkflows(repositoryId, signal));
   const [workflowId, setWorkflowId] = useState("");
