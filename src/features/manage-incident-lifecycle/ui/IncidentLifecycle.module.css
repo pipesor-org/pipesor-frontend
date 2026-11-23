@@ -36,11 +36,11 @@
 }
 
 .error {
-  color: var(--color-critical);
+  color: var(--color-critical-text);
 }
 
 .success {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .mono {

@@ -14,5 +14,5 @@
 }
 
 .error {
-  color: var(--color-critical);
+  color: var(--color-critical-text);
 }

@@ -35,7 +35,7 @@
 }
 
 .recorded {
-  color: var(--color-success);
+  color: var(--color-success-text);
   font-weight: var(--font-weight-medium);
 }
 
@@ -44,7 +44,7 @@
 }
 
 .error {
-  color: var(--color-critical);
+  color: var(--color-critical-text);
 }
 
 .actions,

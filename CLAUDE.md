@@ -6,7 +6,7 @@
 
 ## Sources of truth
 
-- Product UX: the Paper file **Pipesor**, Page 1 (ten 1440 px artboards), read through the Paper MCP server when it is connected. [Paper product reconciliation](docs/architecture/paper-product-reconciliation.md) records the frame inventory and the agreed deviations. Paper is a desktop composition: keep the app's tokens, responsive shell, themes and EN/ES conventions.
+- Visual language: the [design system](docs/design-system.md) ("Ink on paper") and its tokens. Product UX and screen content: the Paper file **Pipesor**, Page 1, read through the Paper MCP server when it is connected; [Paper product reconciliation](docs/architecture/paper-product-reconciliation.md) records the frame inventory and the agreed deviations. Paper no longer defines colors, typography or component styling.
 - API: [MVP HTTP API v1](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/architecture/contracts/mvp-http-api-v1.md) and the [platform identity contract](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/architecture/contracts/platform-identity-v1.md) (login flow §5). Running services publish OpenAPI at `/v3/api-docs`; prefer it over guessing response shapes.
 - Never render a value the backend does not provide (confidence, PR links, assignees, display IDs). Omit the element or show an explicit unavailable state.
 
