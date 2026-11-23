@@ -14,6 +14,7 @@ import {
 import { isApiError, useApiQuery } from "../../../shared/api";
 import { Button } from "../../../shared/ui/button";
 import { Select, TextInput } from "../../../shared/ui/field";
+import { Notice } from "../../../shared/ui/notice";
 
 import { registerPipeline } from "../api/register";
 import { RepositoryAccessStep } from "./RepositoryAccessStep";
@@ -83,7 +84,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
     }
   }
 
-  const required = <span aria-hidden="true"> *</span>;
+  const required = <span className={styles.required} aria-hidden="true"> *</span>;
   const fieldError = (show: boolean, id: string) =>
     show && submitted ? <p className={styles.error} id={id}>{t("onboarding.requiredError")}</p> : null;
 
@@ -239,14 +240,14 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
       <section aria-labelledby={`${ids.error}-title`}>
         <h2 id={`${ids.error}-title`}>{t("onboarding.review")}</h2>
         <dl className={styles.review}>
-          <div><dt>{t("onboarding.repository")}</dt><dd className={styles.mono}>{repository?.fullName ?? t("onboarding.notSelected")}</dd></div>
+          <div><dt>{t("onboarding.repository")}</dt><dd className={repository ? styles.mono : undefined}>{repository?.fullName ?? t("onboarding.notSelected")}</dd></div>
           <div><dt>{t("onboarding.workflow")}</dt><dd>{workflow?.name ?? t("onboarding.notSelected")}</dd></div>
           <div><dt>{t("policy.criticality")}</dt><dd>{criticality ? t(`criticality.${criticality}`) : t("onboarding.notSelected")}</dd></div>
           <div><dt>{t("policy.environment")}</dt><dd>{environment ? t(`environment.${environment as OperationalEnvironment}`) : t("policy.unspecified")}</dd></div>
           <div><dt>{t("policy.monitoring")}</dt><dd>{t(`monitoring.${monitoring}`)}</dd></div>
           <div><dt>{t("ownership.team")}</dt><dd>{team.trim() || t("ownership.unspecified")}</dd></div>
         </dl>
-        {failure && <p className={styles.error} id={ids.error} role="alert">{t(`onboarding.errors.${failure}`)}</p>}
+        {failure && <Notice tone="critical" id={ids.error} role="alert">{t(`onboarding.errors.${failure}`)}</Notice>}
         <div className={styles.actions}>
           <p className={styles.note}>{t("onboarding.registersOnly")}</p>
           <div className={styles.buttons}>

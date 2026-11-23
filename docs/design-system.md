@@ -78,6 +78,15 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - **Lifecycle.** `LifecycleSteps` shows Open → In remediation → Verification → Resolved from the recorded status: complete steps in success, the current step in ink (`aria-current="step"`). Narrow cards show two rows. Each card has at most one ink action.
 - **Rail.** Section titles are uppercase overlines. Facts are a two-column description list. The timeline joins recorded events with a hairline, and the latest event is the ink dot.
 
+## Forms and messages
+
+- **Layout.** Forms are a card of sections, like detail screens. Each field has a label lane (220 px) and a control lane (440 px), stacked on phones. Section descriptions read at `--text-sm`; hints under a control are `--text-xs` and linked with `aria-describedby`.
+- **Required and errors.** Required fields carry the `required` attribute plus a decorative asterisk in `--color-critical-text`. Field errors appear after a submit attempt, below the hint, with `aria-invalid` (critical border) and `aria-describedby`. A failure of the whole action is a critical `Notice` with `role="alert"` above the actions.
+- **Choices.** Two or three mutually exclusive options use a segmented control: a tinted track with the chosen option raised and in accent.
+- **Review before submit.** Summarise what will be recorded in a `--color-surface-subtle` panel next to the actions.
+- **Messages.** Use `Notice` with a tone: `critical` for failures, `warning` for blocked or limited actions (missing capability, a blocked capture), `success` for a completed step, `info` or `neutral` for context. A notice that appears after an action gets `role="status"` or `role="alert"`.
+- **Screens outside the shell.** Sign-in, sign-in completion and Not Found use `StandalonePage`: one elevated card (`--radius-xl`, `--shadow-md`) over a dotted canvas in a border tone that fades out toward the edges. The canvas is decorative.
+
 ## Components (`src/shared/ui`)
 
 | Primitive | Use |
@@ -92,3 +101,5 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 | `TabNav` + `tabClassName(active)` | Tab bar for views of one screen; the page supplies router links. |
 | `dataTable` (class names) + `TableEmptyRow` | The table system above. Widgets keep only column widths and domain cells. |
 | `StatGroup` + `Stat` (`label`, `value`, `tone`, `live`, `mono`) | Key figures of a view, as a description list. |
+| `Notice` (`tone`) | Inline message with a tinted background and a vivid leading edge; pass `role` when it follows an action. |
+| `StandalonePage` | Frame for screens without the app shell. |

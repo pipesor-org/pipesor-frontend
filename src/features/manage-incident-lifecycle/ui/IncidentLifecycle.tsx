@@ -5,6 +5,7 @@ import { githubRunUrl, type Execution, type IncidentRecord } from "../../../enti
 import type { PipelineRecord } from "../../../entities/monitored-pipeline";
 import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
+import { Notice } from "../../../shared/ui/notice";
 
 import { resolveIncident, startRemediation } from "../api/commands";
 import { lifecycleErrorKey, type LifecycleErrorKey } from "./errors";
@@ -89,7 +90,7 @@ export function IncidentLifecycle({ incident, pipeline, verifications, onChanged
     <section className={styles.section} aria-labelledby={titleId}>
       <h2 id={titleId} ref={title} tabIndex={-1} className={styles.title}>{t("lifecycle.title")}</h2>
       <LifecycleSteps status={incident.status} />
-      {!canOperate && incident.status !== "Resolved" && <p className={styles.notice}>{t("lifecycle.needsOperate")}</p>}
+      {!canOperate && incident.status !== "Resolved" && <Notice tone="warning">{t("lifecycle.needsOperate")}</Notice>}
 
       {incident.status === "Open" && (
         <>

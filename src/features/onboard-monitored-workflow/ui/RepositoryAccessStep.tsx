@@ -6,6 +6,7 @@ import type { GitHubRepository } from "../../../entities/github-access";
 import { clearInstallReturn, rememberInstallReturn } from "../../../entities/session";
 import { githubAppInstallUrl } from "../../../shared/config";
 import { Button, buttonClassName } from "../../../shared/ui/button";
+import { Notice } from "../../../shared/ui/notice";
 
 import styles from "./RegisterWorkflowForm.module.css";
 
@@ -61,7 +62,7 @@ export function RepositoryAccessStep({
       <p className={styles.note}>{t("onboarding.access.description")}</p>
 
       {setupReturn && (
-        <p className={styles.notice} role="status">{t(`onboarding.access.returned.${setupReturn}`)}</p>
+        <Notice tone="success" role="status">{t(`onboarding.access.returned.${setupReturn}`)}</Notice>
       )}
 
       {!loading && (
