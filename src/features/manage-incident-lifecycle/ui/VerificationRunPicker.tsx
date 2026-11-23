@@ -2,10 +2,12 @@ import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
+  analysisBlock,
   fetchWorkflowRuns,
   runAnalysisToCompletion,
   safeRunUrl,
   type AnalysisPhase,
+  type RunAnalysis,
   type WorkflowRef,
 } from "../../../entities/workflow-run";
 import { useApiQuery } from "../../../shared/api";
@@ -25,6 +27,20 @@ interface VerificationRunPickerProps {
   onRecorded: () => void;
 }
 
+type BlockedKey = "blocked" | "blockedSourceExpired" | "blockedScopeChanged";
+
+/** Every BLOCKED receipt is final; its reason picks the explanation. */
+function blockedKey(analysis: RunAnalysis): BlockedKey {
+  switch (analysisBlock(analysis)) {
+    case "sourceExpired":
+      return "blockedSourceExpired";
+    case "scopeChanged":
+      return "blockedScopeChanged";
+    default:
+      return "blocked";
+  }
+}
+
 /**
  * Lets the operator pick the successful rerun that verifies the remediation.
  * Recording it is two steps: Ingestion captures the run (durable receipt,
@@ -40,7 +56,7 @@ export function VerificationRunPicker({ incidentId, workflow, remediationStarted
   );
   const [selected, setSelected] = useState<string | null>(null);
   const [phase, setPhase] = useState<AnalysisPhase | "linking" | null>(null);
-  const [error, setError] = useState<LifecycleErrorKey | "blocked" | null>(null);
+  const [error, setError] = useState<LifecycleErrorKey | BlockedKey | null>(null);
 
   // `createdAt` is the run's creation time and does not move when a run is
   // re-run, so later attempts stay candidates; Pipeline checks the attempt's
@@ -62,7 +78,7 @@ export function VerificationRunPicker({ incidentId, workflow, remediationStarted
         { onPhase: setPhase },
       );
       if (analysis.phase === "BLOCKED" || !analysis.executionId) {
-        setError("blocked");
+        setError(blockedKey(analysis));
         setPhase(null);
         return;
       }

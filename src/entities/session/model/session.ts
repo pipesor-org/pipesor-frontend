@@ -3,6 +3,8 @@ import { z } from "zod";
 import { apiRequest, apiUrl } from "../../../shared/api";
 import { RETURN_TO_PARAM, safeReturnPath } from "../../../shared/config";
 
+import { readInstallReturn } from "./installReturn";
+
 /** GitHub identity of the signed-in person, as returned by Ingestion. */
 export const sessionUserSchema = z.object({
   githubUserId: z.string().min(1),
@@ -117,13 +119,15 @@ export function endSession(reason: SessionEndReason): void {
 /**
  * Starts the GitHub sign-in (identity contract §5 step 1) with a full-page
  * navigation to Ingestion, which redirects to GitHub and back to
- * `/auth/complete`. Only a safe in-app path is forwarded as `return_to`.
+ * `/auth/complete`. Only a safe in-app path is forwarded as `return_to`;
+ * without one, the path saved before a GitHub App installation is used.
  *
  * Ingestion currently accepts a path without query (`?…` answers 400), so the
  * query is dropped and the view returns with its default criteria.
  */
 export function startGitHubSignIn(returnTo?: string | null): void {
-  const safe = safeReturnPath(safeReturnPath(returnTo)?.split(/[?#]/, 1)[0]);
+  // Without a requested destination, continue where an App installation started.
+  const safe = safeReturnPath(safeReturnPath(returnTo ?? readInstallReturn())?.split(/[?#]/, 1)[0]);
   window.location.assign(apiUrl("ingestion", "/api/v1/auth/github/start", safe ? { [RETURN_TO_PARAM]: safe } : undefined));
 }
 

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import {
+  analysisBlock,
   fetchRunAnalysis,
   fetchWorkflowRuns,
   runAnalysisToCompletion,
@@ -44,8 +45,9 @@ function errorKey(error: unknown): ErrorKey {
 /**
  * `request-run-analysis`: recent failed runs of a monitored workflow, read from
  * GitHub with the user's access, each with its durable analysis receipt.
- * "Analyze" records the intent, follows the phase until `PUBLISHED` (or
- * `BLOCKED`) and links to the incident Pipeline opened for that run.
+ * "Analyze" records the intent, follows the phase until it is final
+ * (`PUBLISHED`, or `BLOCKED` with its reason) and links to the incident
+ * Pipeline opened for that run.
  */
 export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflow: WorkflowRef }) {
   const workflow = useMemo(() => ({ repositoryId, workflowId }), [repositoryId, workflowId]);
@@ -106,7 +108,10 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
           </span>
         );
       case "done":
-        if (state.analysis.phase === "BLOCKED") return <span className={styles.error}>{t("runs.blocked")}</span>;
+        // Every BLOCKED receipt is final: explain why and offer no retry of the same attempt.
+        if (state.analysis.phase === "BLOCKED") {
+          return <span className={styles.error}>{t(`runs.blocked.${analysisBlock(state.analysis) ?? "other"}`)}</span>;
+        }
         if (state.analysis.phase !== "PUBLISHED") {
           return (
             <span className={styles.inline}>

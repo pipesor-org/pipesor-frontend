@@ -39,15 +39,16 @@ Before opening a PR, run the [frontend Git workflow](docs/git-workflow.md) check
 ```sh
 bun run test:hooks
 bun run typecheck
+bun run test
 bun run lint
 bun run build
 ```
 
-These validate accepted/rejected commit messages, TypeScript, ESLint, and the production bundle. There is no established automated application test runner; `test:hooks` covers commit-message validation only.
+These validate accepted/rejected commit messages, TypeScript (application, Vite config and tests), unit tests of pure logic (Bun's built-in runner, `*.test.ts` next to the code), ESLint, and the production bundle. There are no component or browser tests; screens are verified manually.
 
 After building, use `bun run preview` for manual browser verification. Follow [AGENTS.md](AGENTS.md) for the applicable navigation, EN/ES, keyboard, responsive, and design checks; build success does not establish those results.
 
-[CI](.github/workflows/ci.yml) calls the shared [`service-ci.yml`](https://github.com/pipesor-org/pipesor-ci#catalog) from [pipesor-ci](https://github.com/pipesor-org/pipesor-ci), pinned by commit SHA: organization conventions (canonical commitlint/Lefthook, PR title of at most 65 characters, squash message, commits, actionlint, zizmor), typecheck, lint and build, one image build checked by [tests/check-image.sh](tests/check-image.sh), a Trivy SBOM with a gate on fixable HIGH/CRITICAL vulnerabilities and, on pushes to `main`, publication of that exact image.
+[CI](.github/workflows/ci.yml) calls the shared [`service-ci.yml`](https://github.com/pipesor-org/pipesor-ci#catalog) from [pipesor-ci](https://github.com/pipesor-org/pipesor-ci), pinned by commit SHA: organization conventions (canonical commitlint/Lefthook, PR title of at most 65 characters, squash message, commits, actionlint, zizmor), typecheck, unit tests, lint and build, one image build checked by [tests/check-image.sh](tests/check-image.sh), a Trivy SBOM with a gate on fixable HIGH/CRITICAL vulnerabilities and, on pushes to `main`, publication of that exact image.
 
 ## Repository guide
 

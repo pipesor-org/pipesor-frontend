@@ -87,4 +87,4 @@ git pull --ff-only
 git switch -c feature/incident-queue-filters
 ```
 
-Run `bun run test:hooks`, `bun run typecheck`, `bun run lint`, and `bun run build` before opening the PR. CI runs typecheck, lint and build on PRs and pushes to `main`; the commit-message cases are enforced by the shared conventions job.
+Run `bun run test:hooks`, `bun run typecheck`, `bun run test`, `bun run lint`, and `bun run build` before opening the PR. CI runs typecheck, unit tests, lint and build on PRs and pushes to `main`; the commit-message cases are enforced by the shared conventions job.

@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { apiRequest, isApiError } from "../../../shared/api";
 
+import { ANALYSIS_PHASES, followAnalysis, type AnalysisPhase } from "./analysis";
+
 /**
  * GitHub Actions run attempts as listed by Ingestion with the user's own
  * access (MVP HTTP API v1): `conclusion=failure` lists runs to analyse,
@@ -59,14 +61,13 @@ export function safeRunUrl(run: Pick<WorkflowRun, "htmlUrl">): string | null {
  */
 const analysisSchema = z.object({
   analysisId: z.guid(),
-  phase: z.enum(["ACCEPTED", "PREPARING", "PUBLISHED", "BLOCKED"]),
+  phase: z.enum(ANALYSIS_PHASES),
   blockedReason: z.string().nullish(),
   executionId: z.guid().nullish(),
   incidentId: z.guid().nullish(),
 });
 
 export type RunAnalysis = z.infer<typeof analysisSchema>;
-export type AnalysisPhase = RunAnalysis["phase"];
 
 export interface RunAttemptRef extends WorkflowRef {
   runId: string;
@@ -92,13 +93,6 @@ export async function fetchRunAnalysis(target: RunAttemptRef, signal?: AbortSign
   }
 }
 
-export class AnalysisTimeoutError extends Error {
-  constructor() {
-    super("Analysis did not finish in time");
-    this.name = "AnalysisTimeoutError";
-  }
-}
-
 const POLL_INTERVAL_MS = 2_000;
 const POLL_TIMEOUT_MS = 180_000;
 
@@ -114,7 +108,7 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 
 /**
  * Requests the capture (idempotent on the service side) and follows its phase
- * until `PUBLISHED` or `BLOCKED`, reporting each phase. Throws
+ * until it is final (`PUBLISHED` or `BLOCKED`), reporting each phase. Throws
  * `AnalysisTimeoutError` after three minutes; the receipt stays durable, so a
  * later call resumes it.
  */
@@ -122,14 +116,12 @@ export async function runAnalysisToCompletion(
   target: RunAttemptRef,
   options: { signal?: AbortSignal; onPhase?: (phase: AnalysisPhase) => void } = {},
 ): Promise<RunAnalysis> {
-  let analysis = await requestRunAnalysis(target, options.signal);
-  const deadline = Date.now() + POLL_TIMEOUT_MS;
-  while (analysis.phase !== "PUBLISHED" && analysis.phase !== "BLOCKED") {
-    options.onPhase?.(analysis.phase);
-    if (Date.now() > deadline) throw new AnalysisTimeoutError();
-    await delay(POLL_INTERVAL_MS, options.signal);
-    analysis = (await fetchRunAnalysis(target, options.signal)) ?? analysis;
-  }
-  options.onPhase?.(analysis.phase);
-  return analysis;
+  const initial = await requestRunAnalysis(target, options.signal);
+  return followAnalysis(initial, () => fetchRunAnalysis(target, options.signal), {
+    onPhase: options.onPhase,
+    intervalMs: POLL_INTERVAL_MS,
+    timeoutMs: POLL_TIMEOUT_MS,
+    wait: (ms) => delay(ms, options.signal),
+    now: Date.now,
+  });
 }

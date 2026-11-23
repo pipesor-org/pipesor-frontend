@@ -20,5 +20,5 @@ jobs:
       contents: read
       packages: write
     with:
-      verify-command: bun install --frozen-lockfile && bun run typecheck && bun run lint && bun run build
+      verify-command: bun install --frozen-lockfile && bun run typecheck && bun run test && bun run lint && bun run build
       image-check-command: bash tests/check-image.sh "$IMAGE"
