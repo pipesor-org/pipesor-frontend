@@ -12,7 +12,7 @@ import {
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
-import { ChevronRightIcon } from "../../../shared/ui/icons";
+import { CheckIcon, ChevronRightIcon } from "../../../shared/ui/icons";
 import { Skeleton } from "../../../shared/ui/skeleton";
 import styles from "./IncidentsTable.module.css";
 
@@ -65,7 +65,7 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
 
         <tbody>
           {rows.length === 0 ? (
-            <TableEmptyRow colSpan={HEADER_CELLS.length} title={t("active.empty.title")} text={t("active.empty.text")} />
+            <TableEmptyRow colSpan={HEADER_CELLS.length} tone="success" icon={<CheckIcon />} title={t("active.empty.title")} text={t("active.empty.text")} />
           ) : (
             rows.map((row) => (
               <tr key={row.id} className={dataTable.interactiveRow}>

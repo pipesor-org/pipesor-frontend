@@ -5,6 +5,7 @@
 .heading h2 { margin: 0; font-size: var(--text-lg); line-height: var(--leading-lg); font-weight: var(--font-weight-semibold); }
 .reset { font-size: var(--text-xs); }
 .tableScroll { margin-top: var(--space-3); }
+.loading { margin-top: var(--space-3); }
 /* Fixed lanes plus a fluid team column; below 1040px the frame scrolls. */
 .table { min-width: 1040px; }
 .table col:nth-child(1) { width: 296px; }
@@ -23,5 +24,5 @@
   .filter { flex-basis: 100%; }
 }
 
-.state { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 16px 0; color: var(--color-text-secondary); font-size: 13px; }
+.state { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); margin-top: var(--space-3); }
 .state p { margin: 0; }

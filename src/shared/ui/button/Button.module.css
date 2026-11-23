@@ -28,6 +28,12 @@
   opacity: 0.5;
 }
 
+/* Busy is not unavailable: keep full strength while the action runs. */
+.button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 1;
+}
+
 /* Sizes */
 .sm {
   min-height: var(--control-height-sm);

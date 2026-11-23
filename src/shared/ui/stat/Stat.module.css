@@ -51,6 +51,13 @@
   white-space: nowrap;
 }
 
+/* Keeps the value's line height while it loads. */
+.placeholder {
+  display: block;
+  height: var(--leading-xl);
+  padding: var(--space-1) 0;
+}
+
 .mono {
   font-family: var(--font-mono);
   font-weight: var(--font-weight-medium);
@@ -122,5 +129,9 @@
   .value {
     font-size: var(--text-lg);
     line-height: var(--leading-lg);
+  }
+
+  .placeholder {
+    height: var(--leading-lg);
   }
 }

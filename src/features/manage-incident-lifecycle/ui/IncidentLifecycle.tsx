@@ -96,7 +96,7 @@ export function IncidentLifecycle({ incident, pipeline, verifications, onChanged
         <>
           <p className={styles.muted}>{t("lifecycle.remediation.text")}</p>
           <div className={styles.actions}>
-            <Button variant="primary" disabled={busy || !canOperate} onClick={() => void run(() => startRemediation(incident.id))}>
+            <Button variant="primary" loading={busy} disabled={busy || !canOperate} onClick={() => void run(() => startRemediation(incident.id))}>
               {busy ? t("lifecycle.submitting") : t("lifecycle.remediation.start")}
             </Button>
           </div>
@@ -126,7 +126,7 @@ export function IncidentLifecycle({ incident, pipeline, verifications, onChanged
           <p className={styles.muted}>{t("lifecycle.verification.observed")}</p>
           {latest && succeeded(latest) ? (
             <div className={styles.actions}>
-              <Button variant="primary" disabled={busy || !canOperate} onClick={() => void run(() => resolveIncident(incident.id, latest.id))}>
+              <Button variant="primary" loading={busy} disabled={busy || !canOperate} onClick={() => void run(() => resolveIncident(incident.id, latest.id))}>
                 {busy ? t("lifecycle.submitting") : t("lifecycle.resolve")}
               </Button>
             </div>
@@ -145,7 +145,10 @@ export function IncidentLifecycle({ incident, pipeline, verifications, onChanged
       )}
 
       {error && <p className={styles.error} role="alert">{t(`lifecycle.errors.${error}`)}</p>}
-      <p className={styles.success} role="status">{recorded ? t("lifecycle.recorded") : ""}</p>
+      {/* Always rendered so the confirmation inserted into it is announced. */}
+      <div className={styles.recorded} role="status">
+        {recorded && <Notice tone="success">{t("lifecycle.recorded")}</Notice>}
+      </div>
     </section>
   );
 }

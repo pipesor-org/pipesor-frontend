@@ -108,6 +108,8 @@ export function OperationsPage() {
             oldestPendingMs={pendingRows.length ? Math.max(0, now - Date.parse(pendingRows[0].resolvedAt)) : null}
             loadedAt={resolved.loadedAt}
             onRefresh={resolved.reload}
+            loading={resolved.status === "loading" || resolving}
+            unavailable={resolved.status === "error"}
           />
           {resolved.status !== "ready" ? (
             <QueueStatus status={resolved.status} error={resolved.error} onRetry={resolved.reload} />
@@ -131,6 +133,8 @@ export function OperationsPage() {
             analyzing={open.rows.filter((row) => row.diagnosis.kind === "absent").length}
             loadedAt={open.loadedAt}
             onRefresh={open.reload}
+            loading={open.status === "loading"}
+            unavailable={open.status === "error"}
           />
           {open.status !== "ready" ? (
             <QueueStatus status={open.status} error={open.error} onRetry={open.reload} />

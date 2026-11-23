@@ -252,7 +252,7 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
           <p className={styles.note}>{t("onboarding.registersOnly")}</p>
           <div className={styles.buttons}>
             {cancel}
-            <Button type="submit" variant="primary" disabled={saving}>{saving ? t("onboarding.saving") : t("inventory.add")}</Button>
+            <Button type="submit" variant="primary" loading={saving} disabled={saving}>{saving ? t("onboarding.saving") : t("inventory.add")}</Button>
           </div>
         </div>
       </section>

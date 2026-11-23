@@ -6,7 +6,7 @@ import { IncidentSeverity, STAGE_LABEL_KEY, type IncidentSeverityLevel, type Inc
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
-import { ChevronRightIcon } from "../../../shared/ui/icons";
+import { CheckIcon, ChevronRightIcon } from "../../../shared/ui/icons";
 
 import styles from "./NeedsValidationTable.module.css";
 
@@ -59,7 +59,7 @@ export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow
 
         <tbody>
           {rows.length === 0 ? (
-            <TableEmptyRow colSpan={HEADER_CELLS.length} title={t("validation.empty.title")} text={t("validation.empty.text")} />
+            <TableEmptyRow colSpan={HEADER_CELLS.length} tone="success" icon={<CheckIcon />} title={t("validation.empty.title")} text={t("validation.empty.text")} />
           ) : (
             rows.map((row) => (
               <tr key={row.id} className={dataTable.interactiveRow}>

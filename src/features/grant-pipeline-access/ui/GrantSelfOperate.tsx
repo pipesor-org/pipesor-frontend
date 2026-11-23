@@ -37,7 +37,7 @@ export function GrantSelfOperate({ pipelineId, onGranted }: { pipelineId: string
   return (
     <div className={styles.root}>
       <p>{t("access.grantSelfText")}</p>
-      <Button variant="primary" onClick={() => void grant()} disabled={busy}>
+      <Button variant="primary" loading={busy} onClick={() => void grant()} disabled={busy}>
         {busy ? t("access.granting") : t("access.grantSelf")}
       </Button>
       {error && <p className={styles.error} role="alert">{t(`access.grantError.${error}`)}</p>}

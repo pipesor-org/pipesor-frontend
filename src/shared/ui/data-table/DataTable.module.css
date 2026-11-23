@@ -200,3 +200,69 @@
   font-size: var(--text-sm);
   line-height: var(--leading-sm);
 }
+
+.emptyIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--tone-border);
+  border-radius: var(--radius-full);
+  background-color: var(--tone-soft);
+  color: var(--tone-text);
+}
+
+.emptyIcon svg {
+  width: var(--space-5);
+  height: var(--space-5);
+}
+
+.neutral {
+  --tone-soft: var(--color-surface-subtle);
+  --tone-border: var(--color-border);
+  --tone-text: var(--color-text-secondary);
+}
+
+.success {
+  --tone-soft: var(--color-success-soft);
+  --tone-border: var(--color-success-border);
+  --tone-text: var(--color-success-text);
+}
+
+.emptyAction {
+  margin-top: var(--space-3);
+}
+
+/* Loading placeholder (TableSkeleton) */
+
+.skeletonFrame {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeletonHead {
+  height: var(--control-height-lg);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface-subtle);
+}
+
+.skeletonRow {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.skeletonRow:last-child {
+  border-bottom: 0;
+}
+
+.skeletonStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

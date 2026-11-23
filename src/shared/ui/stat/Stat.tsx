@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Skeleton } from "../skeleton";
 import type { StatusTone } from "../status-badge";
 
 import styles from "./Stat.module.css";
@@ -34,16 +35,20 @@ interface StatProps {
   live?: boolean;
   /** Durations and other technical values use the mono face. */
   mono?: boolean;
+  /** The value is not known yet: a placeholder instead of a number. */
+  loading?: boolean;
 }
 
-export function Stat({ label, value, tone, live = false, mono = false }: StatProps) {
+export function Stat({ label, value, tone, live = false, mono = false, loading = false }: StatProps) {
   return (
     <div className={styles.stat}>
       <dt className={styles.label}>
         {tone ? <span className={`${styles.dot} ${styles[tone]}${live ? ` ${styles.live}` : ""}`} aria-hidden="true" /> : null}
         {label}
       </dt>
-      <dd className={`${styles.value}${mono ? ` ${styles.mono}` : ""}`}>{value}</dd>
+      <dd className={`${styles.value}${mono ? ` ${styles.mono}` : ""}`}>
+        {loading ? <span className={styles.placeholder}><Skeleton width="3ch" height="100%" /></span> : value}
+      </dd>
     </div>
   );
 }

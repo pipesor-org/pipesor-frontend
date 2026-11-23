@@ -7,7 +7,7 @@ import { STAGE_LABEL_KEY, type IncidentStage } from "../../../entities/incident"
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
-import { ChevronRightIcon } from "../../../shared/ui/icons";
+import { ChevronRightIcon, HistoryIcon } from "../../../shared/ui/icons";
 
 import styles from "./HistoryIncidentsTable.module.css";
 
@@ -73,7 +73,7 @@ export function HistoryIncidentsTable({ rows }: { rows: HistoryIncidentRow[] }) 
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <TableEmptyRow colSpan={COLUMNS.length} text={t("empty")} />
+              <TableEmptyRow colSpan={COLUMNS.length} icon={<HistoryIcon />} text={t("empty")} />
             ) : (
               rows.map((row) => (
                 <tr key={row.id} className={dataTable.interactiveRow}>
