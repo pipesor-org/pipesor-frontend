@@ -43,12 +43,14 @@ for value in "$ingestion" "$pipeline" "$recommendation" "$install"; do
 done
 test "$(curl -sI "$base/config.js" | tr -d '\r' | grep -i '^cache-control:')" = "Cache-Control: no-store"
 
-# Security headers on the shell and on hashed assets; the CSP allows exactly the configured API origins.
+# Security headers on the shell and on hashed assets; the CSP allows exactly the configured API origins
+# and, for images, only the app itself and GitHub's avatar CDN.
 shell_headers="$(curl -sI "$base/" | tr -d '\r')"
 asset="$(curl -fsS "$base/" | grep -o '/assets/[^"]*\.js' | head -n1)"
 asset_headers="$(curl -sI "$base$asset" | tr -d '\r')"
 for headers in "$shell_headers" "$asset_headers"; do
   grep -qi "^content-security-policy:.*connect-src 'self' ${connect_src};" <<< "$headers"
+  grep -qi "^content-security-policy:.*img-src 'self' data: https://avatars.githubusercontent.com;" <<< "$headers"
   grep -qi '^strict-transport-security: max-age=' <<< "$headers"
   grep -qi '^referrer-policy: no-referrer' <<< "$headers"
   grep -qi '^x-frame-options: DENY' <<< "$headers"

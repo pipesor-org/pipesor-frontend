@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
-import { signOut, useSession } from "../../../entities/session";
+import { githubAvatarUrl, signOut, useSession } from "../../../entities/session";
 import { LanguageSelector } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
 import { ChevronsUpDownIcon } from "../../../shared/ui/icons";
@@ -51,6 +51,11 @@ export function UserMenu({ collapsed }: UserMenuProps) {
   const [signingOut, setSigningOut] = useState(false);
   const login = session?.user.login ?? "";
   const initials = login.slice(0, 2).toUpperCase();
+  // Twice the 32px avatar for high-density screens; initials stay underneath
+  // until the picture loads and come back if it cannot load.
+  const avatarUrl = session ? githubAvatarUrl(session.user.githubUserId, 64) : null;
+  const [loadedAvatar, setLoadedAvatar] = useState<string | null>(null);
+  const [failedAvatar, setFailedAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -113,7 +118,22 @@ export function UserMenu({ collapsed }: UserMenuProps) {
         title={collapsed ? login : undefined}
         onClick={() => setOpen((previous) => !previous)}
       >
-        <span className={styles.avatar} aria-hidden="true">{initials}</span>
+        <span className={styles.avatar} aria-hidden="true">
+          {initials}
+          {avatarUrl && avatarUrl !== failedAvatar ? (
+            <img
+              className={`${styles.avatarImage}${avatarUrl === loadedAvatar ? ` ${styles.avatarLoaded}` : ""}`}
+              src={avatarUrl}
+              alt=""
+              width={32}
+              height={32}
+              decoding="async"
+              referrerPolicy="no-referrer"
+              onLoad={() => setLoadedAvatar(avatarUrl)}
+              onError={() => setFailedAvatar(avatarUrl)}
+            />
+          ) : null}
+        </span>
         {/*
          * The identity block stays in layout (never `display:none`/visually
          * hidden) and simply shrinks to zero width when the rail is collapsed.

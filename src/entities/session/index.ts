@@ -10,5 +10,6 @@ export {
   startGitHubSignIn,
 } from "./model/session";
 export type { Session, SessionEndReason, SessionState, SessionUser } from "./model/session";
+export { githubAvatarUrl } from "./model/avatar";
 export { clearInstallReturn, readInstallReturn, rememberInstallReturn, signInDestination } from "./model/installReturn";
 export { useSession } from "./model/useSession";
