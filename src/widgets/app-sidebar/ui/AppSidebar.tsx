@@ -105,19 +105,31 @@ export function AppSidebar({ section }: { section?: AppDestinationKey }) {
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        onFocusCapture={rememberFocus}
-        onBlurCapture={forgetFocus}
-        type="button"
-        className={styles.mobileTrigger}
-        aria-label={t("sidebar.open")}
-        aria-expanded={mobileOpen}
-        aria-controls={sidebarId}
-        onClick={openMobile}
-      >
-        <MenuIcon />
-      </button>
+      {/* Narrow screens only: a top bar replaces the rail and opens it as an overlay. */}
+      <div className={styles.mobileBar}>
+        <button
+          ref={triggerRef}
+          onFocusCapture={rememberFocus}
+          onBlurCapture={forgetFocus}
+          type="button"
+          className={styles.mobileTrigger}
+          aria-label={t("sidebar.open")}
+          aria-expanded={mobileOpen}
+          aria-controls={sidebarId}
+          onClick={openMobile}
+        >
+          <MenuIcon />
+        </button>
+        <span className={styles.mobileBrand}>
+          <img
+            src={theme === "dark" ? pipesorSymbolDark : pipesorSymbolLight}
+            alt=""
+            width={20}
+            height={20}
+          />
+          Pipesor
+        </span>
+      </div>
 
       {mobileOpen ? (
         <div
@@ -203,7 +215,7 @@ export function AppSidebar({ section }: { section?: AppDestinationKey }) {
                 aria-controls={sidebarId}
                 onClick={closeMobile}
               >
-                <ChevronRightIcon />
+                <ChevronLeftIcon />
               </button>
             ) : null}
           </div>

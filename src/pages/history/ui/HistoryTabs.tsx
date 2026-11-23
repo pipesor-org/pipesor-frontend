@@ -6,8 +6,7 @@ import {
   historyViewPath,
   parseHistoryView,
 } from "../../../shared/config";
-
-import styles from "./HistoryTabs.module.css";
+import { TabNav, tabClassName } from "../../../shared/ui/tab-nav";
 
 /**
  * History view switcher.
@@ -29,7 +28,7 @@ export function HistoryTabs() {
   ] as const;
 
   return (
-    <nav className={styles.tabs} aria-label={t("tabs.ariaLabel")}>
+    <TabNav label={t("tabs.ariaLabel")}>
       {tabs.map(({ view, label }) => {
         const isActive = view === activeView;
 
@@ -37,13 +36,13 @@ export function HistoryTabs() {
           <Link
             key={view}
             to={historyViewPath(view)}
-            className={`${styles.tab}${isActive ? ` ${styles.tabActive}` : ""}`}
+            className={tabClassName(isActive)}
             aria-current={isActive ? "page" : undefined}
           >
-            <span className={styles.tabLabel}>{label}</span>
+            {label}
           </Link>
         );
       })}
-    </nav>
+    </TabNav>
   );
 }

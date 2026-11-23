@@ -9,23 +9,33 @@
   flex-direction: column;
   flex: 1 1 auto;
   min-width: 0;
-  padding: var(--content-padding);
-  /*
-   * The workspace frames are 900px tall and leave ~14px below the hint. The
-   * 32px shared padding overflows that frame once a screen reaches eight
-   * rows, so the bottom keeps the frame's breathing room instead.
-   */
-  padding-bottom: 13px;
+  padding: var(--space-8) var(--content-padding) var(--space-6);
+}
+
+/* Centred and capped on wide monitors; full width below the cap. */
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
 }
 
 /*
- * Below the sidebar's overlay breakpoint the sidebar is out of flow, so the
- * content reclaims the full width. The extra top padding clears the floating
- * sidebar trigger that sits over the content in this mode.
+ * Below the sidebar's overlay breakpoint the rail leaves the flow and a fixed
+ * top bar holds its trigger, so the content clears the bar.
  */
 @media (max-width: 900px) {
   .main {
-    padding-top: 64px;
+    padding-top: calc(var(--mobile-bar-height) + var(--space-6));
+  }
+}
+
+@media (max-width: 700px) {
+  .main {
+    padding-inline: var(--space-5);
   }
 }
 
@@ -34,14 +44,13 @@
   align-items: center;
   justify-content: flex-end;
   flex-shrink: 0;
-  /* One line keeps the frame's 28px row; narrow screens grow instead of clipping. */
-  min-height: 28px;
-  padding-top: 10px;
+  min-height: var(--control-height-sm);
+  padding-top: var(--space-3);
 }
 
 .hintText {
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  line-height: 18px;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
   text-align: right;
 }

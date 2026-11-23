@@ -22,13 +22,15 @@ export function AppLayout({ sidebar, hint, children }: AppLayoutProps) {
       {sidebar}
 
       <main className={styles.main}>
-        {children}
+        <div className={styles.content}>
+          {children}
 
-        {hint ? (
-          <div className={styles.hintRow}>
-            <span className={styles.hintText}>{hint}</span>
-          </div>
-        ) : null}
+          {hint ? (
+            <div className={styles.hintRow}>
+              <span className={styles.hintText}>{hint}</span>
+            </div>
+          ) : null}
+        </div>
       </main>
     </div>
   );

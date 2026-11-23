@@ -4,7 +4,7 @@
  * Mirrors `locales/en/pipelines.ts` key-for-key; only the values are translated.
  */
 const pipelines = {
-  backToPipelines: "← Volver a Pipelines",
+  backToPipelines: "Volver a Pipelines",
   retry: "Reintentar",
   opensInNewTab: "(se abre en una pestaña nueva)",
   connection: {

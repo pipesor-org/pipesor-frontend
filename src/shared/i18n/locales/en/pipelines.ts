@@ -4,7 +4,7 @@
  * Inventory, Pipeline Detail, onboarding and run-analysis copy.
  */
 const pipelines = {
-  backToPipelines: "← Back to Pipelines",
+  backToPipelines: "Back to Pipelines",
   retry: "Try again",
   opensInNewTab: "(opens in a new tab)",
   connection: {

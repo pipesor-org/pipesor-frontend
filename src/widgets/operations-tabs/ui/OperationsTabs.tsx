@@ -8,8 +8,7 @@ import {
 } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { Badge } from "../../../shared/ui/badge";
-
-import styles from "./OperationsTabs.module.css";
+import { TabNav, tabClassName } from "../../../shared/ui/tab-nav";
 
 /**
  * Queue switcher for the Operations workspace.
@@ -50,7 +49,7 @@ export function OperationsTabs({ counts }: { counts: Record<"active" | "validati
   ] as const;
 
   return (
-    <nav className={styles.tabs} aria-label={t("tabs.ariaLabel")}>
+    <TabNav label={t("tabs.ariaLabel")}>
       {tabs.map(({ queue, label, to, count }) => {
         const isActive = queue === activeQueue;
 
@@ -58,10 +57,10 @@ export function OperationsTabs({ counts }: { counts: Record<"active" | "validati
           <Link
             key={queue}
             to={to}
-            className={`${styles.tab}${isActive ? ` ${styles.tabActive}` : ""}`}
+            className={tabClassName(isActive)}
             aria-current={isActive ? "page" : undefined}
           >
-            <span className={styles.tabLabel}>{label}</span>
+            {label}
             {count && (
               <Badge tone={isActive ? "accent" : "neutral"}>
                 {count.more ? t("queue.moreAvailable", { value: formatNumber(count.value) }) : formatNumber(count.value)}
@@ -70,6 +69,6 @@ export function OperationsTabs({ counts }: { counts: Record<"active" | "validati
           </Link>
         );
       })}
-    </nav>
+    </TabNav>
   );
 }

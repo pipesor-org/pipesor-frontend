@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { signOut, useSession } from "../../../entities/session";
 import { LanguageSelector } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
+import { ChevronsUpDownIcon } from "../../../shared/ui/icons";
 import { ThemeToggle } from "../../../shared/ui/theme-toggle";
 
 import styles from "./UserMenu.module.css";
@@ -124,6 +125,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
           <span className={styles.name}>{login}</span>
           <span className={styles.role}>{t("userMenu.signedInWith")}</span>
         </span>
+        <ChevronsUpDownIcon className={styles.chevron} />
       </button>
 
       {open ? (
@@ -139,11 +141,13 @@ export function UserMenu({ collapsed }: UserMenuProps) {
             <span className={styles.identityName}>{login}</span>
             <span className={styles.identityRole}>{t("userMenu.signedInWith")}</span>
           </div>
-          <div className={styles.themeToggleWrapper}>
-            <span className={styles.themeLabel}>{t("theme.label")}</span>
-            <ThemeToggle />
+          <div className={styles.preferences}>
+            <div className={styles.themeToggleWrapper}>
+              <span className={styles.themeLabel}>{t("theme.label")}</span>
+              <ThemeToggle />
+            </div>
+            <LanguageSelector />
           </div>
-          <LanguageSelector />
           <Button
             size="sm"
             block

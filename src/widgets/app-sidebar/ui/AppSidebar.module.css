@@ -1,4 +1,7 @@
 .sidebar {
+  /* Nav icons are drawn at 18px; the collapsed rail centres them with it. */
+  --nav-icon-size: 18px;
+
   position: sticky;
   top: 0;
   /*
@@ -13,44 +16,41 @@
   flex-shrink: 0;
   width: var(--sidebar-width);
   height: 100vh;
-  padding: 28px 16px 20px;
+  padding: var(--space-5) var(--space-3) var(--space-3);
   background-color: var(--color-surface);
   border-right: 1px solid var(--color-border);
   /*
-   * Width and the horizontal (collapsed) padding animate together. Because the
-   * collapsible *content* rules below only clip/reveal (they no longer rely on
-   * layout snapping), the rail's geometry and its content stay in step.
+   * Only the width animates. The collapsible content below clips or reveals
+   * with the live width (it never relies on layout snapping), so the rail's
+   * geometry and its content stay in step.
    */
-  transition: width 160ms ease, padding 160ms ease;
+  transition: width var(--duration-base) var(--ease-standard);
 }
 
 .sidebarCollapsed {
   width: var(--sidebar-width-collapsed);
-  padding-left: 12px;
-  padding-right: 12px;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  /* Left inset aligns the logo with the nav icons below; the toggle sits flush
-   * with the inner right edge. */
-  padding: 0 0 24px 12px;
+  gap: var(--space-2);
+  /* The left inset centres the logo on the nav icons below. */
+  padding: 0 0 var(--space-6) var(--space-1-5);
 }
 
 .sidebarCollapsed .header {
   flex-direction: column;
-  gap: 10px;
-  padding: 0 0 20px;
+  gap: var(--space-2);
+  padding: 0 0 var(--space-5);
 }
 
 .brandWrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
 }
 
@@ -61,7 +61,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -70,9 +70,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
   flex-shrink: 0;
+  border-radius: var(--radius-md);
 }
 
 .brandIcon {
@@ -93,25 +94,15 @@
   padding: 0;
   border: none;
   border-radius: var(--radius-md);
-  background-color: var(--color-surface);
+  background-color: var(--color-surface-subtle);
   color: var(--color-text-primary);
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms ease;
+  transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
-.brandExpandButton:hover {
-  background-color: var(--color-surface-subtle);
-}
-
-.brandExpandButton:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-  opacity: 1;
-  pointer-events: auto;
-}
-
+.brandExpandButton:focus-visible,
 .brand:focus-within .brandExpandButton,
 .brandIconContainer:hover .brandExpandButton,
 .brandIconContainer:focus-visible .brandExpandButton {
@@ -119,17 +110,12 @@
   pointer-events: auto;
 }
 
-.brandIconContainer:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-  border-radius: var(--radius-md);
-}
-
 .brandName {
   color: var(--color-text-primary);
-  font-size: 18px;
+  font-size: var(--text-md);
   font-weight: var(--font-weight-semibold);
-  line-height: 26px;
+  line-height: var(--leading-md);
+  letter-spacing: var(--tracking-tight);
   /*
    * The label is clipped to the space the rail actually has at each frame, so
    * it reveals in step with the width transition instead of momentarily
@@ -146,14 +132,17 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: var(--control-height-sm);
+  height: var(--control-height-sm);
   padding: 0;
   border: none;
   border-radius: var(--radius-md);
   background: none;
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
   cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
 }
 
 .toggle:hover {
@@ -161,61 +150,86 @@
   color: var(--color-text-primary);
 }
 
-.toggle:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-}
-
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-0-5);
 }
 
 .navItem {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 42px;
-  padding: 0 12px;
-  border-radius: var(--radius-lg);
+  gap: var(--space-3);
+  height: var(--control-height-md);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   text-decoration: none;
-  /* Matches the rail width transition so the icon slides between its centred
+  /* Padding runs with the rail width so the icon slides between its centred
    * (collapsed) and aligned (expanded) positions. */
-  transition: padding 160ms ease;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    padding var(--duration-base) var(--ease-standard);
 }
 
 .navItem:hover {
   background-color: var(--color-surface-subtle);
+  color: var(--color-text-primary);
 }
 
+/*
+ * Where you are: ink label on a tinted row, accent icon, and an accent bar
+ * flush with the rail's outer edge.
+ */
 .navItemActive,
 .navItemActive:hover {
-  background-color: var(--color-surface-subtle);
+  background-color: var(--color-surface-tint);
+  color: var(--color-text-primary);
+}
+
+.navItemActive .navIcon {
   color: var(--color-accent);
+}
+
+.navItemActive::before {
+  content: "";
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: calc(-1 * var(--space-3));
+  width: var(--indicator-thickness);
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  background-color: var(--color-accent);
+}
+
+.navItem:focus-visible {
+  outline-offset: calc(-1 * var(--focus-ring-width));
 }
 
 .navItemDisabled,
 .navItemDisabled:hover {
   background-color: transparent;
+  color: var(--color-text-tertiary);
   cursor: default;
 }
 
 /* Collapsed rail: icons only, centred via the item's own inset (animatable,
  * unlike `justify-content`). */
 .sidebarCollapsed .navItem {
-  padding: 0 8px;
+  padding: 0 calc(50% - var(--nav-icon-size) / 2);
 }
 
 .navIcon {
   flex-shrink: 0;
+  transition: color var(--duration-fast) var(--ease-standard);
 }
 
 .navLabel {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: var(--font-weight-medium);
-  line-height: 20px;
+  line-height: var(--leading-sm);
   /* Clipped to the rail's live width so the label reveals with it rather than
    * spilling over the content column mid-transition. */
   min-width: 0;
@@ -240,8 +254,8 @@
   flex: 1 1 0%;
 }
 
-/* Floating trigger and backdrop exist only in the narrow-viewport overlay. */
-.mobileTrigger {
+/* The top bar and backdrop exist only in the narrow-viewport overlay mode. */
+.mobileBar {
   display: none;
 }
 
@@ -257,7 +271,9 @@
     z-index: 40;
     width: var(--sidebar-width);
     transform: translateX(-100%);
-    transition: transform 160ms ease;
+    transition:
+      transform var(--duration-slow) var(--ease-out),
+      box-shadow var(--duration-slow) var(--ease-out);
   }
 
   .sidebarMobileOpen {
@@ -265,27 +281,51 @@
     box-shadow: var(--shadow-lg);
   }
 
-  .mobileTrigger {
+  .mobileBar {
     position: fixed;
-    top: 12px;
-    left: 12px;
+    top: 0;
+    right: 0;
+    left: 0;
     z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    height: var(--mobile-bar-height);
+    padding: 0 var(--space-4);
+    background-color: var(--color-chrome);
+    border-bottom: 1px solid var(--color-border);
+    backdrop-filter: saturate(1.8) blur(12px);
+  }
+
+  .mobileTrigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: var(--control-height-md);
+    height: var(--control-height-md);
     padding: 0;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
     background-color: var(--color-surface);
+    box-shadow: var(--shadow-xs);
     color: var(--color-text-primary);
     cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-standard);
   }
 
-  .mobileTrigger:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 1px;
+  .mobileTrigger:hover {
+    background-color: var(--color-surface-subtle);
+  }
+
+  .mobileBrand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-primary);
+    font-size: var(--text-md);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-md);
+    letter-spacing: var(--tracking-tight);
   }
 
   .backdrop {
@@ -294,13 +334,12 @@
     inset: 0;
     z-index: 35;
     background-color: var(--color-backdrop);
+    animation: backdrop-in var(--duration-base) var(--ease-out);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sidebar,
-  .navItem,
-  .brandExpandButton {
-    transition: none;
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
   }
 }
