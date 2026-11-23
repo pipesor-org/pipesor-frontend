@@ -21,6 +21,8 @@ import { isApiError, useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button } from "../../../shared/ui/button";
+import { ChevronLeftIcon } from "../../../shared/ui/icons";
+import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
 
@@ -74,18 +76,13 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
 
   return (
     <AppLayout sidebar={<AppSidebar />}>
-      <div className={styles.context}>
-        <Link className={styles.backLink} to={backTo}>{t("backToPipelines")}</Link>
-      </div>
-      <header className={styles.header}>
-        <h1 ref={headingRef} tabIndex={-1}>{title}</h1>
-        {loaded && (
-          <div className={styles.metadata}>
-            <span>{loaded.pipeline.fullName}</span>
-            <GitHubConnectionStatus />
-          </div>
-        )}
-      </header>
+      <PageHeader
+        divider
+        headingRef={headingRef}
+        back={<Link to={backTo}><ChevronLeftIcon />{t("backToPipelines")}</Link>}
+        title={title}
+        meta={loaded && <><span className={styles.repository}>{loaded.pipeline.fullName}</span><GitHubConnectionStatus /></>}
+      />
 
       {notFound && <p>{t("detail.notFoundText")}</p>}
       {detail.state.status === "error" && !notFound && <Button onClick={detail.reload}>{t("retry")}</Button>}

@@ -137,11 +137,18 @@
   --control-height-md: 36px;
   --control-height-lg: 40px;
 
+  /* Position indicators: active navigation bar and active tab underline */
+  --indicator-thickness: 2px;
+
   /* Layout */
-  --sidebar-width: 200px;
+  --sidebar-width: 216px;
   /* Icon-only rail width when the sidebar is collapsed on desktop. */
   --sidebar-width-collapsed: 64px;
+  /* Top bar that replaces the rail on narrow screens. */
+  --mobile-bar-height: 56px;
   --content-padding: 32px;
+  /* Content stops growing on wide monitors so tables and prose stay scannable. */
+  --content-max-width: 1440px;
 }
 
 /*
@@ -157,6 +164,8 @@
   --color-success-border: color-mix(in srgb, var(--color-success) 28%, var(--color-surface));
   --color-info-soft: color-mix(in srgb, var(--color-info) 10%, var(--color-surface));
   --color-info-border: color-mix(in srgb, var(--color-info) 28%, var(--color-surface));
+  /* Translucent canvas for sticky chrome (the narrow-screen top bar). */
+  --color-chrome: color-mix(in srgb, var(--color-bg-app) 82%, transparent);
 }
 
 [data-theme='dark'] {

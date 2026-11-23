@@ -220,3 +220,20 @@ export function PlusIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** Up/down chevrons: a control that opens a menu (the profile trigger). */
+export function ChevronsUpDownIcon(props: IconProps) {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="m4.5 5.5 2.5-2.5 2.5 2.5M4.5 8.5 7 11l2.5-2.5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

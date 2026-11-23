@@ -2,36 +2,43 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .label {
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-weight-medium);
-  line-height: 18px;
+  line-height: var(--leading-xs);
 }
 
+/* Segmented control, as tall as the small controls it sits next to. */
 .options {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  padding: 2px;
+  gap: var(--space-0-5);
+  height: var(--control-height-sm);
+  padding: var(--space-0-5);
   background-color: var(--color-surface-tint);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 
 .option {
-  min-width: 32px;
-  padding: 2px 8px;
+  min-width: var(--space-8);
+  height: 100%;
+  padding: 0 var(--space-2);
   border: none;
   border-radius: var(--radius-sm);
   background: none;
-  cursor: pointer;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  cursor: pointer;
+  font-size: var(--text-xs);
   font-weight: var(--font-weight-medium);
-  line-height: 18px;
+  line-height: var(--leading-xs);
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
 }
 
 .option:hover {
@@ -41,10 +48,6 @@
 .optionActive,
 .optionActive:hover {
   background-color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
   color: var(--color-accent);
-}
-
-.option:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
 }

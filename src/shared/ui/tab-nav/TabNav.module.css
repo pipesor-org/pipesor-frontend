@@ -1,0 +1,82 @@
+/*
+ * Tabs carry inline padding (room for the focus ring). The bar extends by the
+ * same amount so tab text stays aligned with the page, and its hairline is
+ * drawn as a background inset by that amount so it matches the other rules.
+ * When labels do not fit (long translations on phones) the bar scrolls
+ * sideways instead of overflowing the page.
+ */
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  margin-inline: calc(-1 * var(--space-1-5));
+  overflow-x: auto;
+  background: linear-gradient(var(--color-border), var(--color-border)) bottom / calc(100% - 2 * var(--space-1-5)) 1px no-repeat;
+  scrollbar-width: none;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--control-height-lg);
+  padding-inline: var(--space-1-5);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--leading-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+/*
+ * The underline covers the bar's hairline. It grows from the centre when a
+ * tab becomes current (and shrinks on the one it leaves); hover previews it
+ * in a neutral tone.
+ */
+.tab::after {
+  content: "";
+  position: absolute;
+  right: var(--space-1-5);
+  bottom: 0;
+  left: var(--space-1-5);
+  height: var(--indicator-thickness);
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  transform: scaleX(0);
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.tab:hover {
+  color: var(--color-text-primary);
+}
+
+.tab:hover:not(.active)::after {
+  background-color: var(--color-border-strong);
+  transform: scaleX(1);
+}
+
+.active {
+  color: var(--color-text-primary);
+}
+
+.active::after {
+  transform: scaleX(1);
+}
+
+.tab:focus-visible {
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+@media (max-width: 700px) {
+  .tab {
+    font-size: var(--text-sm);
+  }
+}

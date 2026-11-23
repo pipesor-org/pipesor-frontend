@@ -1,34 +1,5 @@
-.context {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  min-height: 32px;
-}
-
 .note, .empty { margin: 0; }
-.backLink { color: var(--color-text-secondary); font-size: 12px; line-height: 20px; text-decoration: none; }
-.backLink:hover { color: var(--color-text-primary); text-decoration: underline; }
-.backLink:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
-.header { padding: 24px 0; border-bottom: 1px solid var(--color-border); }
-.header h1 {
-  margin: 0 0 8px;
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: var(--font-weight-semibold);
-  overflow-wrap: anywhere;
-}
-.metadata {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: 0 0 8px;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  line-height: 22px;
-}
-.metadata > span:first-child { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
+.repository { font-family: var(--font-mono); overflow-wrap: anywhere; }
 .note { color: var(--color-text-secondary); font-size: 12px; line-height: 18px; }
 .surface {
   width: 100%;
@@ -82,7 +53,6 @@
   .row dt { flex-basis: auto; }
 }
 
-.header h1:focus { outline: none; }
 .surface p { margin: 0; }
 .surface section > * + * { margin-top: 12px; }
 .mono { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }

@@ -2,6 +2,7 @@ export {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronsUpDownIcon,
   HistoryIcon,
   MenuIcon,
   OperationsIcon,

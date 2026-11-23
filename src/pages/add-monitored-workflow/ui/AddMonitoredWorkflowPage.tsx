@@ -6,10 +6,10 @@ import { RegisterWorkflowForm } from "../../../features/onboard-monitored-workfl
 import { pipelineDetailPath } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { buttonClassName } from "../../../shared/ui/button";
+import { ChevronLeftIcon } from "../../../shared/ui/icons";
+import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
-
-import styles from "./AddMonitoredWorkflowPage.module.css";
 
 /**
  * Add monitored workflow (`/pipelines/new`). Cancel and Back return to the
@@ -25,14 +25,14 @@ export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
 
   return (
     <AppLayout sidebar={<AppSidebar />}>
-      <div className={styles.context}>
-        <Link className={styles.backLink} to={backTo}>{t("backToPipelines")}</Link>
-      </div>
-      <header className={styles.header}>
-        <h1 ref={headingRef} tabIndex={-1}>{t("onboarding.title")}</h1>
-        <p>{t("onboarding.subtitle")}</p>
-        <GitHubConnectionStatus />
-      </header>
+      <PageHeader
+        divider
+        headingRef={headingRef}
+        back={<Link to={backTo}><ChevronLeftIcon />{t("backToPipelines")}</Link>}
+        title={t("onboarding.title")}
+        subtitle={t("onboarding.subtitle")}
+        meta={<GitHubConnectionStatus />}
+      />
       <RegisterWorkflowForm
         cancel={<Link className={buttonClassName()} to={backTo}>{t("onboarding.cancel")}</Link>}
         onRegistered={(pipeline) => navigate(pipelineDetailPath(pipeline.id), { replace: true, state })}

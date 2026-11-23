@@ -17,6 +17,7 @@ import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button, buttonClassName } from "../../../shared/ui/button";
 import { Select, TextInput } from "../../../shared/ui/field";
 import { ChevronRightIcon, PlusIcon, SearchIcon } from "../../../shared/ui/icons";
+import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
 
@@ -53,18 +54,17 @@ export function PipelinesPage() {
 
   return (
     <AppLayout sidebar={<AppSidebar />} hint={t("inventory.hint")}>
-      <header className={styles.header}>
-        <div>
-          <h1 ref={headingRef} tabIndex={-1}>{t("inventory.title")}</h1>
-          <p className={styles.subtitle}>{t("inventory.subtitle")}</p>
-          <GitHubConnectionStatus />
-        </div>
-        <div className={styles.actions}>
+      <PageHeader
+        headingRef={headingRef}
+        title={t("inventory.title")}
+        subtitle={t("inventory.subtitle")}
+        meta={<GitHubConnectionStatus />}
+        actions={
           <Link className={buttonClassName({ variant: "primary" })} to={routes.addMonitoredWorkflow} state={returnState}>
             <PlusIcon />{t("inventory.add")}
           </Link>
-        </div>
-      </header>
+        }
+      />
       <div className={styles.filters}>
         <label className={styles.search}>
           <span className={styles.srOnly}>{t("inventory.search")}</span>
