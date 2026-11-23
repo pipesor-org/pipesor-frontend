@@ -2,6 +2,8 @@
 
 Observed 2026-11-19. This companion to the [frontend functional map](frontend-functional-map.md) records design evidence and proposes a delivery sequence. D01–D07 and the accepted architecture decisions continue to govern their respective boundaries. The pre-Workspace comparison baseline was frontend `main` at `d398af3`. The separate Operations replay is draft [PR #23](https://github.com/pipesor-org/pipesor-frontend/pull/23) at `16fe60b`.
 
+
+**Visual styling (2026-11-23):** the dashboard now follows the [design system](../design-system.md) ("Ink on paper": Geist, ink primary actions, token-based scale). The frames below remain the reference for information architecture and content; their colors, typography and component styling are superseded.
 ## Paper MCP access and evidence
 
 The WSL Codex CLI's `codex mcp get paper` showed one enabled Streamable HTTP endpoint at `http://127.0.0.1:29979/mcp`. No remote Paper or stdio entry was configured. The sandboxed request could not connect. Outside the sandbox, WSL reported mirrored networking, Windows reported a running Paper process and a reachable listener, and the same WSL URL completed MCP initialization with `paper-desktop 0.5.19`. The inspection used the configured endpoint directly from the WSL shell because the active tool list did not expose Paper. This verifies endpoint and document access; a fresh Codex session's tool discovery was outside the check.

@@ -15,7 +15,7 @@
 }
 
 .success {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .success.dot {
@@ -23,7 +23,7 @@
 }
 
 .critical {
-  color: var(--color-critical);
+  color: var(--color-critical-text);
 }
 
 .critical.dot {

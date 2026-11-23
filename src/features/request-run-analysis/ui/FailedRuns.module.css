@@ -46,7 +46,7 @@
 }
 
 .error {
-  color: var(--color-critical);
+  color: var(--color-critical-text);
   font-size: 13px;
 }
 

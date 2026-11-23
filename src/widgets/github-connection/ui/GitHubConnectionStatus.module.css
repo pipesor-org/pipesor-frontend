@@ -21,7 +21,7 @@
 }
 
 .connected {
-  color: var(--color-success);
+  color: var(--color-success-text);
 }
 
 .other {

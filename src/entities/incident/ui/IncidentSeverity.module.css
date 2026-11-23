@@ -18,7 +18,7 @@
 }
 
 .critical {
-  color: var(--color-critical);
+  color: var(--color-critical-text);
 }
 
 .critical.dot {

@@ -1,5 +1,11 @@
 @import './tokens.css';
 
+/*
+ * Application-level base styles only: reset, document typography, the shared
+ * focus ring, selection, scrollbars and the reduced-motion policy. Component
+ * styles stay in CSS Modules and consume tokens.
+ */
+
 *,
 *::before,
 *::after {
@@ -18,13 +24,69 @@ body {
   background-color: var(--color-bg-app);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-button {
+button,
+input,
+select,
+textarea {
   font: inherit;
   color: inherit;
+}
+
+/* Large type reads better slightly tighter; long copy wraps without orphans. */
+h1,
+h2,
+h3 {
+  letter-spacing: var(--tracking-snug);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Durations, counts and timestamps line up in columns. */
+table,
+time {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * One focus ring for every interactive element. Components may adjust the
+ * offset for tight layouts but keep the color and width tokens.
+ */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+::selection {
+  background-color: var(--color-selection);
+}
+
+* {
+  scrollbar-color: var(--color-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+/*
+ * Motion is decoration, never information: honour the user's preference by
+ * collapsing every transition and animation (Pipesor never relies on them).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

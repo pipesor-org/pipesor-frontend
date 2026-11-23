@@ -45,10 +45,10 @@
 .table .repository { font-family: var(--font-mono); font-size: 12px; }
 .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 18px; }
 .status::before { content: ""; flex: 0 0 5px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-.CRITICAL { color: var(--color-critical); }
-.HIGH { color: var(--color-warning); }
+.CRITICAL { color: var(--color-critical-text); }
+.HIGH { color: var(--color-warning-text); }
 .MEDIUM, .LOW, .PAUSED { color: var(--color-text-secondary); }
-.ACTIVE { color: var(--color-success); }
+.ACTIVE { color: var(--color-success-text); }
 .monitoringCell { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .monitoringCell svg { flex-shrink: 0; color: var(--color-text-secondary); }
 .table .empty { padding: 32px 16px; text-align: center; color: var(--color-text-secondary); }

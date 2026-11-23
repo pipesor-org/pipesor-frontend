@@ -23,7 +23,7 @@ The [frontend functional architecture map](architecture/frontend-functional-map.
 
 ## 2. Visual source of truth and design handoff
 
-The approved **Pipesor** designs in Paper are the visual reference **when accessible**. The codebase remains usable without a paid Paper account. For handoffs to another developer, provide only the information relevant to the task:
+The [design system](design-system.md) and `src/app/styles/tokens.css` define the visual language. The **Pipesor** designs in Paper remain the reference for information architecture and screen content **when accessible**. The codebase remains usable without a paid Paper account. For handoffs to another developer, provide only the information relevant to the task:
 
 - Approved screenshot or frame reference, including state/variant and target viewport.
 - Expected layout and visual changes; which existing component should be reused, if known.
@@ -39,11 +39,11 @@ A Paper frame describes a visual state; it does **not**, by itself, approve back
 - The UI supports **light and dark** themes. Theme preference follows `system`, `light`, or `dark` and is persisted in `localStorage` under `pipesor.theme` (applied before initial render; `system` tracks `prefers-color-scheme` while active). The theme toggle lives in the profile menu. Semantic tokens live in `src/app/styles/tokens.css` and should be maintained per theme (`[data-theme='dark']`); see also `src/shared/lib/theme.ts` and `src/shared/lib/ThemeProvider.tsx` for the initialization/transition logic.
 - Do not paste new arbitrary hex colors or recreate brand assets. New visual themes and design-system extensions require explicit approval and a clear visual use case; a component-specific technical dimension is not automatically a new token.
 - Use supplied SVGs from `src/shared/assets/branding/` directly. Keep product name **Pipesor** unchanged across locales. Browser favicon comes from `public/favicon.png` through `index.html`.
-- Sora and JetBrains Mono are the existing font families. Respect established weights, spacing rhythm, density and hierarchy; avoid per-screen typography systems.
+- Geist and Geist Mono are the font families. Use the type scale, spacing grid, radii, elevation and motion tokens described in the [design system](design-system.md); avoid per-screen typography systems.
 
 **Where styling belongs:** global reset/body setup stays in `src/app/styles/global.css`; UI styles belong in component-co-located `*.module.css`. Import CSS Modules as `styles`, follow existing camelCase class naming, and use meaningful state/variant names such as `sidebarCollapsed` or `navItemActive`. Avoid broad `:global`, `!important`, and selectors that depend on unrelated widgets' markup. Compose conditional classes using the existing project pattern instead of introducing a styling dependency.
 
-The existing typography uses **Sora** for UI and **JetBrains Mono** for technical identifiers and durations; fonts are loaded through `index.html` (Google Fonts). Reuse current weight, line-height, density, and spacing patterns before introducing new ones. Component-specific pixel dimensions may be needed to faithfully implement an approved design; do not promote every dimension to a global token.
+The typography uses **Geist** for UI and **Geist Mono** for technical identifiers, commits, logs and evidence; fonts are loaded through `index.html` (Google Fonts). Pair each `--text-*` size with its `--leading-*`, and use the `--space-*` grid before introducing other values. Component-specific pixel dimensions may be needed to faithfully implement an approved design; do not promote every dimension to a global token.
 
 ## 4. Component reuse and presentation
 
