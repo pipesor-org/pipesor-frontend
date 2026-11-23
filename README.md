@@ -28,7 +28,7 @@ bun run setup:hooks
 bun run dev
 ```
 
-Open `http://127.0.0.1:5173` — the services only accept that dashboard origin (CORS and the GitHub callback). In development the API origins default to the local stack (Ingestion 8081, Pipeline 8082, Recommendation 8086, see the [runtime manifest](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/development/runtime-manifest.md)); builds read them from `VITE_PIPESOR_*_URL` (see [.env.example](.env.example)) and warn when they are missing. Start Vite with `bun run dev -- --host 127.0.0.1 --port 5173 --strictPort` when your default host differs. Hook setup is required once per clone; Lefthook and Commitlint run with Bun without requiring Node.js. Keep personal overrides in ignored `lefthook-local.yml`.
+Open `http://127.0.0.1:5173` — the services only accept that dashboard origin (CORS and the GitHub callback). In development the API origins default to the local stack (Ingestion 8081, Pipeline 8082, Recommendation 8086, see the [runtime manifest](https://github.com/pipesor-org/pipesor-docs/blob/main/docs/development/runtime-manifest.md)); deployed images read them at runtime from `/config.js`, which the container renders from its `PIPESOR_*_URL` environment; `VITE_PIPESOR_*_URL` (see [.env.example](.env.example)) remains a local override. Start Vite with `bun run dev -- --host 127.0.0.1 --port 5173 --strictPort` when your default host differs. Hook setup is required once per clone; Lefthook and Commitlint run with Bun without requiring Node.js. Keep personal overrides in ignored `lefthook-local.yml`.
 
 Paper access and agent tools are optional. Approved screenshots, specifications, and existing components provide design handoffs; request missing details rather than inventing them. Sora and JetBrains Mono load from Google Fonts through `index.html`, so those fonts may be unavailable offline.
 
@@ -47,7 +47,7 @@ These validate accepted/rejected commit messages, TypeScript, ESLint, and the pr
 
 After building, use `bun run preview` for manual browser verification. Follow [AGENTS.md](AGENTS.md) for the applicable navigation, EN/ES, keyboard, responsive, and design checks; build success does not establish those results.
 
-The [Quality workflow](.github/workflows/quality.yml) checks PR commits, the PR title and prospective squash message, hook cases, typecheck, lint, and build. It also checks the latest commit on pushes to `main`.
+[CI](.github/workflows/ci.yml) calls the shared [`service-ci.yml`](https://github.com/pipesor-org/pipesor-ci#catalog) from [pipesor-ci](https://github.com/pipesor-org/pipesor-ci), pinned by commit SHA: organization conventions (canonical commitlint/Lefthook, PR title of at most 65 characters, squash message, commits, actionlint, zizmor), typecheck, lint and build, one image build checked by [tests/check-image.sh](tests/check-image.sh), a Trivy SBOM with a gate on fixable HIGH/CRITICAL vulnerabilities and, on pushes to `main`, publication of that exact image.
 
 ## Repository guide
 
@@ -68,9 +68,9 @@ The project follows Feature-Sliced Design. No `features/` layer is implemented; 
 
 ## Deployment status
 
-The DEV dashboard runs as an Azure Container App (pipesor-iac `workloads`): the Quality `image` job rebuilds the SPA with the DEV API origins (`PIPESOR_REQUIRE_API_ORIGINS=1` makes a build without them fail), packages it in unprivileged nginx on port 8080 ([Dockerfile](Dockerfile), [deploy/nginx.conf](deploy/nginx.conf)) and, on `main`, publishes it to GHCR by digest for `workloads.images.dashboard`. API origins are baked at build time, so each environment needs its own image.
+The DEV dashboard runs as an Azure Container App (pipesor-iac `workloads`). CI builds the environment-independent SPA once, packages it in unprivileged nginx on port 8080 ([Dockerfile](Dockerfile), [deploy/nginx.conf](deploy/nginx.conf)) and, on `main`, publishes it to the private GHCR package with `candidate.json`; Terraform pins that digest in `workloads.images.dashboard`. API origins are runtime configuration: at startup [deploy/40-pipesor-config.sh](deploy/40-pipesor-config.sh) validates `PIPESOR_INGESTION_URL`, `PIPESOR_PIPELINE_URL`, `PIPESOR_RECOMMENDATION_URL` (bare HTTPS origins) and the optional `PIPESOR_GITHUB_APP_INSTALL_URL`, renders `/config.js` and the CSP, and refuses to start when they are missing or invalid. The same image is therefore promoted unchanged across environments.
 
-nginx serves client routes from `index.html` (`no-store`), hashed assets as immutable, and every response with the headers in [deploy/security-headers.conf](deploy/security-headers.conf): a CSP whose `connect-src` is exactly the three API origins (`PIPESOR_CONNECT_SRC` build argument, validated), HSTS, `no-referrer` (the sign-in handoff arrives in a URL), `DENY` framing and `nosniff`. The CSP has no `'unsafe-eval'`, so Zod runs `jitless` ([src/app/zodConfig.ts](src/app/zodConfig.ts), imported first). Staged promotion beyond DEV is described in the [release guide](docs/git-workflow.md#4-releases-and-deployment).
+nginx serves client routes from `index.html` (`no-store`), hashed assets as immutable, and every response with the headers in [deploy/security-headers.conf](deploy/security-headers.conf): a CSP whose `connect-src` is exactly the three configured API origins, HSTS, `no-referrer` (the sign-in handoff arrives in a URL), `DENY` framing and `nosniff`. The CSP has no `'unsafe-eval'`, so Zod runs `jitless` ([src/app/zodConfig.ts](src/app/zodConfig.ts), imported first). Staged promotion beyond DEV is described in the [release guide](docs/git-workflow.md#4-releases-and-deployment).
 
 ## Contribution
 

@@ -60,7 +60,7 @@ Preserve these domain distinctions: incident lifecycle vs. diagnosis validation;
 4. For UI changes, verify navigation, both locales, keyboard accessibility, responsive behavior, and visual fidelity where relevant. For domain/schema changes, verify valid and invalid data cases.
 5. Report changed files, checks passed/failed, any browser or design comparisons **not performed**, and open decisions. Do not claim verification you did not perform.
 
-The repository has no established application test runner. Run `bun run test:hooks` for hook or Commitlint changes; the Quality workflow also runs these hook cases, commit validation, typecheck, lint, and build. Do not claim automated application test coverage.
+The repository has no established application test runner. Run `bun run test:hooks` for hook or Commitlint changes; CI (shared pipesor-ci pipeline) runs commit validation against the canonical configuration, typecheck, lint, build and the image checks. Do not claim automated application test coverage.
 
 ## Git workflow
 
