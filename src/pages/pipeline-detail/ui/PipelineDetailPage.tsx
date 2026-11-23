@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 
 import { fetchSelfPrincipalRef } from "../../../entities/github-access";
 import {
+  CriticalityBadge,
+  MonitoringBadge,
   PIPELINE_CAPABILITIES,
   environmentLabel,
   fetchLatestActivity,
@@ -118,8 +120,8 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
             <section aria-labelledby="pipeline-policy">
               <h2 id="pipeline-policy">{t("policy.title")}</h2>
               <DetailFields fields={[
-                [t("policy.criticality"), <span className={`${styles.status} ${styles[pipeline.criticality]}`}>{t(`criticality.${pipeline.criticality}`)}</span>],
-                [t("policy.monitoring"), <span className={`${styles.status} ${styles[pipeline.monitoringStatus]}`}>{t(`monitoring.${pipeline.monitoringStatus}`)}</span>],
+                [t("policy.criticality"), <CriticalityBadge criticality={pipeline.criticality} />],
+                [t("policy.monitoring"), <MonitoringBadge status={pipeline.monitoringStatus} />],
                 [t("policy.environment"), environmentLabel(t, pipeline.environment)],
               ]} />
               <p className={styles.note}>{t("policy.description")}</p>

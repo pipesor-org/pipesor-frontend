@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { completeSignIn, startGitHubSignIn } from "../../../entities/session";
 import { isApiError, safeErrorCode } from "../../../shared/api";
 import { DEFAULT_OPERATIONS_QUEUE, authRoutes, operationsQueuePath } from "../../../shared/config";
+import { Button } from "../../../shared/ui/button";
 
 import { Brand } from "./Brand";
 import styles from "./SignIn.module.css";
@@ -75,9 +76,9 @@ export function AuthCompletePage() {
                 ) : null}
               </p>
             </div>
-            <button type="button" className={styles.primary} onClick={() => startGitHubSignIn(null)}>
+            <Button variant="primary" size="lg" block onClick={() => startGitHubSignIn(null)}>
               {t("complete.tryAgain")}
-            </button>
+            </Button>
           </>
         ) : (
           <p className={styles.text} role="status">{t("complete.working")}</p>

@@ -2,12 +2,21 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 
-import { PIPELINE_CRITICALITIES, PIPELINE_MONITORING_STATUSES, environmentLabel, listPipelines, pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
+import {
+  CriticalityBadge,
+  MonitoringBadge,
+  PIPELINE_CRITICALITIES,
+  PIPELINE_MONITORING_STATUSES,
+  environmentLabel,
+  listPipelines,
+  pipelineWorkflowLabel,
+} from "../../../entities/monitored-pipeline";
 import { useApiQuery } from "../../../shared/api";
 import { pipelineDetailPath, routes } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
-import { Button } from "../../../shared/ui/button";
-import { ChevronRightIcon, SearchIcon } from "../../../shared/ui/icons";
+import { Button, buttonClassName } from "../../../shared/ui/button";
+import { Select, TextInput } from "../../../shared/ui/field";
+import { ChevronRightIcon, PlusIcon, SearchIcon } from "../../../shared/ui/icons";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
 
@@ -51,43 +60,43 @@ export function PipelinesPage() {
           <GitHubConnectionStatus />
         </div>
         <div className={styles.actions}>
-          <Link className={styles.add} to={routes.addMonitoredWorkflow} state={returnState}>
-            <span aria-hidden="true">+</span>{t("inventory.add")}
+          <Link className={buttonClassName({ variant: "primary" })} to={routes.addMonitoredWorkflow} state={returnState}>
+            <PlusIcon />{t("inventory.add")}
           </Link>
         </div>
       </header>
       <div className={styles.filters}>
         <label className={styles.search}>
-          <span className={styles.srOnly}>{t("inventory.search")}</span><SearchIcon />
-          <input ref={searchRef} type="search" name="q" value={query.q} placeholder={t("inventory.search")}
+          <span className={styles.srOnly}>{t("inventory.search")}</span>
+          <TextInput ref={searchRef} type="search" name="q" value={query.q} placeholder={t("inventory.search")} icon={<SearchIcon />}
             onChange={(event) => setCriterion("q", event.target.value)} />
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.criticality")}</span>
-          <select name="criticality" value={query.criticality} onChange={(event) => setCriterion("criticality", event.target.value)}>
+          <Select name="criticality" value={query.criticality} onChange={(event) => setCriterion("criticality", event.target.value)}>
             <option value="">{t("inventory.criticality")}</option>
             {PIPELINE_CRITICALITIES.map((value) => <option key={value} value={value}>{t(`criticality.${value}`)}</option>)}
-          </select>
+          </Select>
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.team")}</span>
-          <select name="team" value={query.team} onChange={(event) => setCriterion("team", event.target.value)}>
+          <Select name="team" value={query.team} onChange={(event) => setCriterion("team", event.target.value)}>
             <option value="">{t("inventory.team")}</option>
             {teams.map((team) => <option key={team} value={team}>{team}</option>)}
-          </select>
+          </Select>
         </label>
         <label className={styles.filter}>
           <span className={styles.srOnly}>{t("inventory.monitoring")}</span>
-          <select name="monitoring" value={query.monitoring} onChange={(event) => setCriterion("monitoring", event.target.value)}>
+          <Select name="monitoring" value={query.monitoring} onChange={(event) => setCriterion("monitoring", event.target.value)}>
             <option value="">{t("inventory.monitoring")}</option>
             {PIPELINE_MONITORING_STATUSES.map((value) => <option key={value} value={value}>{t(`monitoring.${value}`)}</option>)}
-          </select>
+          </Select>
         </label>
       </div>
       <div className={styles.heading}>
         <h2 id="monitored-workflows">{t("inventory.heading")}</h2>
-        {filtered && <button type="button" className={styles.reset}
-          onClick={() => { setParams({}, { replace: true }); searchRef.current?.focus(); }}>{t("inventory.reset")}</button>}
+        {filtered && <Button variant="link" className={styles.reset}
+          onClick={() => { setParams({}, { replace: true }); searchRef.current?.focus(); }}>{t("inventory.reset")}</Button>}
       </div>
 
       {inventory.state.status === "loading" && <p className={styles.state} role="status">{t("inventory.loading")}</p>}
@@ -116,10 +125,10 @@ export function PipelinesPage() {
                   </Link></th>
                   <td className={styles.repository}>{pipeline.fullName}</td>
                   <td>{environmentLabel(t, pipeline.environment)}</td>
-                  <td><span className={`${styles.status} ${styles[pipeline.criticality]}`}>{t(`criticality.${pipeline.criticality}`)}</span></td>
+                  <td><CriticalityBadge criticality={pipeline.criticality} /></td>
                   <td>{pipeline.responsibleTeamNameSnapshot || t("ownership.unspecified")}</td>
                   <td><div className={styles.monitoringCell}>
-                    <span className={`${styles.status} ${styles[pipeline.monitoringStatus]}`}>{t(`monitoring.${pipeline.monitoringStatus}`)}</span>
+                    <MonitoringBadge status={pipeline.monitoringStatus} />
                     <ChevronRightIcon width={12} height={12} aria-hidden="true" />
                   </div></td>
                 </tr>

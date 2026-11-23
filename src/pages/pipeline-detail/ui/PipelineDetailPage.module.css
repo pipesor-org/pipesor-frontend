@@ -90,10 +90,5 @@
 .surface a { color: var(--color-accent); font-size: 13px; font-weight: var(--font-weight-medium); text-decoration: none; }
 .surface a:hover { text-decoration: underline; }
 .surface a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.status { font-size: 13px; font-weight: var(--font-weight-medium); }
-.CRITICAL { color: var(--color-critical-text); }
-.HIGH { color: var(--color-warning-text); }
-.MEDIUM, .LOW, .PAUSED { color: var(--color-text-secondary); }
-.ACTIVE { color: var(--color-success-text); }
 .you { color: var(--color-text-secondary); font-size: 12px; }
 .srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

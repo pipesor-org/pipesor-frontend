@@ -4,6 +4,8 @@ import { useLocation } from "react-router-dom";
 import { fetchGitHubConnection } from "../../../entities/github-access";
 import { startGitHubSignIn } from "../../../entities/session";
 import { useApiQuery } from "../../../shared/api";
+import { Button } from "../../../shared/ui/button";
+import { StatusBadge } from "../../../shared/ui/status-badge";
 
 import styles from "./GitHubConnectionStatus.module.css";
 
@@ -28,13 +30,14 @@ export function GitHubConnectionStatus() {
 
   return (
     <span className={styles.root}>
-      <span className={`${styles.status} ${connected ? styles.connected : styles.other}`} role="status">
-        <span className={styles.dot} aria-hidden="true" />
-        GitHub Actions · {label}
+      <span role="status">
+        <StatusBadge tone={connected ? "success" : "neutral"} variant="dot" live={state.status === "loading"}>
+          GitHub Actions · {label}
+        </StatusBadge>
       </span>
-      <button type="button" className={styles.reconnect} onClick={() => startGitHubSignIn(pathname)}>
+      <Button variant="link" onClick={() => startGitHubSignIn(pathname)}>
         {t("connection.reconnect")}
-      </button>
+      </Button>
     </span>
   );
 }

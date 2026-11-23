@@ -76,28 +76,8 @@
   font-weight: var(--font-weight-medium);
 }
 
-.field textarea {
-  width: 100%;
-  min-height: 72px;
-  padding: 8px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-  font: inherit;
-  font-size: 13px;
-  line-height: 20px;
-  resize: vertical;
-}
 
-.field textarea:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 1px;
-}
 
-.field textarea[aria-invalid="true"] {
-  border-color: var(--color-critical);
-}
 
 .history h3 {
   margin: 8px 0;

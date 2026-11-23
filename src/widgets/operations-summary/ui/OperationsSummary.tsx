@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { useFormatters } from "../../../shared/i18n";
+import { Button } from "../../../shared/ui/button";
 
 import styles from "./OperationsSummary.module.css";
 
@@ -29,9 +30,9 @@ export function OperationsSummary(props: OperationsSummaryProps) {
   const freshness = (
     <div className={styles.snapshot}>
       {props.loadedAt !== null && <span>{t("queue.updated", { time: formatTimestamp(new Date(props.loadedAt).toISOString()) })}</span>}
-      <button type="button" className={styles.refresh} onClick={props.onRefresh}>
+      <Button variant="link" className={styles.refresh} onClick={props.onRefresh}>
         {t("queue.refresh")}
-      </button>
+      </Button>
     </div>
   );
 

@@ -24,6 +24,8 @@
   /* Borders */
   --color-border: #e6e6e9;
   --color-border-strong: #d4d4d8;
+  /* Form-control outline: >= 3:1 against surfaces (WCAG 1.4.11). */
+  --color-border-input: #878b92;
 
   /* Text */
   --color-text-primary: #17191c;
@@ -40,7 +42,10 @@
   --color-accent-hover: #1d44c4;
   --color-on-accent: #ffffff;
   --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  --color-accent-border: color-mix(in srgb, var(--color-accent) 28%, var(--color-surface));
   --color-focus: var(--color-accent);
+  /* Soft halo around a focused form control (the border carries the indicator). */
+  --color-focus-halo: color-mix(in srgb, var(--color-focus) 26%, transparent);
   --color-selection: color-mix(in srgb, var(--color-accent) 20%, transparent);
 
   /*
@@ -127,6 +132,11 @@
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 
+  /* Controls: buttons and form fields share heights so rows align */
+  --control-height-sm: 28px;
+  --control-height-md: 36px;
+  --control-height-lg: 40px;
+
   /* Layout */
   --sidebar-width: 200px;
   /* Icon-only rail width when the sidebar is collapsed on desktop. */
@@ -163,6 +173,7 @@
   /* Borders */
   --color-border: #24262b;
   --color-border-strong: #33363d;
+  --color-border-input: #646972;
 
   /* Text */
   --color-text-primary: #f4f6f8;

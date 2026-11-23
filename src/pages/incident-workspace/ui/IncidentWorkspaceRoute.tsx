@@ -5,8 +5,8 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { DiagnosisStatusLabel, fetchIncidentDiagnosis, type DiagnosisStatus } from "../../../entities/diagnosis";
 import {
   IncidentSeverity,
+  IncidentStatusBadge,
   STAGE_LABEL_KEY,
-  STATUS_LABEL_KEY,
   githubRunUrl,
   incidentLabel,
 } from "../../../entities/incident";
@@ -94,7 +94,7 @@ export function IncidentWorkspaceRoute() {
             <div className={styles.metaRow}>
               <div className={styles.metadata}>
                 <IncidentSeverity severity={loaded.incident.severity} />
-                <span>{t(STATUS_LABEL_KEY[loaded.incident.status])}</span>
+                <IncidentStatusBadge status={loaded.incident.status} />
                 <span>{t(STAGE_LABEL_KEY[loaded.incident.stage])}</span>
                 {diagnosisStatus && <DiagnosisStatusLabel status={diagnosisStatus} />}
               </div>

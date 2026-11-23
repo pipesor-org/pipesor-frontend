@@ -15,4 +15,5 @@ export type { Execution, IncidentPage, IncidentQueueState, IncidentRecord, Incid
 export { INCIDENT_SEVERITY_LEVELS, INCIDENT_STAGES } from "./model/types";
 export type { IncidentSeverityLevel, IncidentStage, IncidentStatus } from "./model/types";
 export { IncidentSeverity } from "./ui/IncidentSeverity";
+export { IncidentStatusBadge } from "./ui/IncidentStatusBadge";
 export { SEVERITY_LABEL_KEY, STAGE_LABEL_KEY, STATUS_LABEL_KEY } from "./ui/labels";

@@ -11,6 +11,7 @@ import {
 import { isApiError, useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
+import { Textarea } from "../../../shared/ui/field";
 
 import styles from "./DiagnosisReview.module.css";
 
@@ -185,7 +186,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
                   <label htmlFor={ids.cause}>
                     {t("review.actualCause")} <span className={styles.muted}>{t("review.required")}</span>
                   </label>
-                  <textarea
+                  <Textarea
                     id={ids.cause}
                     ref={firstField}
                     value={cause}
@@ -203,7 +204,7 @@ export function DiagnosisReview({ diagnosis, onReviewed, canReview = true }: Dia
                 <label htmlFor={ids.notes}>
                   {t("review.notes")} <span className={styles.muted}>{t("review.optional")}</span>
                 </label>
-                <textarea
+                <Textarea
                   id={ids.notes}
                   ref={mode === "confirm" ? firstField : undefined}
                   value={notes}

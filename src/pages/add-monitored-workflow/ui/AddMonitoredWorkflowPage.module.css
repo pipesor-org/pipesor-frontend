@@ -5,6 +5,4 @@
 .header h1 { margin: 0; font-size: 24px; line-height: 32px; font-weight: var(--font-weight-semibold); }
 .header h1:focus { outline: none; }
 .header p { margin: 0; color: var(--color-text-secondary); font-size: 14px; line-height: 22px; }
-.cancel { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; padding: 7px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text-primary); font-size: 13px; font-weight: var(--font-weight-semibold); line-height: 20px; text-decoration: none; }
-.cancel:hover { background: var(--color-surface-subtle); }
-.cancel:focus-visible, .backLink:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.backLink:focus-visible { outline-offset: var(--focus-ring-offset); }

@@ -120,12 +120,6 @@
   line-height: 18px;
 }
 
-.status {
-  color: var(--color-text-primary);
-  font-size: 13px;
-  font-weight: var(--font-weight-medium);
-  line-height: 20px;
-}
 
 
 
@@ -183,11 +177,7 @@
 
 .placeholder {
   display: block;
-  width: 120px;
-  height: 12px;
-  margin-top: 4px;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface-subtle);
+  margin-top: var(--space-1);
 }
 
 .emptyCell {

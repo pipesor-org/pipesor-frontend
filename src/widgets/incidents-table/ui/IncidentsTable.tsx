@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 import {
   IncidentSeverity,
+  IncidentStatusBadge,
   STAGE_LABEL_KEY,
-  STATUS_LABEL_KEY,
   type IncidentSeverityLevel,
   type IncidentStage,
   type IncidentStatus,
@@ -12,6 +12,7 @@ import {
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
+import { Skeleton } from "../../../shared/ui/skeleton";
 import styles from "./IncidentsTable.module.css";
 
 /** Row state for a value that is read separately from the incident itself. */
@@ -92,7 +93,7 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
                     ) : row.pipeline.kind === "error" ? (
                       <span className={styles.incidentWorkflow}>{t("table.pipelineUnavailable")}</span>
                     ) : (
-                      <span className={styles.placeholder} aria-hidden="true" />
+                      <span className={styles.placeholder}><Skeleton width="160px" /></span>
                     )}
                   </div>
                 </td>
@@ -118,7 +119,7 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
                 </td>
                 <td>
                   <div className={styles.cell}>
-                    <span className={styles.status}>{t(STATUS_LABEL_KEY[row.status])}</span>
+                    <IncidentStatusBadge status={row.status} />
                   </div>
                 </td>
                 <td>

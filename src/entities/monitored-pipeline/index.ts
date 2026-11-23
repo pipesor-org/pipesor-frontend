@@ -26,3 +26,4 @@ export type {
 } from "./model/api";
 export { OPERATIONAL_ENVIRONMENTS, environmentLabel } from "./ui/environmentLabel";
 export type { OperationalEnvironment } from "./ui/environmentLabel";
+export { CriticalityBadge, MonitoringBadge } from "./ui/PipelineBadges";

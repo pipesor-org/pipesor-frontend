@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RegisterWorkflowForm } from "../../../features/onboard-monitored-workflow";
 import { pipelineDetailPath } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
+import { buttonClassName } from "../../../shared/ui/button";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
 
@@ -33,7 +34,7 @@ export function AddMonitoredWorkflowPage({ backTo }: { backTo: string }) {
         <GitHubConnectionStatus />
       </header>
       <RegisterWorkflowForm
-        cancel={<Link className={styles.cancel} to={backTo}>{t("onboarding.cancel")}</Link>}
+        cancel={<Link className={buttonClassName()} to={backTo}>{t("onboarding.cancel")}</Link>}
         onRegistered={(pipeline) => navigate(pipelineDetailPath(pipeline.id), { replace: true, state })}
       />
     </AppLayout>

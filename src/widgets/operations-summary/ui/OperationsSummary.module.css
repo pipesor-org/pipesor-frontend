@@ -63,21 +63,10 @@
 }
 
 .refresh {
-  margin-left: 12px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-accent);
-  font: inherit;
-  font-size: 12px;
+  margin-left: var(--space-3);
   font-weight: var(--font-weight-medium);
-  cursor: pointer;
 }
 
-.refresh:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
 
 @media (max-width: 600px) {
   .cellDivided {
@@ -92,6 +81,6 @@
   }
 
   .refresh {
-    margin-left: 8px;
+    margin-left: var(--space-2);
   }
 }

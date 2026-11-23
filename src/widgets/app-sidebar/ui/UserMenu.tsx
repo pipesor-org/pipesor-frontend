@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import { signOut, useSession } from "../../../entities/session";
 import { LanguageSelector } from "../../../shared/i18n";
+import { Button } from "../../../shared/ui/button";
 import { ThemeToggle } from "../../../shared/ui/theme-toggle";
 
 import styles from "./UserMenu.module.css";
@@ -143,8 +144,9 @@ export function UserMenu({ collapsed }: UserMenuProps) {
             <ThemeToggle />
           </div>
           <LanguageSelector />
-          <button
-            type="button"
+          <Button
+            size="sm"
+            block
             className={styles.signOut}
             disabled={signingOut}
             onClick={() => {
@@ -153,7 +155,7 @@ export function UserMenu({ collapsed }: UserMenuProps) {
             }}
           >
             {t("userMenu.signOut")}
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>
