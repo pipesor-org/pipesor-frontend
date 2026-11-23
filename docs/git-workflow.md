@@ -68,14 +68,14 @@ A breaking change commits the author to explaining the migration path in the bod
   combined squash message, including after edits to the PR. Preserve that message
   when merging; the final commit is checked again on `main`.
 - Keep PR titles within **65 characters**: the squash commit appends ` (#NN)`, and the
-  72-character header limit is enforced again on `main`. A longer header fails the `main`
-  run before the dashboard image is built and published (as happened with #39).
+  72-character header limit is enforced again on `main`. CI rejects longer PR titles before merge
+  (a longer header once failed the `main` run, as happened with #39).
 - Pass the repository's required checks and prefer squash merging. Do not force-push shared branches or branches under review by others.
 - Do not commit build output, credentials, `.env` files, or machine-specific configuration.
 
 ## 4. Releases and deployment
 
-The [organization contribution guide](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) describes the target staged promotion and exceptional hotfix process. On pushes to `main`, Quality stores the verified `dist/` build as a GitHub Actions artifact named for the commit, retained for 90 days. PR builds are not published. This artifact is a CI baseline, not yet a deployment or release registry; promotion and retention for deployed releases are not implemented. The future Azure-based frontend deployment has not been implemented. Its eventual process should build an immutable artifact once, promote the same artifact through environments with recorded results and approvals, and assign a protected SemVer release tag without rebuilding. Do not claim those controls exist until configured.
+The [organization contribution guide](https://github.com/pipesor-org/.github/blob/main/CONTRIBUTING.md) describes the target staged promotion and exceptional hotfix process. On pushes to `main`, CI publishes the verified dashboard image once to the private GHCR package and records `candidate.json` (digest, source SHA, CI run/attempt). PR builds are verified but not published. The image is environment-independent (runtime `/config.js`), so the same digest is promoted through environments by the pipesor-iac Terraform roots; rollback is a reviewed plan with an earlier digest. [Release candidate](../.github/workflows/release.yml) is hard-disabled; when activated it names an existing digest with a SemVer tag and GitHub Release without rebuilding. Approval gates beyond DEV are not configured yet.
 
 If production cannot take the head of `main`, merge the fix to `main` first, then cherry-pick it with `-x` onto a short-lived hotfix branch from the production tag. Follow the organization hotfix promotion and approval process and delete the branch after release.
 
@@ -87,4 +87,4 @@ git pull --ff-only
 git switch -c feature/incident-queue-filters
 ```
 
-Run `bun run test:hooks`, `bun run typecheck`, `bun run test`, `bun run lint`, and `bun run build` before opening the PR. The Quality workflow runs these checks on PRs and pushes to `main`.
+Run `bun run test:hooks`, `bun run typecheck`, `bun run test`, `bun run lint`, and `bun run build` before opening the PR. CI runs typecheck, unit tests, lint and build on PRs and pushes to `main`; the commit-message cases are enforced by the shared conventions job.
