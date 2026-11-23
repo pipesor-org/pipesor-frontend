@@ -27,6 +27,8 @@ import styles from "./FailedRuns.module.css";
 type RowState =
   | { kind: "checking" }
   | { kind: "idle" }
+  /** The receipt could not be read (not a 404): the status is unknown, not "not analyzed". */
+  | { kind: "unknown" }
   | { kind: "running"; phase: AnalysisPhase }
   | { kind: "done"; analysis: RunAnalysis }
   | { kind: "error"; key: ErrorKey };
@@ -72,7 +74,7 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
         const analysis = await fetchRunAnalysis({ ...workflow, runId: run.runId, attempt: run.attempt }, controller.signal);
         state = analysis ? { kind: "done", analysis } : { kind: "idle" };
       } catch {
-        state = { kind: "idle" };
+        state = { kind: "unknown" };
       }
       if (!controller.signal.aborted) setRows((previous) => ({ ...previous, [key(run)]: state }));
     });
@@ -99,7 +101,21 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
       case "checking":
         return <span className={styles.muted}>{t("runs.checking")}</span>;
       case "idle":
-        return <Button onClick={() => void analyze(run)}>{t("runs.analyze")}</Button>;
+        // No receipt (Ingestion answers 404 ANALYSIS_NOT_FOUND): not analyzed yet, not a failure.
+        return (
+          <span className={styles.inline}>
+            <span className={styles.muted}>{t("runs.notAnalyzed")}</span>
+            <Button onClick={() => void analyze(run)}>{t("runs.analyze")}</Button>
+          </span>
+        );
+      case "unknown":
+        // Requesting an analysis is idempotent, so Analyze stays safe when the status is unknown.
+        return (
+          <span className={styles.inline}>
+            <span className={styles.muted}>{t("runs.statusUnavailable")}</span>
+            <Button onClick={() => void analyze(run)}>{t("runs.analyze")}</Button>
+          </span>
+        );
       case "running":
         return <span className={`${styles.muted} ${styles.inline}`} role="status"><Spinner />{t(`runs.phase.${state.phase}`)}</span>;
       case "error":

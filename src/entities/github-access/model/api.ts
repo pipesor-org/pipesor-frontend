@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { apiRequest } from "../../../shared/api";
+import { apiRequest, createRequestCache } from "../../../shared/api";
 
 /**
  * GitHub access through Ingestion, always with the signed-in user's own
@@ -31,32 +31,57 @@ export type GitHubRepository = z.infer<typeof repositorySchema>;
 
 const repositoriesSchema = z.object({ context: contextSchema, repositories: z.array(repositorySchema) });
 
-/** Discovery reads ask for at most this many items (Ingestion requires `limit`). */
-const DISCOVERY_LIMIT = 100;
+/**
+ * Discovery reads ask for at most this many items, the backend maximum.
+ * Ingestion never truncates a list: when the caller can see more items than
+ * `limit` it answers 503 VERIFICATION_UNAVAILABLE, so a smaller limit fails for
+ * anyone with more repositories (or workflows) than that.
+ */
+export const DISCOVERY_LIMIT = 100;
 
-export async function fetchRepositories(signal?: AbortSignal): Promise<GitHubRepository[]> {
+/** One authorized repository discovery: who it was read for and what they can see. */
+export interface RepositoryDiscovery {
+  /** The caller's Pipesor principal reference (`tid:oid`). */
+  principalRef: string;
+  repositories: GitHubRepository[];
+}
+
+/**
+ * The session's latest discovery read, shared by every consumer (cleared with
+ * the other request caches when the session changes). Reads are not tied to
+ * one caller's AbortSignal so a view that unmounts cannot fail another view's
+ * read; `useApiQuery` already ignores results of superseded loads.
+ */
+const discovery = createRequestCache<RepositoryDiscovery>();
+const DISCOVERY_KEY = "repositories";
+
+async function readDiscovery(): Promise<RepositoryDiscovery> {
   const page = await apiRequest("ingestion", {
     path: "/api/v1/github/repositories",
     query: { limit: DISCOVERY_LIMIT },
     schema: repositoriesSchema,
-    signal,
   });
-  return page.repositories;
+  return { principalRef: `${page.context.tenantId}:${page.context.subjectObjectId}`, repositories: page.repositories };
+}
+
+/**
+ * Repositories the caller can register workflows from. Always a fresh read
+ * (the user may just have changed access on GitHub); it also refreshes the
+ * discovery `fetchSelfPrincipalRef` reuses.
+ */
+export async function fetchRepositories(): Promise<GitHubRepository[]> {
+  discovery.delete(DISCOVERY_KEY);
+  return (await discovery.get(DISCOVERY_KEY, readDiscovery)).repositories;
 }
 
 /**
  * The caller's Pipesor principal reference (`tid:oid`) as reported by
- * Ingestion's authorized discovery context. Used to grant the caller a
- * capability; the session does not carry it yet.
+ * Ingestion's authorized discovery context, used to grant the caller a
+ * capability (the session does not carry it yet). Reuses the session's
+ * discovery read when there is one, so the page and the grant share a call.
  */
-export async function fetchSelfPrincipalRef(signal?: AbortSignal): Promise<string> {
-  const page = await apiRequest("ingestion", {
-    path: "/api/v1/github/repositories",
-    query: { limit: 1 },
-    schema: repositoriesSchema,
-    signal,
-  });
-  return `${page.context.tenantId}:${page.context.subjectObjectId}`;
+export async function fetchSelfPrincipalRef(): Promise<string> {
+  return (await discovery.get(DISCOVERY_KEY, readDiscovery)).principalRef;
 }
 
 const workflowSchema = z.object({

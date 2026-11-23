@@ -64,7 +64,7 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
   const { pipelineId = "" } = useParams();
   const validId = UUID.test(pipelineId);
   const detail = useApiQuery(validId ? pipelineId : null, (signal) => loadDetail(pipelineId, signal));
-  const self = useApiQuery("self-principal", (signal) => fetchSelfPrincipalRef(signal));
+  const self = useApiQuery("self-principal", () => fetchSelfPrincipalRef());
   const selfRef = self.state.status === "success" ? self.state.data : null;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const loaded = detail.state.status === "success" ? detail.state.data : null;

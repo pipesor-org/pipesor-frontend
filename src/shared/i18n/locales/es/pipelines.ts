@@ -116,7 +116,7 @@ const pipelines = {
     description: "Leídas desde GitHub con tu acceso. Analizar una ejecución captura sus logs como evidencia protegida y abre un incidente con un diagnóstico AIOps.",
     loading: "Cargando ejecuciones fallidas…", loadError: "No se pudieron cargar las ejecuciones fallidas desde GitHub.",
     empty: "No hay ejecuciones fallidas para este workflow.",
-    checking: "Comprobando…", analyze: "Analizar", retry: "Reintentar", follow: "Ver progreso",
+    checking: "Comprobando…", notAnalyzed: "Sin analizar", statusUnavailable: "Estado no disponible", analyze: "Analizar", retry: "Reintentar", follow: "Ver progreso",
     attempt: "intento {{attempt}}",
     phase: {
       ACCEPTED: "Análisis solicitado…",
