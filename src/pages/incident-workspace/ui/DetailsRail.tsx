@@ -96,8 +96,8 @@ export function DetailsRail({ data, diagnosis, now }: DetailsRailProps) {
         <ol className={styles.timeline}>
           {timeline.map((entry) => (
             <li key={entry.key}>
+              <span className={styles.event}>{t(`workspace.timeline.${entry.key as "detected"}`)}</span>
               <time dateTime={entry.at}>{formatTimestamp(entry.at)}</time>
-              <span>{t(`workspace.timeline.${entry.key as "detected"}`)}</span>
             </li>
           ))}
         </ol>

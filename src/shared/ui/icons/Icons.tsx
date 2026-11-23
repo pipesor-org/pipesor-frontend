@@ -237,3 +237,20 @@ export function ChevronsUpDownIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** Check mark: a completed step. */
+export function CheckIcon(props: IconProps) {
+  return (
+    <svg
+      width={12}
+      height={12}
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="m2.5 6.25 2.25 2.25 4.75-5" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

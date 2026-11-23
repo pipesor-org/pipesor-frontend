@@ -17,7 +17,9 @@ import { isApiError, useApiQuery } from "../../../shared/api";
 import { historyViewPath, isOperationsQueue, operationsQueuePath } from "../../../shared/config";
 import { useNow } from "../../../shared/lib";
 import { AppLayout } from "../../../shared/ui/app-layout";
-import { Button } from "../../../shared/ui/button";
+import { Button, buttonClassName } from "../../../shared/ui/button";
+import { ChevronLeftIcon } from "../../../shared/ui/icons";
+import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 
 import { loadWorkspace } from "../model/loadWorkspace";
@@ -78,35 +80,38 @@ export function IncidentWorkspaceRoute() {
 
   return (
     <AppLayout sidebar={<AppSidebar section={origin === "history" ? "history" : "operations"} />}>
-      <div className={styles.context}>
-        <Link className={styles.back} to={backTo}>← {t(origin === "history" ? "workspace.backHistory" : "workspace.backOperations")}</Link>
-      </div>
-
-      <header className={styles.header}>
-        <h1 ref={heading} tabIndex={-1} aria-live="polite">{title}</h1>
-        {loaded && (
+      <PageHeader
+        live
+        divider
+        headingRef={heading}
+        back={
+          <Link to={backTo}>
+            <ChevronLeftIcon />
+            {t(origin === "history" ? "workspace.backHistory" : "workspace.backOperations")}
+          </Link>
+        }
+        title={title}
+        subtitle={loaded && (
           <>
-            <p className={styles.subtitle}>
-              <span className={styles.mono}>{incidentLabel(loaded.incident)}</span>
-              {loaded.pipeline && pipelineWorkflowLabel(loaded.pipeline) && <> · {pipelineWorkflowLabel(loaded.pipeline)}</>}
-              {loaded.incident.summary && <> · {loaded.incident.summary}</>}
-            </p>
-            <div className={styles.metaRow}>
-              <div className={styles.metadata}>
-                <IncidentSeverity severity={loaded.incident.severity} />
-                <IncidentStatusBadge status={loaded.incident.status} />
-                <span>{t(STAGE_LABEL_KEY[loaded.incident.stage])}</span>
-                {diagnosisStatus && <DiagnosisStatusLabel status={diagnosisStatus} />}
-              </div>
-              {runUrl && (
-                <a className={styles.external} href={runUrl} target="_blank" rel="noreferrer noopener">
-                  {t("workspace.viewRun")} ↗<span className={styles.srOnly}> {t("workspace.opensInNewTab")}</span>
-                </a>
-              )}
-            </div>
+            <span className={styles.mono}>{incidentLabel(loaded.incident)}</span>
+            {loaded.pipeline && pipelineWorkflowLabel(loaded.pipeline) && <> · {pipelineWorkflowLabel(loaded.pipeline)}</>}
+            {loaded.incident.summary && <> · {loaded.incident.summary}</>}
           </>
         )}
-      </header>
+        meta={loaded && (
+          <>
+            <IncidentSeverity severity={loaded.incident.severity} />
+            <IncidentStatusBadge status={loaded.incident.status} />
+            <span>{t(STAGE_LABEL_KEY[loaded.incident.stage])}</span>
+            {diagnosisStatus && <DiagnosisStatusLabel status={diagnosisStatus} />}
+          </>
+        )}
+        actions={runUrl && (
+          <a className={buttonClassName({ size: "sm" })} href={runUrl} target="_blank" rel="noreferrer noopener">
+            {t("workspace.viewRun")} ↗<span className={styles.srOnly}> {t("workspace.opensInNewTab")}</span>
+          </a>
+        )}
+      />
 
       {notFound && <p>{t("workspace.notFoundText")}</p>}
       {workspace.state.status === "error" && !notFound && (
@@ -127,38 +132,44 @@ export function IncidentWorkspaceRoute() {
 
       {loaded && (
         <div className={styles.columns}>
-          <article className={styles.surface}>
-            {diagnosisQuery.state.status === "loading" && (
-              <section><p className={styles.muted} role="status">{t("diagnosis.loading")}</p></section>
-            )}
-            {diagnosisQuery.state.status === "error" && (
-              <section className={styles.inline}>
-                <p role="alert">{t("workspace.analysis.error")}</p>
-                <Button onClick={diagnosisQuery.reload}>{t("workspace.retry")}</Button>
-              </section>
-            )}
-            {diagnosisQuery.state.status === "success" && diagnosisQuery.state.data.kind === "absent" && (
-              <section>
-                <h2>{t("workspace.analysis.title")}</h2>
-                <p>{t("workspace.analysis.text")}</p>
-                <Button onClick={diagnosisQuery.reload}>{t("queue.refresh")}</Button>
-              </section>
-            )}
-            {diagnosis && <DiagnosisSections diagnosis={diagnosis} />}
-            <IncidentLifecycle
-              incident={loaded.incident}
-              pipeline={loaded.pipeline}
-              verifications={loaded.verifications}
-              onChanged={workspace.reload}
-            />
-            {diagnosis && (
-              <DiagnosisReview
-                diagnosis={diagnosis}
-                canReview={loaded.pipeline ? loaded.pipeline.effectiveCapabilities.includes("OPERATE") : true}
-                onReviewed={(view) => setReviewedStatus(view.status)}
+          <div className={styles.main}>
+            <article className={styles.card}>
+              {diagnosisQuery.state.status === "loading" && (
+                <section><p className={styles.muted} role="status">{t("diagnosis.loading")}</p></section>
+              )}
+              {diagnosisQuery.state.status === "error" && (
+                <section className={styles.inline}>
+                  <p role="alert">{t("workspace.analysis.error")}</p>
+                  <Button onClick={diagnosisQuery.reload}>{t("workspace.retry")}</Button>
+                </section>
+              )}
+              {diagnosisQuery.state.status === "success" && diagnosisQuery.state.data.kind === "absent" && (
+                <section>
+                  <h2>{t("workspace.analysis.title")}</h2>
+                  <p>{t("workspace.analysis.text")}</p>
+                  <div><Button onClick={diagnosisQuery.reload}>{t("queue.refresh")}</Button></div>
+                </section>
+              )}
+              {diagnosis && <DiagnosisSections diagnosis={diagnosis} />}
+            </article>
+            <div className={styles.card}>
+              <IncidentLifecycle
+                incident={loaded.incident}
+                pipeline={loaded.pipeline}
+                verifications={loaded.verifications}
+                onChanged={workspace.reload}
               />
+            </div>
+            {diagnosis && (
+              <div className={styles.card}>
+                <DiagnosisReview
+                  diagnosis={diagnosis}
+                  canReview={loaded.pipeline ? loaded.pipeline.effectiveCapabilities.includes("OPERATE") : true}
+                  onReviewed={(view) => setReviewedStatus(view.status)}
+                />
+              </div>
             )}
-          </article>
+          </div>
           <DetailsRail data={loaded} diagnosis={diagnosis} now={now} />
         </div>
       )}

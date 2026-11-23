@@ -204,6 +204,8 @@ const operations = {
 
   lifecycle: {
     title: "Remediation and verification",
+    progress: "Lifecycle progress",
+    stepDone: "completed",
     needsOperate: "You need the Operate capability on this pipeline to record remediation, verification or resolution.",
     submitting: "Recording…",
     recorded: "Change recorded.",
