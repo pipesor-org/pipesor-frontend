@@ -9,6 +9,7 @@ import { Button } from "../../../shared/ui/button";
 import { resolveIncident, startRemediation } from "../api/commands";
 import { lifecycleErrorKey, type LifecycleErrorKey } from "./errors";
 import styles from "./IncidentLifecycle.module.css";
+import { LifecycleSteps } from "./LifecycleSteps";
 import { VerificationRunPicker } from "./VerificationRunPicker";
 
 function succeeded(execution: Execution): boolean {
@@ -87,6 +88,7 @@ export function IncidentLifecycle({ incident, pipeline, verifications, onChanged
   return (
     <section className={styles.section} aria-labelledby={titleId}>
       <h2 id={titleId} ref={title} tabIndex={-1} className={styles.title}>{t("lifecycle.title")}</h2>
+      <LifecycleSteps status={incident.status} />
       {!canOperate && incident.status !== "Resolved" && <p className={styles.notice}>{t("lifecycle.needsOperate")}</p>}
 
       {incident.status === "Open" && (

@@ -34,7 +34,10 @@ export function EvidenceItem({ evidence, cited }: { evidence: DiagnosisEvidence;
   return (
     <li className={styles.evidenceItem}>
       <div className={styles.evidenceHead}>
-        <span className={styles.evidenceMeta}>{parts.join(" · ")}</span>
+        <span className={styles.evidenceMeta}>
+          <span>{parts.join(" · ")}</span>
+          {cited && <span className={styles.tag}>{t("workspace.evidence.cited")}</span>}
+        </span>
         {expandable && (
           <Button
             variant="link"
@@ -47,7 +50,6 @@ export function EvidenceItem({ evidence, cited }: { evidence: DiagnosisEvidence;
           </Button>
         )}
       </div>
-      {cited && <span className={styles.tag}>{t("workspace.evidence.cited")}</span>}
       <pre id={contentId} className={styles.excerpt}>{expanded || !expandable ? evidence.content : preview}</pre>
     </li>
   );

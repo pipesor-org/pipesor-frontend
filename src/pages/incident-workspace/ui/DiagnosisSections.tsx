@@ -21,15 +21,17 @@ export function DiagnosisSections({ diagnosis }: { diagnosis: Diagnosis }) {
 
   return (
     <>
-      <section>
+      <section className={styles.inference}>
         <p className={styles.eyebrow}>{t("workspace.inference.eyebrow")}</p>
-        <p className={styles.label}>{t("workspace.inference.probableCause")}</p>
-        <p className={styles.cause}>{hypothesis.probableCause}</p>
+        <div className={styles.group}>
+          <p className={styles.label}>{t("workspace.inference.probableCause")}</p>
+          <p className={styles.cause}>{hypothesis.probableCause}</p>
+        </div>
         {hypothesis.limitations && (
-          <>
+          <div className={styles.group}>
             <p className={styles.label}>{t("workspace.inference.limitations")}</p>
             <p>{hypothesis.limitations}</p>
-          </>
+          </div>
         )}
         <p className={styles.footnote}>
           {t("workspace.inference.version", { version: diagnosis.version, time: formatTimestamp(diagnosis.createdAt) })}
@@ -40,7 +42,7 @@ export function DiagnosisSections({ diagnosis }: { diagnosis: Diagnosis }) {
       <section>
         <div className={styles.sectionHead}>
           <h2>{t("workspace.evidence.title")}</h2>
-          <span className={styles.muted}>{t("workspace.evidence.count", { count: diagnosis.evidence.length })}</span>
+          <span className={styles.count}>{t("workspace.evidence.count", { count: diagnosis.evidence.length })}</span>
         </div>
         <p className={styles.muted}>{t("workspace.evidence.note")}</p>
         {diagnosis.evidence.length > 0 ? (
@@ -72,9 +74,11 @@ export function DiagnosisSections({ diagnosis }: { diagnosis: Diagnosis }) {
       </section>
 
       <section>
-        <h2>{t("workspace.recommendation.title")}</h2>
-        <p className={styles.eyebrow}>{t("workspace.inference.eyebrow")}</p>
-        <p>{hypothesis.recommendation?.trim() || t("workspace.recommendation.empty")}</p>
+        <div className={styles.sectionHead}>
+          <h2>{t("workspace.recommendation.title")}</h2>
+          <span className={styles.eyebrow}>{t("workspace.inference.eyebrow")}</span>
+        </div>
+        <p className={styles.recommendation}>{hypothesis.recommendation?.trim() || t("workspace.recommendation.empty")}</p>
         <p className={styles.footnote}>{t("workspace.recommendation.note")}</p>
       </section>
 

@@ -70,6 +70,14 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - **Empty tables.** One `TableEmptyRow` with a title and/or a sentence, centred.
 - **Key figures.** `StatGroup` and `Stat` show the figures of a view in one card: label above, value at `--text-xl` with tabular numerals (`mono` for durations). A status dot (`tone`) may precede a label whose meaning is a status. `live` pulses it while a process runs, for example analyses in progress. Freshness and refresh go in the group's `aside`. Phones show two columns.
 
+## Detail screens (Incident Workspace)
+
+- **Layout.** A main column of cards (diagnosis, lifecycle, review) beside a quiet context rail. Below 1100 px the rail moves under the cards.
+- **Kinds of content.** Model output leads the diagnosis card on a `--color-surface-subtle` band under an uppercase overline ("AIOps inference · model output"). Observed evidence and retrieved knowledge follow on the plain surface, each with its own heading and note. The recommendation repeats the inference overline.
+- **Evidence.** Sanitized log excerpts read as bordered mono blocks; "Cited by the diagnosis" is a neutral tag beside the locator.
+- **Lifecycle.** `LifecycleSteps` shows Open → In remediation → Verification → Resolved from the recorded status: complete steps in success, the current step in ink (`aria-current="step"`). Narrow cards show two rows. Each card has at most one ink action.
+- **Rail.** Section titles are uppercase overlines. Facts are a two-column description list. The timeline joins recorded events with a hairline, and the latest event is the ink dot.
+
 ## Components (`src/shared/ui`)
 
 | Primitive | Use |

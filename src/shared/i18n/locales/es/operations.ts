@@ -199,6 +199,8 @@ const operations = {
 
   lifecycle: {
     title: "Remediación y verificación",
+    progress: "Progreso del ciclo de vida",
+    stepDone: "completado",
     needsOperate: "Necesitas la capacidad Operar en este pipeline para registrar la remediación, la verificación o la resolución.",
     submitting: "Registrando…",
     recorded: "Cambio registrado.",

@@ -18,19 +18,21 @@ interface PageHeaderProps {
    * focusable by script (`tabIndex={-1}`) without adding it to the tab order.
    */
   headingRef?: Ref<HTMLHeadingElement>;
+  /** Announces title changes politely (a title that resolves after loading). */
+  live?: boolean;
 }
 
 /**
  * The title block every navigable screen starts with: one `h1`, an optional
  * back link, subtitle, facts and actions, on a single typographic scale.
  */
-export function PageHeader({ title, subtitle, back, meta, actions, divider = false, headingRef }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, back, meta, actions, divider = false, headingRef, live = false }: PageHeaderProps) {
   return (
     <header className={`${styles.header}${divider ? ` ${styles.divider}` : ""}`}>
       {back ? <div className={styles.back}>{back}</div> : null}
       <div className={styles.row}>
         <div className={styles.titleBlock}>
-          <h1 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className={styles.title}>{title}</h1>
+          <h1 ref={headingRef} tabIndex={headingRef ? -1 : undefined} aria-live={live ? "polite" : undefined} className={styles.title}>{title}</h1>
           {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
           {meta ? <div className={styles.meta}>{meta}</div> : null}
         </div>
