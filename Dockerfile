@@ -11,8 +11,10 @@ COPY --chown=101:101 deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --chown=101:101 deploy/security-headers.conf /etc/nginx/pipesor/security-headers.conf
 COPY --chmod=755 deploy/40-pipesor-config.sh /docker-entrypoint.d/40-pipesor-config.sh
 USER root
-# The startup hook (running as 101) writes the rendered CSP include and config.js.
-RUN install -o 101 -g 101 -m 644 /dev/null /etc/nginx/conf.d/security-headers.inc
+# Apply Alpine security updates over the pinned base (as the Python images do with apt-get upgrade); the
+# startup hook (running as 101) writes the rendered CSP include and config.js.
+RUN apk upgrade --no-cache \
+    && install -o 101 -g 101 -m 644 /dev/null /etc/nginx/conf.d/security-headers.inc
 USER 101:101
 COPY --chown=101:101 dist/ /usr/share/nginx/html/
 EXPOSE 8080
