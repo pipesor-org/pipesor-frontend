@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { STAGE_LABEL_KEY } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
+import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
 
 import type { RecurringContext } from "../model/insights";
 import styles from "./HistoryInsightsRecurringContexts.module.css";
@@ -42,8 +43,8 @@ export function HistoryInsightsRecurringContexts({ groups: allGroups }: { groups
         </p>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table} aria-labelledby={titleId}>
+      <div className={dataTable.frame}>
+        <table className={`${dataTable.table} ${styles.table}`} aria-labelledby={titleId}>
           <colgroup>
             <col className={styles.colPipeline} />
             <col className={styles.colStage} />
@@ -52,56 +53,43 @@ export function HistoryInsightsRecurringContexts({ groups: allGroups }: { groups
           </colgroup>
 
           <thead>
-            <tr className={styles.headerRow}>
-              <th scope="col" className={styles.headerCell}>
+            <tr>
+              <th scope="col">
                 {t("filters.pipeline")}
               </th>
-              <th scope="col" className={styles.headerCell}>
+              <th scope="col">
                 {t("columns.stage")}
               </th>
-              <th scope="col" className={styles.headerCell}>
+              <th scope="col">
                 {t("insights.stage.caption")}
               </th>
-              <th
-                scope="col"
-                className={styles.headerCell}
-                aria-hidden="true"
-              />
+              <th scope="col" aria-hidden="true" />
             </tr>
           </thead>
 
           <tbody>
             {groups.length === 0 ? (
-              <tr>
-                <td className={styles.empty} colSpan={4}>
-                  {t("insights.summary.noData")}
-                </td>
-              </tr>
+              <TableEmptyRow colSpan={4} text={t("insights.summary.noData")} />
             ) : (
               groups.map((group) => (
-                <tr
-                  key={`${group.pipelineId}:${group.stage}`}
-                  className={styles.row}
-                >
+                <tr key={`${group.pipelineId}:${group.stage}`}>
                   <td>
-                    <div className={styles.stack}>
-                      <span className={styles.repository}>
+                    <div className={dataTable.stack}>
+                      <span className={`${dataTable.mono} ${styles.ellipsis}`}>
                         {group.repository ?? t("insights.recurring.pipelineUnavailable")}
                       </span>
-                      {group.workflow && <span className={styles.workflow}>{group.workflow}</span>}
+                      {group.workflow && <span className={`${dataTable.muted} ${styles.ellipsis}`}>{group.workflow}</span>}
                     </div>
                   </td>
                   <td>
-                    <span className={styles.stage}>
-                      {tOperations(STAGE_LABEL_KEY[group.stage])}
-                    </span>
+                    {tOperations(STAGE_LABEL_KEY[group.stage])}
                   </td>
                   <td>
-                    <span className={styles.count}>
+                    <span className={dataTable.mono}>
                       {formatNumber(group.count)}
                     </span>
                   </td>
-                  <td className={styles.actionCell} aria-hidden="true" />
+                  <td aria-hidden="true" />
                 </tr>
               ))
             )}

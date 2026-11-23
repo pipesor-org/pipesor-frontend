@@ -1,18 +1,17 @@
 import { useTranslation } from "react-i18next";
 
 import { useFormatters } from "../../../shared/i18n";
+import { Stat, StatGroup } from "../../../shared/ui/stat";
 
 import type { InsightsSummary } from "../model/insights";
 import styles from "./HistoryInsightsSummary.module.css";
 
 /**
- * KPI strip for History — Insights.
+ * Key figures for History — Insights.
  *
  * Values come from the incident entity; this component only formats them. A
  * metric without samples renders an em dash plus a visually hidden "No data"
- * rather than zero, so missing measurements are never presented as results. The
- * strip is a description list so each value keeps its label in the accessibility
- * tree.
+ * rather than zero, so missing measurements are never presented as results.
  */
 export function HistoryInsightsSummary({ summary }: { summary: InsightsSummary }) {
   const { t } = useTranslation("history");
@@ -55,22 +54,22 @@ export function HistoryInsightsSummary({ summary }: { summary: InsightsSummary }
   ];
 
   return (
-    <dl className={styles.strip}>
-      {metrics.map(({ key, label, value, mono }) => (
-        <div key={key} className={styles.cell}>
-          <dt className={styles.label}>{label}</dt>
-          <dd className={`${styles.value}${mono ? ` ${styles.mono}` : ""}`}>
-            {value ?? (
+    <div className={styles.summary}>
+      <StatGroup>
+        {metrics.map(({ key, label, value, mono }) => (
+          <Stat
+            key={key}
+            label={label}
+            mono={mono}
+            value={value ?? (
               <>
                 <span aria-hidden="true">—</span>
-                <span className={styles.srOnly}>
-                  {t("insights.summary.noData")}
-                </span>
+                <span className={styles.srOnly}>{t("insights.summary.noData")}</span>
               </>
             )}
-          </dd>
-        </div>
-      ))}
-    </dl>
+          />
+        ))}
+      </StatGroup>
+    </div>
   );
 }

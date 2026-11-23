@@ -1,6 +1,6 @@
 .scope {
-  margin: 16px 0 0;
+  margin: var(--space-4) 0 0;
   color: var(--color-text-secondary);
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
 }

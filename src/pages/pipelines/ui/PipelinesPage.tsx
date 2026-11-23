@@ -15,6 +15,7 @@ import { useApiQuery } from "../../../shared/api";
 import { pipelineDetailPath, routes } from "../../../shared/config";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button, buttonClassName } from "../../../shared/ui/button";
+import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
 import { Select, TextInput } from "../../../shared/ui/field";
 import { ChevronRightIcon, PlusIcon, SearchIcon } from "../../../shared/ui/icons";
 import { PageHeader } from "../../../shared/ui/page-header";
@@ -109,8 +110,8 @@ export function PipelinesPage() {
       {inventory.state.status === "success" && (
         <>
           <p className={styles.srOnly} role="status">{t("inventory.results", { count: pipelines.length })}</p>
-          <div className={styles.tableScroll} role="region" aria-labelledby="monitored-workflows" tabIndex={0}>
-            <table className={styles.table}>
+          <div className={`${dataTable.frame} ${styles.tableScroll}`} role="region" aria-labelledby="monitored-workflows" tabIndex={0}>
+            <table className={`${dataTable.table} ${styles.table}`}>
               <colgroup><col /><col /><col /><col /><col /><col /></colgroup>
               <thead><tr>
                 <th scope="col">{t("inventory.workflow")}</th><th scope="col">{t("inventory.repository")}</th>
@@ -118,21 +119,23 @@ export function PipelinesPage() {
                 <th scope="col">{t("inventory.team")}</th><th scope="col">{t("inventory.monitoring")}</th>
               </tr></thead>
               <tbody>{pipelines.length ? pipelines.map((pipeline) => (
-                <tr key={pipeline.id}>
-                  <th scope="row"><Link className={styles.pipelineLink} to={pipelineDetailPath(pipeline.id)} state={returnState}>
-                    <span className={styles.slug}>{pipelineWorkflowLabel(pipeline) ?? pipeline.githubWorkflowId}</span>
-                    {pipeline.workflowFile && <span className={styles.workflow}>{pipeline.workflowFile.split("/").pop()}</span>}
-                  </Link></th>
-                  <td className={styles.repository}>{pipeline.fullName}</td>
+                <tr key={pipeline.id} className={dataTable.interactiveRow}>
+                  <th scope="row"><div className={dataTable.stack}>
+                    <Link className={`${dataTable.rowLink} ${styles.slug}`} to={pipelineDetailPath(pipeline.id)} state={returnState}>
+                      {pipelineWorkflowLabel(pipeline) ?? pipeline.githubWorkflowId}
+                    </Link>
+                    {pipeline.workflowFile && <span className={dataTable.muted}>{pipeline.workflowFile.split("/").pop()}</span>}
+                  </div></th>
+                  <td><span className={dataTable.mono}>{pipeline.fullName}</span></td>
                   <td>{environmentLabel(t, pipeline.environment)}</td>
                   <td><CriticalityBadge criticality={pipeline.criticality} /></td>
                   <td>{pipeline.responsibleTeamNameSnapshot || t("ownership.unspecified")}</td>
-                  <td><div className={styles.monitoringCell}>
+                  <td><span className={dataTable.trailing}>
                     <MonitoringBadge status={pipeline.monitoringStatus} />
-                    <ChevronRightIcon width={12} height={12} aria-hidden="true" />
-                  </div></td>
+                    <ChevronRightIcon className={dataTable.chevron} />
+                  </span></td>
                 </tr>
-              )) : <tr><td colSpan={6} className={styles.empty}>{t(all.length ? "inventory.empty" : "inventory.none")}</td></tr>}</tbody>
+              )) : <TableEmptyRow colSpan={6} text={t(all.length ? "inventory.empty" : "inventory.none")} />}</tbody>
             </table>
           </div>
         </>

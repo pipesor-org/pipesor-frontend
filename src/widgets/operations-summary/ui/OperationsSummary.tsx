@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
+import { Stat, StatGroup } from "../../../shared/ui/stat";
 
 import styles from "./OperationsSummary.module.css";
 
@@ -18,7 +19,7 @@ export type OperationsSummaryProps = Freshness &
   );
 
 /**
- * Summary strip under the queue tabs. Counts describe the incidents loaded so
+ * Key figures under the queue tabs. Counts describe the incidents loaded so
  * far (`N+` when more pages exist); the page derives them from the queue.
  */
 export function OperationsSummary(props: OperationsSummaryProps) {
@@ -28,50 +29,37 @@ export function OperationsSummary(props: OperationsSummaryProps) {
     more ? t("queue.moreAvailable", { value: formatNumber(value) }) : formatNumber(value);
 
   const freshness = (
-    <div className={styles.snapshot}>
+    <>
       {props.loadedAt !== null && <span>{t("queue.updated", { time: formatTimestamp(new Date(props.loadedAt).toISOString()) })}</span>}
       <Button variant="link" className={styles.refresh} onClick={props.onRefresh}>
         {t("queue.refresh")}
       </Button>
-    </div>
+    </>
   );
 
   if (props.variant === "validation") {
     return (
-      <section className={styles.summary} aria-label={t("validation.summary.ariaLabel", { count: props.pending })}>
-        <div className={styles.cell}>
-          <span className={styles.value}>{count(props.pending, props.more)}</span>
-          <span className={styles.label}>{t("validation.summary.pending")}</span>
-        </div>
-        <div className={`${styles.cell} ${styles.cellDivided}`}>
-          <span className={styles.valueMono}>{props.oldestPendingMs === null ? "—" : formatDuration(props.oldestPendingMs)}</span>
-          <span className={styles.label}>{t("validation.summary.oldestPending")}</span>
-        </div>
-        {freshness}
-      </section>
+      <div className={styles.summary}>
+        <StatGroup label={t("validation.summary.ariaLabel", { count: props.pending })} aside={freshness}>
+          <Stat label={t("validation.summary.pending")} value={count(props.pending, props.more)} tone={props.pending > 0 ? "warning" : undefined} />
+          <Stat
+            label={t("validation.summary.oldestPending")}
+            value={props.oldestPendingMs === null ? "—" : formatDuration(props.oldestPendingMs)}
+            mono
+          />
+        </StatGroup>
+      </div>
     );
   }
 
   return (
-    <section className={styles.summary} aria-label={t("active.summary.ariaLabel", { count: props.total })}>
-      <div className={styles.cell}>
-        <span className={styles.value}>{count(props.total, props.more)}</span>
-        <span className={styles.label}>{t("active.summary.active")}</span>
-      </div>
-      <div className={`${styles.cell} ${styles.cellDivided}`}>
-        <span className={styles.severityGroup}>
-          <span className={styles.value}>{formatNumber(props.critical)}</span>
-          <span className={styles.label}>{t("severity.critical")}</span>
-          <span className={styles.label}>·</span>
-          <span className={styles.value}>{formatNumber(props.high)}</span>
-          <span className={styles.label}>{t("severity.high")}</span>
-        </span>
-      </div>
-      <div className={`${styles.cell} ${styles.cellDivided}`}>
-        <span className={styles.value}>{formatNumber(props.analyzing)}</span>
-        <span className={styles.label}>{t("active.summary.analyzing")}</span>
-      </div>
-      {freshness}
-    </section>
+    <div className={styles.summary}>
+      <StatGroup label={t("active.summary.ariaLabel", { count: props.total })} aside={freshness}>
+        <Stat label={t("active.summary.active")} value={count(props.total, props.more)} />
+        <Stat label={t("severity.critical")} value={formatNumber(props.critical)} tone="critical" />
+        <Stat label={t("severity.high")} value={formatNumber(props.high)} tone="warning" />
+        <Stat label={t("active.summary.analyzing")} value={formatNumber(props.analyzing)} tone="info" live={props.analyzing > 0} />
+      </StatGroup>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import { DiagnosisStatusLabel, type DiagnosisStatus } from "../../../entities/di
 import { STAGE_LABEL_KEY, type IncidentStage } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
+import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 
 import styles from "./HistoryIncidentsTable.module.css";
@@ -56,49 +57,45 @@ export function HistoryIncidentsTable({ rows }: { rows: HistoryIncidentRow[] }) 
         <span className={styles.sectionSort}>{t("section.sort")}</span>
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table} aria-labelledby={titleId}>
+      <div className={dataTable.frame}>
+        <table className={`${dataTable.table} ${styles.table}`} aria-labelledby={titleId}>
           <colgroup>
             {COLUMNS.map((column) => (
               <col key={column.key} className={styles[column.column]} />
             ))}
           </colgroup>
           <thead>
-            <tr className={styles.headerRow}>
+            <tr>
               {COLUMNS.map((column) => (
-                <th key={column.key} scope="col" className={styles.headerCell}>{t(column.labelKey)}</th>
+                <th key={column.key} scope="col">{t(column.labelKey)}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <tr>
-                <td className={styles.empty} colSpan={COLUMNS.length}>{t("empty")}</td>
-              </tr>
+              <TableEmptyRow colSpan={COLUMNS.length} text={t("empty")} />
             ) : (
               rows.map((row) => (
-                <tr key={row.id} className={styles.row}>
+                <tr key={row.id} className={dataTable.interactiveRow}>
                   <td>
-                    <div className={styles.stack}>
-                      <Link className={styles.incidentId} to={incidentWorkspacePath(row.id, "history")}>{row.label}</Link>
+                    <div className={dataTable.stack}>
+                      <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "history")}>{row.label}</Link>
                       {row.pipeline.kind === "ready" ? (
                         <>
-                          <span className={styles.incidentRepository}>{row.pipeline.value.repository}</span>
-                          {row.pipeline.value.workflow && <span className={styles.incidentWorkflow}>{row.pipeline.value.workflow}</span>}
+                          <span className={dataTable.mono}>{row.pipeline.value.repository}</span>
+                          {row.pipeline.value.workflow && <span className={dataTable.muted}>{row.pipeline.value.workflow}</span>}
                         </>
                       ) : row.pipeline.kind === "error" ? (
-                        <span className={styles.incidentWorkflow}>{tOperations("table.pipelineUnavailable")}</span>
+                        <span className={dataTable.muted}>{tOperations("table.pipelineUnavailable")}</span>
                       ) : null}
                     </div>
                   </td>
-                  <td>
-                    <span className={styles.stage}>{tOperations(STAGE_LABEL_KEY[row.stage])}</span>
-                  </td>
+                  <td>{tOperations(STAGE_LABEL_KEY[row.stage])}</td>
                   <td>
                     {row.diagnosis.kind === "ready" ? (
-                      <span className={styles.diagnosis}>{row.diagnosis.value.probableCause}</span>
+                      <span className={dataTable.clamp}>{row.diagnosis.value.probableCause}</span>
                     ) : (
-                      <span className={styles.muted}>
+                      <span className={dataTable.muted}>
                         {row.diagnosis.kind === "absent"
                           ? t("noDiagnosis")
                           : row.diagnosis.kind === "error"
@@ -108,19 +105,19 @@ export function HistoryIncidentsTable({ rows }: { rows: HistoryIncidentRow[] }) 
                     )}
                   </td>
                   <td>
-                    {row.diagnosis.kind === "ready" ? <DiagnosisStatusLabel status={row.diagnosis.value.status} /> : <span className={styles.muted}>{EMPTY_VALUE}</span>}
+                    {row.diagnosis.kind === "ready" ? <DiagnosisStatusLabel status={row.diagnosis.value.status} /> : <span className={dataTable.muted}>{EMPTY_VALUE}</span>}
                   </td>
                   <td>
-                    <span className={styles.duration}>{row.diagnosisMs === null ? EMPTY_VALUE : formatPreciseDuration(row.diagnosisMs)}</span>
+                    <span className={dataTable.mono}>{row.diagnosisMs === null ? EMPTY_VALUE : formatPreciseDuration(row.diagnosisMs)}</span>
                   </td>
                   <td>
-                    <span className={styles.duration}>{row.resolutionMs === null ? EMPTY_VALUE : formatPreciseDuration(row.resolutionMs)}</span>
+                    <span className={dataTable.mono}>{row.resolutionMs === null ? EMPTY_VALUE : formatPreciseDuration(row.resolutionMs)}</span>
                   </td>
                   <td>
-                    <div className={styles.resolvedCell}>
-                      <time className={styles.resolvedAt} dateTime={row.resolvedAt}>{formatTimestamp(row.resolvedAt)}</time>
-                      <ChevronRightIcon className={styles.chevron} />
-                    </div>
+                    <span className={dataTable.trailing}>
+                      <time className={`${dataTable.mono} ${styles.resolvedAt}`} dateTime={row.resolvedAt}>{formatTimestamp(row.resolvedAt)}</time>
+                      <ChevronRightIcon className={dataTable.chevron} />
+                    </span>
                   </td>
                 </tr>
               ))

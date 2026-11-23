@@ -62,6 +62,14 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - **Page header.** Every screen starts with `PageHeader`: an optional back link (chevron plus text, no arrow characters in copy), one `h1` at `--text-2xl` with `--tracking-tight` (`--text-xl` on phones), an optional subtitle, facts (`meta`) and actions. Detail screens add the `divider`.
 - **Tabs.** Views of one screen use `TabNav` links with `aria-current="page"`. The current tab is ink with an accent underline that grows in; hover previews a neutral underline. On phones the labels drop to `--text-sm`, and the bar scrolls sideways if a translation still does not fit.
 
+## Tables and key figures
+
+- **One table system.** Every list composes `dataTable` classes inside a bordered card (`frame`). Column headers are `--text-xs` on a subtle band; cells are `--text-sm` with `--space-3` padding (`--space-4` at the row edges). Wide tables keep a minimum width and scroll inside the card, never the page.
+- **Rows that open something.** The row's primary link (`rowLink`, the display ID or workflow name) stretches over the whole row: the row is one click target with one accessible name. Hover tints the row, adds the accent indicator on its leading edge, underlines the link and nudges the trailing chevron. Keyboard focus outlines the whole row. Rows that open nothing get no hover.
+- **Cell content.** Use `stack` for multi-line cells, `id` for display identifiers, `mono` for repositories, durations and timestamps, `muted` for secondary lines, `clamp` for long prose (three lines), and `trailing` for a value with the row chevron.
+- **Empty tables.** One `TableEmptyRow` with a title and/or a sentence, centred.
+- **Key figures.** `StatGroup` and `Stat` show the figures of a view in one card: label above, value at `--text-xl` with tabular numerals (`mono` for durations). A status dot (`tone`) may precede a label whose meaning is a status. `live` pulses it while a process runs, for example analyses in progress. Freshness and refresh go in the group's `aside`. Phones show two columns.
+
 ## Components (`src/shared/ui`)
 
 | Primitive | Use |
@@ -74,3 +82,5 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 | `Badge` | Count pill next to tab and navigation labels only. |
 | `PageHeader` (`title`, `subtitle`, `back`, `meta`, `actions`, `divider`, `headingRef`) | The title block of every navigable screen. `headingRef` makes the `h1` a programmatic focus target after navigation. |
 | `TabNav` + `tabClassName(active)` | Tab bar for views of one screen; the page supplies router links. |
+| `dataTable` (class names) + `TableEmptyRow` | The table system above. Widgets keep only column widths and domain cells. |
+| `StatGroup` + `Stat` (`label`, `value`, `tone`, `live`, `mono`) | Key figures of a view, as a description list. |
