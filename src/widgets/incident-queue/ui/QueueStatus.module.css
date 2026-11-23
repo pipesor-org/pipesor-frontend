@@ -1,16 +1,18 @@
 .status {
-  margin: 24px 0;
+  margin: var(--space-6) 0;
   color: var(--color-text-secondary);
-  font-size: 13px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
 }
 
 .failure {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
-  margin: 24px 0;
-  font-size: 13px;
+  gap: var(--space-2);
+  margin: var(--space-6) 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
 }
 
 .failure p {
@@ -20,11 +22,11 @@
 .reference {
   color: var(--color-text-secondary);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .more {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
+  padding: var(--space-4) 0;
 }

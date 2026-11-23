@@ -5,6 +5,7 @@ import { DiagnosisStatusLabel, type DiagnosisStatus } from "../../../entities/di
 import { IncidentSeverity, STAGE_LABEL_KEY, type IncidentSeverityLevel, type IncidentStage } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
+import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 
 import styles from "./NeedsValidationTable.module.css";
@@ -39,17 +40,17 @@ export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow
   const { formatDuration, formatTimestamp } = useFormatters();
 
   return (
-    <div className={styles.card}>
-      <table className={styles.table} aria-label={t("tabs.needsValidation")}>
+    <div className={dataTable.frame}>
+      <table className={`${dataTable.table} ${styles.table}`} aria-label={t("tabs.needsValidation")}>
         <colgroup>
           {HEADER_CELLS.map((cell) => (
             <col key={cell.key} className={styles[cell.column]} />
           ))}
         </colgroup>
         <thead>
-          <tr className={styles.headerRow}>
+          <tr>
             {HEADER_CELLS.map((cell) => (
-              <th key={cell.key} scope="col" className={styles.headerCell}>
+              <th key={cell.key} scope="col">
                 {t(cell.labelKey)}
               </th>
             ))}
@@ -58,60 +59,45 @@ export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow
 
         <tbody>
           {rows.length === 0 ? (
-            <tr>
-              <td colSpan={HEADER_CELLS.length} className={styles.emptyCell}>
-                <div className={styles.empty}>
-                  <span className={styles.emptyTitle}>{t("validation.empty.title")}</span>
-                  <span className={styles.emptyText}>{t("validation.empty.text")}</span>
-                </div>
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={HEADER_CELLS.length} title={t("validation.empty.title")} text={t("validation.empty.text")} />
           ) : (
             rows.map((row) => (
-              <tr key={row.id} className={styles.row}>
+              <tr key={row.id} className={dataTable.interactiveRow}>
                 <td>
-                  <div className={styles.cell}>
-                    <IncidentSeverity severity={row.severity} />
-                  </div>
+                  <IncidentSeverity severity={row.severity} />
                 </td>
                 <td>
-                  <div className={styles.cell}>
-                    <Link className={styles.incidentId} to={incidentWorkspacePath(row.id, "validation")}>
+                  <div className={dataTable.stack}>
+                    <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "validation")}>
                       {row.label}
                     </Link>
                     {row.pipeline ? (
                       <>
-                        <span className={styles.incidentRepository}>{row.pipeline.repository}</span>
-                        {row.pipeline.workflow && <span className={styles.incidentWorkflow}>{row.pipeline.workflow}</span>}
+                        <span className={dataTable.mono}>{row.pipeline.repository}</span>
+                        {row.pipeline.workflow && <span className={dataTable.muted}>{row.pipeline.workflow}</span>}
                       </>
                     ) : (
-                      <span className={styles.incidentWorkflow}>{t("table.pipelineUnavailable")}</span>
+                      <span className={dataTable.muted}>{t("table.pipelineUnavailable")}</span>
                     )}
                   </div>
                 </td>
+                <td>{t(STAGE_LABEL_KEY[row.stage])}</td>
                 <td>
-                  <div className={styles.cell}>
-                    <span className={styles.stage}>{t(STAGE_LABEL_KEY[row.stage])}</span>
-                  </div>
+                  <span className={dataTable.clamp}>{row.probableCause}</span>
                 </td>
                 <td>
-                  <div className={styles.cell}>
-                    <span className={styles.diagnosisTitle}>{row.probableCause}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cell}>
-                    <time className={styles.resolvedAt} dateTime={row.resolvedAt}>{formatTimestamp(row.resolvedAt)}</time>
-                    <span className={styles.pendingFor}>
+                  <div className={dataTable.stack}>
+                    <time className={dataTable.mono} dateTime={row.resolvedAt}>{formatTimestamp(row.resolvedAt)}</time>
+                    <span className={dataTable.muted}>
                       {t("validation.pendingFor", { duration: formatDuration(Math.max(0, now - Date.parse(row.resolvedAt))) })}
                     </span>
                   </div>
                 </td>
                 <td>
-                  <div className={`${styles.cell} ${styles.validationCell}`}>
+                  <span className={dataTable.trailing}>
                     <DiagnosisStatusLabel status={row.status} />
-                    <ChevronRightIcon className={styles.validationChevron} />
-                  </div>
+                    <ChevronRightIcon className={dataTable.chevron} />
+                  </span>
                 </td>
               </tr>
             ))

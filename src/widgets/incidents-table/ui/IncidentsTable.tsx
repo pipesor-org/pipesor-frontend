@@ -11,6 +11,7 @@ import {
 } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
+import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
 import { ChevronRightIcon } from "../../../shared/ui/icons";
 import { Skeleton } from "../../../shared/ui/skeleton";
 import styles from "./IncidentsTable.module.css";
@@ -45,17 +46,17 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
   const { formatDuration } = useFormatters();
 
   return (
-    <div className={styles.card}>
-      <table className={styles.table} aria-label={t("tabs.activeIncidents")}>
+    <div className={dataTable.frame}>
+      <table className={`${dataTable.table} ${styles.table}`} aria-label={t("tabs.activeIncidents")}>
         <colgroup>
           {HEADER_CELLS.map((cell) => (
             <col key={cell.key} className={styles[cell.column]} />
           ))}
         </colgroup>
         <thead>
-          <tr className={styles.headerRow}>
+          <tr>
             {HEADER_CELLS.map((cell) => (
-              <th key={cell.key} scope="col" className={styles.headerCell}>
+              <th key={cell.key} scope="col">
                 {t(cell.labelKey)}
               </th>
             ))}
@@ -64,71 +65,52 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
 
         <tbody>
           {rows.length === 0 ? (
-            <tr>
-              <td colSpan={HEADER_CELLS.length} className={styles.emptyCell}>
-                <div className={styles.empty}>
-                  <span className={styles.emptyTitle}>{t("active.empty.title")}</span>
-                  <span className={styles.emptyText}>{t("active.empty.text")}</span>
-                </div>
-              </td>
-            </tr>
+            <TableEmptyRow colSpan={HEADER_CELLS.length} title={t("active.empty.title")} text={t("active.empty.text")} />
           ) : (
             rows.map((row) => (
-              <tr key={row.id} className={styles.row}>
+              <tr key={row.id} className={dataTable.interactiveRow}>
                 <td>
-                  <div className={styles.cell}>
-                    <IncidentSeverity severity={row.severity} />
-                  </div>
+                  <IncidentSeverity severity={row.severity} />
                 </td>
                 <td>
-                  <div className={styles.cell}>
-                    <Link className={styles.incidentId} to={incidentWorkspacePath(row.id, "active")}>
+                  <div className={dataTable.stack}>
+                    <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "active")}>
                       {row.label}
                     </Link>
                     {row.pipeline.kind === "ready" ? (
                       <>
-                        <span className={styles.incidentRepository}>{row.pipeline.value.repository}</span>
-                        {row.pipeline.value.workflow && <span className={styles.incidentWorkflow}>{row.pipeline.value.workflow}</span>}
+                        <span className={dataTable.mono}>{row.pipeline.value.repository}</span>
+                        {row.pipeline.value.workflow && <span className={dataTable.muted}>{row.pipeline.value.workflow}</span>}
                       </>
                     ) : row.pipeline.kind === "error" ? (
-                      <span className={styles.incidentWorkflow}>{t("table.pipelineUnavailable")}</span>
+                      <span className={dataTable.muted}>{t("table.pipelineUnavailable")}</span>
                     ) : (
-                      <span className={styles.placeholder}><Skeleton width="160px" /></span>
+                      <Skeleton width="160px" />
                     )}
                   </div>
                 </td>
+                <td>{t(STAGE_LABEL_KEY[row.stage])}</td>
                 <td>
-                  <div className={styles.cell}>
-                    <span className={styles.stage}>{t(STAGE_LABEL_KEY[row.stage])}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cell}>
-                    {row.diagnosis.kind === "ready" ? (
-                      <span className={styles.diagnosisTitle}>{row.diagnosis.value}</span>
-                    ) : (
-                      <span className={styles.diagnosisNote}>
-                        {row.diagnosis.kind === "absent"
-                          ? t("diagnosis.analyzing")
-                          : row.diagnosis.kind === "error"
-                            ? t("diagnosis.unavailable")
-                            : t("diagnosis.loading")}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cell}>
-                    <IncidentStatusBadge status={row.status} />
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cell}>
-                    <span className={styles.elapsedRow}>
-                      <span className={styles.elapsedValue}>{formatDuration(Math.max(0, now - Date.parse(row.detectedAt)))}</span>
-                      <ChevronRightIcon className={styles.elapsedChevron} />
+                  {row.diagnosis.kind === "ready" ? (
+                    <span className={dataTable.clamp}>{row.diagnosis.value}</span>
+                  ) : (
+                    <span className={dataTable.muted}>
+                      {row.diagnosis.kind === "absent"
+                        ? t("diagnosis.analyzing")
+                        : row.diagnosis.kind === "error"
+                          ? t("diagnosis.unavailable")
+                          : t("diagnosis.loading")}
                     </span>
-                  </div>
+                  )}
+                </td>
+                <td>
+                  <IncidentStatusBadge status={row.status} />
+                </td>
+                <td>
+                  <span className={dataTable.trailing}>
+                    <span className={dataTable.mono}>{formatDuration(Math.max(0, now - Date.parse(row.detectedAt)))}</span>
+                    <ChevronRightIcon className={dataTable.chevron} />
+                  </span>
                 </td>
               </tr>
             ))
