@@ -14,6 +14,51 @@ const common = {
     /** Accessible name of the sidebar's secondary navigation (About, Settings). */
     secondary: "More",
     about: "About Pipesor",
+    settings: "Settings",
+  },
+  settings: {
+    title: "Settings",
+    subtitle: "Your account, preferences, GitHub connection and what you can do in Pipesor.",
+    profile: {
+      title: "Account",
+      signedIn: "Signed in with GitHub as {{login}}.",
+      session: "This session ends at {{time}} and lives only in this browser tab.",
+      signOut: "Sign out",
+      signOutNote: "Signing out also disconnects your GitHub account from Pipesor; your access comes back when you sign in again. It does not revoke the authorization you gave the Pipesor GitHub App.",
+      revoke: "Revoke it in Authorized GitHub Apps",
+      newTab: "opens in a new tab",
+    },
+    preferences: {
+      title: "Preferences",
+      language: "Language",
+      theme: "Theme",
+      themes: { system: "System", light: "Light", dark: "Dark" },
+      note: "Preferences are saved in this browser only.",
+    },
+    github: {
+      title: "GitHub",
+      text: "Pipesor reads your repositories through its read-only GitHub App. Choose which organizations and repositories it can see on GitHub.",
+      manage: "Choose repositories on GitHub",
+    },
+    access: {
+      title: "Your access",
+      text: "Pipelines you can see and what you can do on each. Access is given per pipeline by whoever configures it.",
+      workflow: "Workflow",
+      repository: "Repository",
+      level: "Your access",
+      empty: "You have no access to any pipeline yet. Register a workflow you administer, or ask a repository administrator to add you.",
+      error: "Your pipelines could not be loaded.",
+      loading: "Loading your pipelines…",
+    },
+    browser: {
+      title: "Stored in this browser",
+      items: {
+        session: "Your Pipesor session, in this tab only; it ends when you close the tab or sign out.",
+        preferences: "Theme, language and sidebar preferences.",
+        nothing: "No cookies and no analytics.",
+      },
+      more: "How Pipesor protects your data",
+    },
   },
   /** Announced for sidebar destinations whose screen does not exist yet. */
   destinationUnavailable: "not available yet",

@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
 import { pipesorSymbolDark, pipesorSymbolLight } from "../../../shared/assets";
-import { aboutPath, appDestinations, type AppDestinationKey } from "../../../shared/config";
+import { aboutPath, appDestinations, routes, type AppDestinationKey } from "../../../shared/config";
 import { useMediaQuery, useTheme } from "../../../shared/lib";
 import {
   InfoIcon,
+  SettingsIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   HistoryIcon,
@@ -40,7 +41,7 @@ const MOBILE_MEDIA_QUERY = "(max-width: 900px)";
  * the toggle, or Escape.
  */
 /** Secondary destinations at the foot of the sidebar, above the user menu. */
-type SecondarySection = "about";
+type SecondarySection = "about" | "settings";
 
 export function AppSidebar({ section }: { section?: AppDestinationKey | SecondarySection }) {
   const { t } = useTranslation("common");
@@ -283,6 +284,14 @@ export function AppSidebar({ section }: { section?: AppDestinationKey | Secondar
           >
             <InfoIcon className={styles.navIcon} />
             <span className={`${styles.navLabel}${isCollapsed ? ` ${styles.srOnly}` : ""}`}>{t("nav.about")}</span>
+          </NavLink>
+          <NavLink
+            to={routes.settings}
+            title={isCollapsed ? t("nav.settings") : undefined}
+            className={({ isActive }) => `${styles.navItem}${isActive || section === "settings" ? ` ${styles.navItemActive}` : ""}`}
+          >
+            <SettingsIcon className={styles.navIcon} />
+            <span className={`${styles.navLabel}${isCollapsed ? ` ${styles.srOnly}` : ""}`}>{t("nav.settings")}</span>
           </NavLink>
         </nav>
 

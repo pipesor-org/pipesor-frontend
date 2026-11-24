@@ -1,5 +1,6 @@
 export {
   InfoIcon,
+  SettingsIcon,
   CheckIcon,
   ChevronDownIcon,
   ChevronLeftIcon,

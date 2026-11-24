@@ -23,6 +23,8 @@ export const routes = {
   /** Public "About Pipesor" area: how it works, getting started, AI transparency, security. */
   about: "/about",
   aboutView: "/about/:view",
+  /** Personal settings: profile and session, preferences, GitHub, your access. */
+  settings: "/settings",
 } as const;
 
 /** Views of the About Pipesor area, in tab order. */

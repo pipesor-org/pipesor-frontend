@@ -5,3 +5,5 @@
  */
 export { GrantSelfOperate } from "./ui/GrantSelfOperate";
 export { PipelinePeople } from "./ui/PipelinePeople";
+export { levelOf } from "./model/access";
+export type { AccessLevel } from "./model/access";
