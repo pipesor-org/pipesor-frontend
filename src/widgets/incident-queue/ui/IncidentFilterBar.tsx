@@ -8,6 +8,7 @@ import {
   SEVERITY_LABEL_KEY,
   STAGE_LABEL_KEY,
   STATUS_LABEL_KEY,
+  MAX_QUERY_LENGTH,
   UNCLASSIFIED_SEVERITY,
   hasIncidentFilters,
   type IncidentFilters,
@@ -113,6 +114,7 @@ export function IncidentFilterBar({ filters, onChange, scope, facets, result }: 
           placeholder={t("filters.search")}
           icon={<SearchIcon />}
           autoComplete="off"
+          maxLength={MAX_QUERY_LENGTH}
           className={styles.searchInput}
           onChange={(event) => setText(event.target.value)}
         />

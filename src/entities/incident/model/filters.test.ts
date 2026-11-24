@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  MAX_QUERY_LENGTH,
   NO_INCIDENT_FILTERS,
   activeQuery,
   hasIncidentFilters,
@@ -44,6 +45,10 @@ describe("criteria in the URL", () => {
   test("unknown or malformed values are dropped, never break the view", () => {
     const url = new URLSearchParams("severity=urgent&severity=HIGH&stage=lint&repo=abc&repo=-1&repo=42&status=resolved");
     expect(readIncidentFilters(url, ACTIVE)).toEqual(filters({ repositories: ["42"], severities: ["High"] }));
+  });
+
+  test("a shared link's search is cut to what Pipeline accepts", () => {
+    expect(readIncidentFilters(new URLSearchParams({ q: "a".repeat(150) })).q).toHaveLength(MAX_QUERY_LENGTH);
   });
 
   test("a queue without statuses ignores status criteria", () => {

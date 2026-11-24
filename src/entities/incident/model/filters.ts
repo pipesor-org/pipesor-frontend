@@ -32,6 +32,8 @@ export const NO_INCIDENT_FILTERS: IncidentFilters = { q: "", repositories: [], s
 
 /** Shortest text query that filters (one character matches nearly everything); digits always count. */
 export const MIN_QUERY_LENGTH = 2;
+/** Longest text query Pipeline accepts (`400 INVALID_FILTER` beyond it). */
+export const MAX_QUERY_LENGTH = 100;
 
 /** The text query when it filters, otherwise "". */
 export function activeQuery(q: string): string {
@@ -97,7 +99,7 @@ export function readIncidentFilters(params: URLSearchParams, allowedStatuses: re
     if (/^[1-9][0-9]{0,19}$/.test(value) && !repositories.includes(value)) repositories.push(value);
   }
   return {
-    q: (params.get(FILTER_PARAMS.q) ?? "").slice(0, 200),
+    q: (params.get(FILTER_PARAMS.q) ?? "").slice(0, MAX_QUERY_LENGTH),
     repositories,
     severities: fromTokens(params.getAll(FILTER_PARAMS.severity), SEVERITY_TOKEN, SEVERITY_FILTERS),
     stages: fromTokens(params.getAll(FILTER_PARAMS.stage), STAGE_TOKEN, INCIDENT_STAGES),

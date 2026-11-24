@@ -29,6 +29,7 @@ export {
   NO_INCIDENT_FILTERS,
   SEVERITY_FILTERS,
   UNCLASSIFIED_SEVERITY,
+  MAX_QUERY_LENGTH,
   activeQuery,
   hasIncidentFilters,
   matchesIncidentFilters,
