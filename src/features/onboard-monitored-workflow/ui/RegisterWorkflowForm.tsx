@@ -1,7 +1,7 @@
-import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { DISCOVERY_CAP, fetchRepositories, fetchWorkflows } from "../../../entities/github-access";
+import { DISCOVERY_CAP, fetchRepositories } from "../../../entities/github-access";
 import {
   OPERATIONAL_ENVIRONMENTS,
   PIPELINE_CRITICALITIES,
@@ -10,6 +10,7 @@ import {
   type PipelineCriticality,
   type PipelineMonitoringStatus,
   type PipelineRecord,
+  listPipelines,
 } from "../../../entities/monitored-pipeline";
 import { isApiError, useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
@@ -19,6 +20,7 @@ import { Notice } from "../../../shared/ui/notice";
 
 import { registerPipeline } from "../api/register";
 import { RepositoryAccessStep } from "./RepositoryAccessStep";
+import { RepositoryBrowser, type WorkflowSelection } from "./RepositoryBrowser";
 import styles from "./RegisterWorkflowForm.module.css";
 
 const TEAM_MAX = 120;
@@ -45,9 +47,9 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
   const { formatNumber } = useFormatters();
   const ids = { repository: useId(), workflow: useId(), criticality: useId(), environment: useId(), team: useId(), error: useId() };
   const repositories = useApiQuery("github-repositories", () => fetchRepositories());
-  const [repositoryId, setRepositoryId] = useState("");
-  const workflows = useApiQuery(repositoryId ? `github-workflows:${repositoryId}` : null, (signal) => fetchWorkflows(repositoryId, signal));
-  const [workflowId, setWorkflowId] = useState("");
+  // Monitored workflows the caller can see, marked in the browser instead of offered again.
+  const inventory = useApiQuery("onboarding-monitored", (signal) => listPipelines(signal));
+  const [selection, setSelection] = useState<WorkflowSelection | null>(null);
   const [criticality, setCriticality] = useState<PipelineCriticality | "">("");
   const [environment, setEnvironment] = useState("");
   const [monitoring, setMonitoring] = useState<PipelineMonitoringStatus>("ACTIVE");
@@ -58,11 +60,21 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
 
   const repositoryList = repositories.state.status === "success" ? repositories.state.data.repositories : [];
   const repositoriesTruncated = repositories.state.status === "success" && repositories.state.data.truncated;
-  const repository = repositoryList.find((item) => item.repositoryId === repositoryId) ?? null;
-  const workflowList = repositoryId && workflows.state.status === "success" ? workflows.state.data : [];
-  const workflow = workflowList.find((item) => item.workflowId === workflowId) ?? null;
-  const missing = { repository: !repository, workflow: !workflow, criticality: !criticality };
-  const invalid = missing.repository || missing.workflow || missing.criticality || team.trim().length > TEAM_MAX;
+  const monitored = useMemo(
+    () =>
+      inventory.state.status === "success"
+        ? inventory.state.data.map((pipeline) => ({
+            pipelineId: pipeline.id,
+            githubRepositoryId: pipeline.githubRepositoryId,
+            githubWorkflowId: pipeline.githubWorkflowId,
+          }))
+        : [],
+    [inventory.state],
+  );
+  const repository = selection?.repository ?? null;
+  const workflow = selection?.workflow ?? null;
+  const missing = { workflow: !selection, criticality: !criticality };
+  const invalid = missing.workflow || missing.criticality || team.trim().length > TEAM_MAX;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -112,56 +124,14 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
 
         {repositoryList.length > 0 && (
           <div className={styles.fields}>
-            <div className={styles.field}>
-              <label htmlFor={ids.repository}>{t("onboarding.repository")}{required}</label>
-              <div className={styles.control}>
-                <Select
-                  id={ids.repository}
-                  value={repositoryId}
-                  required
-                  aria-invalid={submitted && missing.repository}
-                  aria-describedby={submitted && missing.repository ? `${ids.repository}-error` : undefined}
-                  onChange={(event) => { setRepositoryId(event.target.value); setWorkflowId(""); }}
-                >
-                  <option value="">{t("onboarding.selectRepository")}</option>
-                  {repositoryList.map((item) => <option key={item.repositoryId} value={item.repositoryId}>{item.fullName}</option>)}
-                </Select>
-                {repositoriesTruncated && (
-                  <p className={styles.note}>{t("onboarding.repositoriesTruncated", { cap: formatNumber(DISCOVERY_CAP) })}</p>
-                )}
-                {fieldError(missing.repository, `${ids.repository}-error`)}
-              </div>
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor={ids.workflow}>{t("onboarding.workflow")}{required}</label>
-              <div className={styles.control}>
-                <Select
-                  id={ids.workflow}
-                  value={workflowId}
-                  required
-                  disabled={!repositoryId || workflows.state.status !== "success"}
-                  aria-invalid={submitted && missing.workflow}
-                  aria-describedby={`${ids.workflow}-hint${submitted && missing.workflow ? ` ${ids.workflow}-error` : ""}`}
-                  onChange={(event) => setWorkflowId(event.target.value)}
-                >
-                  <option value="">{t("onboarding.selectWorkflow")}</option>
-                  {workflowList.map((item) => <option key={item.workflowId} value={item.workflowId}>{item.name}</option>)}
-                </Select>
-                <p className={styles.note} id={`${ids.workflow}-hint`}>
-                  {!repositoryId
-                    ? t("onboarding.selectRepositoryFirst")
-                    : workflows.state.status === "loading"
-                      ? t("onboarding.loadingWorkflows")
-                      : workflows.state.status === "error"
-                        ? t("onboarding.workflowsError")
-                        : workflowList.length === 0
-                          ? t("onboarding.noWorkflows")
-                          : ""}
-                </p>
-                {fieldError(missing.workflow, `${ids.workflow}-error`)}
-              </div>
-            </div>
+            <RepositoryBrowser
+              repositories={repositoryList}
+              monitored={monitored}
+              selection={selection}
+              onSelect={setSelection}
+              error={submitted && missing.workflow ? { id: `${ids.workflow}-error`, text: t("onboarding.browser.required") } : null}
+            />
+            {repositoriesTruncated && <p className={styles.note}>{t("onboarding.repositoriesTruncated", { cap: formatNumber(DISCOVERY_CAP) })}</p>}
 
             <dl className={styles.facts}>
               <div><dt>{t("identity.file")}</dt><dd className={styles.mono}>{workflow?.file ?? "—"}</dd></div>

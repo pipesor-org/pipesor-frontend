@@ -1,0 +1,312 @@
+/*
+ * Repository browser: accounts as collapsible blocks, repositories inside,
+ * and the workflows of the open repository as the choice to make.
+ */
+.browser {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.search {
+  flex: 1 1 260px;
+  max-width: 400px;
+  min-width: 0;
+}
+
+.summary {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.accounts,
+.repositories {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accounts {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.account + .account {
+  border-top: 1px solid var(--color-border);
+}
+
+.accountHeading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.accountButton,
+.repositoryButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--control-height-lg);
+  padding: var(--space-2) var(--space-4);
+  border: 0;
+  background: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.accountButton {
+  background-color: var(--color-surface-subtle);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-sm);
+}
+
+.accountButton:hover,
+.repositoryButton:hover {
+  background-color: var(--color-surface-tint);
+}
+
+.accountButton:focus-visible,
+.repositoryButton:focus-visible,
+.showAll:focus-visible,
+.inlineAction:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--color-text-tertiary);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+[aria-expanded="true"] > .chevron {
+  transform: rotate(90deg);
+}
+
+.accountName,
+.repositoryName {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.repositoryName {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-sm);
+}
+
+.meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-left: auto;
+  padding-left: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--leading-xs);
+  text-align: right;
+}
+
+.repository {
+  border-top: 1px solid var(--color-border);
+}
+
+.repositoryButton {
+  padding-left: var(--space-8);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.chosen {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.workflows {
+  padding: var(--space-2) var(--space-4) var(--space-3) var(--space-12);
+  background-color: var(--color-surface-subtle);
+}
+
+.workflowList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.workflow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1-5) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.workflow:has(input:checked) {
+  background-color: var(--color-accent-soft);
+}
+
+.workflowLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  cursor: pointer;
+}
+
+.workflow.taken .workflowLabel {
+  cursor: default;
+}
+
+.workflowLabel input {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.workflowText {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+.workflowName {
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--leading-sm);
+}
+
+.workflow.taken .workflowName {
+  color: var(--color-text-secondary);
+}
+
+.takenActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mono {
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.link {
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+.showAll,
+.inlineAction {
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.showAll {
+  margin: var(--space-2) var(--space-4) var(--space-3) var(--space-8);
+}
+
+.note,
+.empty {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+.empty {
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-critical-text);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--leading-xs);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 700px) {
+  /* Names take the row; counts drop below them. */
+  .accountButton,
+  .repositoryButton {
+    flex-wrap: wrap;
+    row-gap: var(--space-0-5);
+  }
+
+  .accountName,
+  .repositoryName {
+    flex: 1 1 0;
+  }
+
+  .repositoryButton {
+    padding-left: var(--space-6);
+  }
+
+  .workflows {
+    padding-left: var(--space-6);
+  }
+
+  .meta {
+    flex-basis: 100%;
+    margin-left: var(--space-6);
+    padding-left: 0;
+    text-align: left;
+  }
+}

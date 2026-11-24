@@ -54,8 +54,6 @@ export function RepositoryAccessStep({
     navigate({ pathname, search: params.size ? `?${params}` : "" }, { replace: true, state });
   }, [navigate, pathname, search, state]);
 
-  const accounts = [...new Set(repositories.map((repository) => repository.fullName.split("/")[0]))].sort();
-
   return (
     <section aria-labelledby="repository-access-title">
       <h2 id="repository-access-title">{t("onboarding.access.title")}</h2>
@@ -65,16 +63,8 @@ export function RepositoryAccessStep({
         <Notice tone="success" role="status">{t(`onboarding.access.returned.${setupReturn}`)}</Notice>
       )}
 
-      {!loading && (
-        <p>
-          {repositories.length === 0
-            ? t("onboarding.access.none")
-            : t("onboarding.access.available", {
-                count: repositories.length,
-                accounts: accounts.join(", "),
-              })}
-        </p>
-      )}
+      {/* What is available is browsed below, grouped by account; here only its absence needs saying. */}
+      {!loading && repositories.length === 0 && <p>{t("onboarding.access.none")}</p>}
 
       <div className={styles.inline}>
         {githubAppInstallUrl ? (
