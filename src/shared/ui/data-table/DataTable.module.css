@@ -175,12 +175,23 @@
   -webkit-line-clamp: 3;
 }
 
-.table .empty {
-  padding: var(--space-12) var(--space-4);
+/* Beats the edge padding of first/last cells: the body below owns the inset. */
+.table tr > td.empty {
+  padding: var(--space-12) 0;
   text-align: center;
 }
 
+/*
+ * The message stays within the visible frame even when a wide table scrolls
+ * sideways (narrow screens): sticky at the frame's left edge, as wide as the
+ * frame (the frame is the size container).
+ */
 .emptyBody {
+  position: sticky;
+  left: 0;
+  box-sizing: border-box;
+  width: 100cqw;
+  padding: 0 var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;

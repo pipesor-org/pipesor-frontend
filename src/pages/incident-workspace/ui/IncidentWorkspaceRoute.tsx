@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 
 import { DiagnosisStatusLabel, fetchIncidentDiagnosis, type DiagnosisStatus } from "../../../entities/diagnosis";
 import {
   IncidentSeverity,
   IncidentStatusBadge,
   STAGE_LABEL_KEY,
+  UNRESOLVED_INCIDENT_STATUSES,
   githubRunUrl,
   incidentLabel,
+  withReturnFilters,
 } from "../../../entities/incident";
 import { pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
 import { IncidentLifecycle } from "../../../features/manage-incident-lifecycle";
@@ -42,6 +44,7 @@ export function IncidentWorkspaceRoute() {
   const { t } = useTranslation("operations");
   const { incidentId = "" } = useParams();
   const [search] = useSearchParams();
+  const location = useLocation();
   const origin = search.get("from");
   const validId = UUID.test(incidentId);
   const now = useNow();
@@ -50,7 +53,11 @@ export function IncidentWorkspaceRoute() {
   const diagnosisQuery = useApiQuery(validId ? incidentId : null, (signal) => fetchIncidentDiagnosis(incidentId, signal));
   const [reviewedStatus, setReviewedStatus] = useState<DiagnosisStatus | null>(null);
 
-  const backTo = origin === "history" ? historyViewPath("incidents") : operationsQueuePath(isOperationsQueue(origin) ? origin : "active");
+  const queue = isOperationsQueue(origin) ? origin : "active";
+  // Back restores the queue's criteria carried by the row link (recognized criteria only).
+  const backTo = origin === "history"
+    ? withReturnFilters(historyViewPath("incidents"), location.state, [])
+    : withReturnFilters(operationsQueuePath(queue), location.state, queue === "active" ? UNRESOLVED_INCIDENT_STATUSES : []);
   const loaded = workspace.state.status === "success" ? workspace.state.data : null;
   const notFound = !validId || (workspace.state.status === "error" && isApiError(workspace.state.error) && workspace.state.error.status === 404);
   const diagnosis = diagnosisQuery.state.status === "success" && diagnosisQuery.state.data.kind === "ready" ? diagnosisQuery.state.data.diagnosis : null;

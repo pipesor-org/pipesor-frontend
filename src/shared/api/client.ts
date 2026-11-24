@@ -22,7 +22,8 @@ export function configureApiAuth(hooks: ApiAuthHooks): void {
   authHooks = hooks;
 }
 
-export type QueryValue = string | number | boolean | null | undefined;
+/** A scalar, or a list sent as a repeated parameter (`?severity=A&severity=B`). */
+export type QueryValue = string | number | boolean | null | undefined | readonly (string | number)[];
 
 export interface ApiRequest<T> {
   method?: "GET" | "POST" | "PUT" | "DELETE";
@@ -47,7 +48,11 @@ function newCorrelationId(): string {
 function buildUrl(service: ApiService, path: string, query?: Record<string, QueryValue>): string {
   const url = new URL(path, apiOrigins[service]);
   for (const [key, value] of Object.entries(query ?? {})) {
-    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+    if (Array.isArray(value)) {
+      for (const item of value) url.searchParams.append(key, String(item));
+    } else if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, String(value));
+    }
   }
   return url.href;
 }

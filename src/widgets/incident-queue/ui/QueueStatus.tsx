@@ -8,9 +8,9 @@ import { Notice } from "../../../shared/ui/notice";
 import styles from "./QueueStatus.module.css";
 
 /** Loading and failure states of a queue, with a retry and a safe error reference. */
-export function QueueStatus({ status, error, onRetry }: { status: "loading" | "error"; error: unknown; onRetry: () => void }) {
+export function QueueStatus({ status, error, onRetry }: { status: "idle" | "loading" | "error"; error: unknown; onRetry: () => void }) {
   const { t } = useTranslation("operations");
-  if (status === "loading") {
+  if (status !== "error") {
     return (
       <div className={styles.loading} role="status">
         <span className={styles.srOnly}>{t("queue.loading")}</span>

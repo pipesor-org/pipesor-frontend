@@ -95,6 +95,14 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - **Confirmation.** A recorded change appears as a success `Notice` inside a live region that is always rendered, so it is announced. Notices settle in with a short fade, and the lifecycle step just reached settles with a small scale. All of it collapses under `prefers-reduced-motion`.
 - **Errors loading a view.** A critical `Notice` with the error reference, when there is one, and a retry button.
 
+## Filtering lists
+
+- **One quiet row** between a view's figures and its table: search (with the `/` shortcut and a debounce), then multi-select facets as `FacetMenu` buttons, then the result line and "Clear filters". No chip row: a facet shows its count on the button itself (accent tint) while values are chosen.
+- **Criteria live in the URL** (REPLACE) and travel to detail views through router state so "Back" restores them.
+- **Figures stay whole.** Tab counts and key figures always describe the whole queue; the result line says how many rows match ("N of M") and, when filtering in the browser, how much of the queue was searched.
+- **Zero results** keep the criteria and offer "Clear filters" in the table's empty state.
+- On phones the search takes the full width and facets wrap below it.
+
 ## Components (`src/shared/ui`)
 
 | Primitive | Use |
@@ -111,4 +119,5 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 | `dataTable` (class names) + `TableEmptyRow` (`icon`, `tone`, `action`) + `TableSkeleton` | The table system above. Widgets keep only column widths and domain cells. |
 | `StatGroup` + `Stat` (`label`, `value`, `tone`, `live`, `mono`) | Key figures of a view, as a description list. |
 | `Notice` (`tone`) | Inline message with a tinted background and a vivid leading edge; pass `role` when it follows an action. |
+| `FacetMenu` | Multi-select filter facet: a quiet button with the chosen count, opening a non-modal panel of checkboxes (Escape, outside click and tabbing out close it). |
 | `StandalonePage` | Frame for screens without the app shell. |

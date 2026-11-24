@@ -5,8 +5,8 @@ import { DiagnosisStatusLabel, type DiagnosisStatus } from "../../../entities/di
 import { IncidentSeverity, STAGE_LABEL_KEY, type IncidentSeverityLevel, type IncidentStage } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
-import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
-import { CheckIcon, ChevronRightIcon } from "../../../shared/ui/icons";
+import { TableEmptyRow, dataTable, type TableEmpty } from "../../../shared/ui/data-table";
+import { CheckIcon, ChevronRightIcon, SearchIcon } from "../../../shared/ui/icons";
 
 import styles from "./NeedsValidationTable.module.css";
 
@@ -35,7 +35,7 @@ const HEADER_CELLS = [
  * Needs Validation queue table: resolved incidents whose diagnosis is still
  * awaiting human review. Pending time is live from `resolvedAt`.
  */
-export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow[]; now: number }) {
+export function NeedsValidationTable({ rows, now, empty, linkState }: { rows: PendingValidationRow[]; now: number; empty?: TableEmpty; linkState?: unknown }) {
   const { t } = useTranslation("operations");
   const { formatDuration, formatTimestamp } = useFormatters();
 
@@ -59,7 +59,11 @@ export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow
 
         <tbody>
           {rows.length === 0 ? (
-            <TableEmptyRow colSpan={HEADER_CELLS.length} tone="success" icon={<CheckIcon />} title={t("validation.empty.title")} text={t("validation.empty.text")} />
+            empty ? (
+              <TableEmptyRow colSpan={HEADER_CELLS.length} icon={<SearchIcon />} title={empty.title} text={empty.text} action={empty.action} />
+            ) : (
+              <TableEmptyRow colSpan={HEADER_CELLS.length} tone="success" icon={<CheckIcon />} title={t("validation.empty.title")} text={t("validation.empty.text")} />
+            )
           ) : (
             rows.map((row) => (
               <tr key={row.id} className={dataTable.interactiveRow}>
@@ -68,7 +72,7 @@ export function NeedsValidationTable({ rows, now }: { rows: PendingValidationRow
                 </td>
                 <td>
                   <div className={dataTable.stack}>
-                    <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "validation")}>
+                    <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "validation")} state={linkState}>
                       {row.label}
                     </Link>
                     {row.pipeline ? (
