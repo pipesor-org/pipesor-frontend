@@ -117,6 +117,7 @@ const pipelines = {
     description: "Read from GitHub with your access. Analyzing a run captures its logs as protected evidence and opens an incident with an AIOps diagnosis.",
     loading: "Loading failed runs…", loadError: "Failed runs could not be loaded from GitHub.",
     empty: "No failed runs found for this workflow.",
+    loadMore: "Load more failed runs", loadingMore: "Loading…", loadMoreError: "More failed runs could not be loaded from GitHub.",
     checking: "Checking…", notAnalyzed: "Not analyzed", statusUnavailable: "Status unavailable", analyze: "Analyze", retry: "Try again", follow: "Check progress",
     attempt: "attempt {{attempt}}",
     phase: {
