@@ -73,13 +73,12 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 - **Sin cookies** y sin analítica ni telemetría.
 - `sessionStorage` (se borra al cerrar la pestaña): la sesión de Pipesor (token de acceso, caducidad ≤ 1 hora, id y usuario de GitHub) y la ruta de retorno tras instalar la App.
 - `localStorage`: solo preferencias de interfaz (tema, idioma, barra lateral).
-- **Google Fonts:** las fuentes se cargan desde servidores de Google, lo que expone la IP de quien visita a Google. *(Pendiente de decisión: alojarlas en Pipesor; ver sección 8.)*
+- **Fuentes tipográficas:** se sirven desde Pipesor (Geist y Geist Mono, licencia SIL OFL 1.1). El navegador no contacta con ningún proveedor de fuentes.
 
 ### 4.3 Encargados y transferencias
 
 - **Microsoft Azure** (alojamiento, base de datos, mensajería, bóveda de secretos, modelos de IA): región **West US 3, Estados Unidos**. Implica **transferencia internacional** de datos desde Perú.
 - **GitHub** (identidad, logs originales, instalación de la App).
-- **Google** (fuentes tipográficas, ver arriba).
 - **Azure OpenAI:** la monitorización de abuso está en la **configuración por defecto de Microsoft, no modificada** (no se solicitó la exención). Según la política de Microsoft, puede conservar entradas y salidas durante un periodo limitado para detectar abusos; que el Redactor cite la política vigente de Microsoft sin afirmar plazos que no pueda verificar.
 
 ### 4.4 Conservación
@@ -134,6 +133,6 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 
 1. **Responsable del tratamiento y contacto** (`[RESPONSABLE]`, `[CORREO DE CONTACTO]`) y canal para ejercer derechos.
 2. ~~Modelo de diagnóstico desplegado~~ — resuelto: GPT-6 Luna 2026-09-22.
-3. **Google Fonts:** declararlo en la política o alojar las fuentes en Pipesor (recomendado: elimina un tercero y la transferencia de la IP).
+3. ~~Google Fonts~~ — resuelto: las fuentes se alojan en Pipesor (decisión del responsable, 24/11/2026).
 4. **Retención:** publicar la política como "documentada, aún no aplicada" o aplicar la purga antes de publicarla.
 5. **Visibilidad de la autoría de revisiones:** hoy quien puede ver el pipeline ve el identificador y el texto de quien revisa; declararlo o restringirlo.

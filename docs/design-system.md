@@ -30,7 +30,7 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 
 ## Typography
 
-- **Geist** for the interface and **Geist Mono** for identifiers, commits, logs and evidence. Both are loaded from Google Fonts in `index.html`.
+- **Geist** for the interface and **Geist Mono** for identifiers, commits, logs and evidence. Both are self-hosted variable fonts (`src/app/fonts`, `src/app/styles/fonts.css`; SIL OFL 1.1, latin and latin-ext subsets), so no visitor data reaches a font CDN and the CSP allows fonts from `'self'` only.
 - Scale (size / line-height): `--text-2xs` 11/16, `--text-xs` 12/18, `--text-sm` 13/20, `--text-base` 14/22 (body default), `--text-md` 16/24, `--text-lg` 18/26, `--text-xl` 22/30, `--text-2xl` 28/36. Always pair a size with its leading.
 - Weights: 400 body, 500 labels and emphasis, 600 headings. Headings use `--tracking-snug` (applied globally to `h1`–`h3`) or `--tracking-tight` at 22 px and above. Use `--tracking-wide` only for small uppercase overlines.
 - Tables and `<time>` use tabular numerals globally.

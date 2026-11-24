@@ -43,7 +43,7 @@ A Paper frame describes a visual state; it does **not**, by itself, approve back
 
 **Where styling belongs:** global reset/body setup stays in `src/app/styles/global.css`; UI styles belong in component-co-located `*.module.css`. Import CSS Modules as `styles`, follow existing camelCase class naming, and use meaningful state/variant names such as `sidebarCollapsed` or `navItemActive`. Avoid broad `:global`, `!important`, and selectors that depend on unrelated widgets' markup. Compose conditional classes using the existing project pattern instead of introducing a styling dependency.
 
-The typography uses **Geist** for UI and **Geist Mono** for technical identifiers, commits, logs and evidence; fonts are loaded through `index.html` (Google Fonts). Pair each `--text-*` size with its `--leading-*`, and use the `--space-*` grid before introducing other values. Component-specific pixel dimensions may be needed to faithfully implement an approved design; do not promote every dimension to a global token.
+The typography uses **Geist** for UI and **Geist Mono** for technical identifiers, commits, logs and evidence; both are self-hosted (`src/app/fonts`, declared in `src/app/styles/fonts.css`, SIL OFL 1.1) so no third party receives visitors' data. Pair each `--text-*` size with its `--leading-*`, and use the `--space-*` grid before introducing other values. Component-specific pixel dimensions may be needed to faithfully implement an approved design; do not promote every dimension to a global token.
 
 ## 4. Component reuse and presentation
 
