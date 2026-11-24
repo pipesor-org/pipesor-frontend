@@ -213,7 +213,7 @@ const about = {
     },
     model: {
       title: "The model",
-      text: "Diagnoses come from a large language model served by Azure OpenAI in Microsoft Foundry, in Microsoft's US data zone (West US 3). Embeddings for retrieval use text-embedding-3-small. Models are used through the API; none is trained or modified. Each diagnosis records the model deployment, its version and the prompt version.",
+      text: "Diagnoses come from GPT-6 Luna (version 2026-09-22), a large language model served by Azure OpenAI in Microsoft Foundry, in Microsoft's US data zone (West US 3). Embeddings for retrieval use text-embedding-3-small. Models are used through the API; none is trained or modified. Each diagnosis records the model deployment, its version and the prompt version.",
     },
     inputs: {
       title: "What the model receives",
