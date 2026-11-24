@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import { CheckIcon } from "../../../shared/ui/icons";
 
+import { StandardsMap } from "./StandardsMap";
 import styles from "./About.module.css";
 
 const GLANCE = ["proposes", "minimal", "noTraining", "noLearning", "noAction"] as const;
@@ -71,6 +72,8 @@ export function AiTransparency() {
           <ul className={styles.list}>{LIMITS.map((item) => <li key={item}>{t(`ai.limits.items.${item}`)}</li>)}</ul>
         </section>
       </div>
+
+      <StandardsMap />
     </div>
   );
 }

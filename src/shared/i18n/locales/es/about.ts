@@ -4,6 +4,8 @@
  * Textos del área pública «Acerca de Pipesor»: cómo funciona (recorrido de los
  * datos y glosario), primeros pasos, transparencia de la IA y seguridad.
  */
+import { legal, privacy, standards, terms } from "./aboutLegal";
+
 const about = {
   title: "Acerca de Pipesor",
   subtitle: "Cómo Pipesor convierte una ejecución fallida de GitHub Actions en un diagnóstico que valida una persona, y cómo trata tus datos.",
@@ -13,6 +15,8 @@ const about = {
     "getting-started": "Primeros pasos",
     ai: "Transparencia de la IA",
     security: "Seguridad",
+    privacy: "Privacidad",
+    terms: "Términos",
   },
   public: {
     signIn: "Iniciar sesión",
@@ -212,7 +216,7 @@ const about = {
     },
     model: {
       title: "El modelo",
-      text: "Los diagnósticos los genera GPT-6 Luna (versión 2026-09-22), un modelo de lenguaje servido por Azure OpenAI en Microsoft Foundry, dentro de la zona de datos de EE. UU. de Microsoft (West US 3). Los embeddings para la recuperación usan text-embedding-3-small. Los modelos se usan mediante su API; ninguno se entrena ni se modifica. Cada diagnóstico registra el despliegue del modelo, su versión y la versión de las instrucciones.",
+      text: "Los diagnósticos los genera GPT-6 Luna (versión 2026-09-22), un modelo de lenguaje servido por Azure OpenAI en Microsoft Foundry, dentro de la zona de datos de EE. UU. de Microsoft (West US 3). Los embeddings para la recuperación usan text-embedding-3-small. Los modelos se usan mediante su API; ninguno se entrena ni se modifica. Los opera Microsoft dentro de Azure y, según Microsoft, las instrucciones y las respuestas no están disponibles para OpenAI. Cada diagnóstico registra el despliegue del modelo, su versión y la versión de las instrucciones.",
     },
     inputs: {
       title: "Qué recibe el modelo",
@@ -261,7 +265,7 @@ const about = {
         masking: "La protección puede eliminar detalles útiles, como versiones o direcciones.",
         variance: "El modelo no es determinista: el mismo fallo puede explicarse de formas distintas.",
         expired: "Si GitHub ya borró los logs de una ejecución, no se puede analizar.",
-        scope: "Los resultados provienen de tres repositorios y no se generalizan a cualquier tipo de pipeline.",
+        scope: "Los resultados provienen de 10 escenarios de fallo derivados de tres repositorios del entorno de validación y no se generalizan a cualquier tipo de pipeline.",
       },
     },
   },
@@ -334,6 +338,10 @@ const about = {
       },
     },
   },
+  legal,
+  privacy,
+  terms,
+  standards,
 } as const;
 
 export default about;

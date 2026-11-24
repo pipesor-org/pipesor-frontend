@@ -9,6 +9,8 @@ const auth = {
     lead: "Pipesor supervisa tus workflows de GitHub Actions, diagnostica las ejecuciones fallidas y permite que tu equipo revise cada diagnóstico.",
     continue: "Continuar con GitHub",
     redirecting: "Redirigiendo a GitHub…",
+    consent: "He leído la <privacy>Política de privacidad</privacy> y autorizo el tratamiento de mis datos para usar Pipesor, incluida su transferencia a Estados Unidos, donde Microsoft (Azure y Azure OpenAI) y GitHub los alojan y procesan. Acepto los <terms>Términos de uso</terms>.",
+    consentRequired: "Para continuar, acepta la Política de privacidad y los Términos de uso.",
     points: {
       readOnly: "Solo lectura: Pipesor nunca modifica tu código, workflows, secretos ni permisos de GitHub.",
       repositories: "Cualquier cuenta de GitHub puede entrar. Los repositorios aparecen cuando su administrador los selecciona en la GitHub App de Pipesor, y solo ves los que puedes leer en GitHub.",

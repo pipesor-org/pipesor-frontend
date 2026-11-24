@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { completeSignIn, signInDestination, startGitHubSignIn } from "../../../entities/session";
+import { completeSignIn, signInDestination } from "../../../entities/session";
 import { isApiError, safeErrorCode } from "../../../shared/api";
 import { DEFAULT_OPERATIONS_QUEUE, authRoutes, operationsQueuePath } from "../../../shared/config";
 import { Button } from "../../../shared/ui/button";
@@ -78,7 +78,8 @@ export function AuthCompletePage() {
               ) : null}
             </p>
           </div>
-          <Button variant="primary" size="lg" block onClick={() => startGitHubSignIn(null)}>
+          {/* Back through the sign-in screen, where consent is given before continuing with GitHub. */}
+          <Button variant="primary" size="lg" block onClick={() => navigate(authRoutes.signIn)}>
             {t("complete.tryAgain")}
           </Button>
         </>

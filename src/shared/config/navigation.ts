@@ -20,13 +20,13 @@ export const routes = {
   pipelines: "/pipelines",
   addMonitoredWorkflow: "/pipelines/new",
   pipelineDetail: "/pipelines/:pipelineId",
-  /** Public "About Pipesor" area: how it works, getting started, AI transparency, security. */
+  /** Public "About Pipesor" area: how it works, getting started, AI transparency, security, privacy, terms. */
   about: "/about",
   aboutView: "/about/:view",
 } as const;
 
 /** Views of the About Pipesor area, in tab order. */
-export const ABOUT_VIEWS = ["how-it-works", "getting-started", "ai", "security"] as const;
+export const ABOUT_VIEWS = ["how-it-works", "getting-started", "ai", "security", "privacy", "terms"] as const;
 export type AboutView = (typeof ABOUT_VIEWS)[number];
 
 export function isAboutView(value: string | undefined): value is AboutView {

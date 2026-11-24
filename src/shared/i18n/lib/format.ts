@@ -28,6 +28,18 @@ export function formatDate(iso: string, language: string): string {
 }
 
 /**
+ * Formats an ISO-8601 calendar date in full (`November 24, 2026`,
+ * `24 de noviembre de 2026`), for document dates such as a policy's last
+ * update. UTC, so the day never shifts with the viewer's time zone.
+ */
+export function formatLongDate(iso: string, language: string): string {
+  return new Intl.DateTimeFormat(intlLocaleFor(language), {
+    dateStyle: "long",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
+/**
  * Formats an ISO-8601 UTC instant as a day only (`Sep 1`, `1 sept`).
  *
  * Used where a period boundary is displayed without a time of day, such as the
