@@ -73,6 +73,8 @@ const operations = {
     status: "Estado",
     validation: "Validación",
     noDiagnosis: "Sin diagnóstico",
+    resolved: "Resuelto",
+    resolvedWithin: { "24h": "Últimas 24 horas", "7d": "Últimos 7 días", "30d": "Últimos 30 días", "90d": "Últimos 90 días" },
     selected: "seleccionados",
     clearFacet: "Quitar selección",
     clear: "Limpiar filtros",

@@ -79,6 +79,8 @@ const operations = {
     status: "Status",
     validation: "Validation",
     noDiagnosis: "No diagnosis",
+    resolved: "Resolved",
+    resolvedWithin: { "24h": "Last 24 hours", "7d": "Last 7 days", "30d": "Last 30 days", "90d": "Last 90 days" },
     selected: "selected",
     clearFacet: "Clear selection",
     clear: "Clear filters",

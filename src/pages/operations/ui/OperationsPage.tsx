@@ -3,13 +3,12 @@ import { Navigate, useSearchParams } from "react-router-dom";
 
 import {
   NO_INCIDENT_FILTERS,
-  UNRESOLVED_INCIDENT_STATUSES,
+  FILTER_SCOPES,
   fetchIncidentSummary,
   hasIncidentFilters,
   incidentLabel,
   returnFiltersState,
   type DiagnosisCriterion,
-  type IncidentStatus,
 } from "../../../entities/incident";
 import { useApiQuery } from "../../../shared/api";
 import {
@@ -85,9 +84,6 @@ function toPendingRow(row: QueueRow): PendingValidationRow | null {
  * pages are ordered for reading (severity, then age) without claiming a
  * global order.
  */
-/** Facets per queue: Needs Validation holds resolved incidents only, so it has no status facet. */
-const ACTIVE_STATUSES = UNRESOLVED_INCIDENT_STATUSES;
-const NO_STATUSES: readonly IncidentStatus[] = [];
 /** Needs Validation is the resolved queue whose diagnosis awaits review. */
 const PENDING: readonly DiagnosisCriterion[] = ["PENDING"];
 
@@ -96,7 +92,8 @@ export function OperationsPage() {
   const [searchParams] = useSearchParams();
   const queue = searchParams.get(OPERATIONS_QUEUE_PARAM);
   const isValidation = queue === "validation";
-  const [filters, setFilters] = useIncidentFilterParams(isValidation ? NO_STATUSES : ACTIVE_STATUSES);
+  // Active offers Status; Needs Validation holds resolved incidents, so it offers the Resolved period instead.
+  const [filters, setFilters] = useIncidentFilterParams(isValidation ? FILTER_SCOPES.validation : FILTER_SCOPES.active);
   const filtering = hasIncidentFilters(filters);
   // Whole queues: tab counts and figures always describe the queue, not the filter.
   const open = useIncidentQueue("OPEN");
@@ -176,7 +173,7 @@ export function OperationsPage() {
             filters={filters}
             onChange={setFilters}
             scope={validationTable.scope}
-            facets={{ repository: true, severity: true, stage: true }}
+            facets={{ repository: true, severity: true, stage: true, resolved: true }}
             result={
               // The service selected pending incidents itself: its total is the answer ("N matching incidents").
               validationTable.scope.kind === "service"
@@ -221,7 +218,7 @@ export function OperationsPage() {
             filters={filters}
             onChange={setFilters}
             scope={activeTable.scope}
-            facets={{ repository: true, severity: true, stage: true, statuses: ACTIVE_STATUSES }}
+            facets={{ repository: true, severity: true, stage: true, statuses: FILTER_SCOPES.active.statuses }}
           />
           {activeTable.status !== "ready" ? (
             <QueueStatus status={activeTable.status} error={activeTable.error} onRetry={activeTable.reload} />

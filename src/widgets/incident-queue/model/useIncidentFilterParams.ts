@@ -1,30 +1,16 @@
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import {
-  readIncidentFilters,
-  writeIncidentFilters,
-  type DiagnosisCriterion,
-  type IncidentFilters,
-  type IncidentStatus,
-} from "../../../entities/incident";
-
-const NO_DIAGNOSES: readonly DiagnosisCriterion[] = [];
+import { readIncidentFilters, writeIncidentFilters, type IncidentFilterScope, type IncidentFilters } from "../../../entities/incident";
 
 /**
  * Queue criteria kept in the URL (REPLACE), so Back from the Workspace and a
- * shared link restore them. The allowed values (the view's Status and
- * Validation facets) must be stable arrays.
+ * shared link restore them. `scope` (the criteria the view offers) must be a
+ * stable object, such as one of `FILTER_SCOPES`.
  */
-export function useIncidentFilterParams(
-  allowedStatuses: readonly IncidentStatus[],
-  allowedDiagnoses: readonly DiagnosisCriterion[] = NO_DIAGNOSES,
-) {
+export function useIncidentFilterParams(scope: IncidentFilterScope) {
   const [params, setParams] = useSearchParams();
-  const filters = useMemo(
-    () => readIncidentFilters(params, allowedStatuses, allowedDiagnoses),
-    [params, allowedStatuses, allowedDiagnoses],
-  );
+  const filters = useMemo(() => readIncidentFilters(params, scope), [params, scope]);
   const setFilters = useCallback(
     (next: IncidentFilters) => setParams((previous) => writeIncidentFilters(previous, next), { replace: true }),
     [setParams],

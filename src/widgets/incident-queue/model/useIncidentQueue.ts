@@ -143,11 +143,11 @@ function diagnosisCriterion(diagnosis: RowDiagnosis): DiagnosisCriterion | null 
   return diagnosis.kind === "ready" ? diagnosis.status : diagnosis.kind === "absent" ? "ABSENT" : null;
 }
 
-function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
+function rowMatch(row: QueueRow, filters: IncidentFilters, nowMs: number): boolean | null {
   const repository = row.pipeline.kind === "ready"
     ? { repositoryId: row.pipeline.repositoryId, fullName: row.pipeline.fullName, workflow: row.pipeline.workflow }
     : null;
-  const match = matchesIncidentFilters(row.incident, repository, filters, diagnosisCriterion(row.diagnosis));
+  const match = matchesIncidentFilters(row.incident, filters, { repository, diagnosis: diagnosisCriterion(row.diagnosis), nowMs });
   // A pipeline or diagnosis that cannot be read never matches a criterion on it.
   return match === null && (row.pipeline.kind === "error" || row.diagnosis.kind === "error") ? false : match;
 }
@@ -184,6 +184,8 @@ export function useIncidentQueue(
   base.current = diagnosis;
   const order = useRef(sort);
   order.current = sort;
+  // "Now" of the current read: a Resolved period is measured from it on every page and when filtering here.
+  const readAt = useRef(Date.now());
 
   const patchRows = useCallback((gen: number, match: (row: QueueRow) => boolean, patch: (row: QueueRow) => Partial<QueueRow>) => {
     if (generation.current !== gen) return;
@@ -244,7 +246,7 @@ export function useIncidentQueue(
   const loadForBrowser = useCallback(
     async (gen: number) => {
       const whole = await readWholeQueue(
-        (token) => fetchIncidentQueue(state, token, { pageSize: MAX_PAGE_SIZE, sort: order.current }),
+        (token) => fetchIncidentQueue(state, token, { pageSize: MAX_PAGE_SIZE, sort: order.current, nowMs: readAt.current }),
         BROWSER_FILTER_CAP,
         () => generation.current === gen,
       );
@@ -259,7 +261,7 @@ export function useIncidentQueue(
     async (pageToken: string | null, gen: number, filtered: boolean) => {
       const userFilters = hasIncidentFilters(criteria.current);
       const page = await fetchIncidentQueue(state, pageToken, {
-        ...(filtered ? { filters: criteria.current, diagnosis: base.current } : {}),
+        ...(filtered ? { filters: criteria.current, diagnosis: base.current, nowMs: readAt.current } : {}),
         sort: order.current,
       });
       if (generation.current !== gen) return;
@@ -301,6 +303,7 @@ export function useIncidentQueue(
       // it (the view recomputes), and in-flight enrichment stays valid.
       if (!refetch && filtered && current.mode === "browser" && current.status === "ready") return;
       const gen = ++generation.current;
+      readAt.current = Date.now();
       setData({ ...IDLE, status: "loading" });
       requestedDiagnoses.current = new Set();
       const run = filtered && serviceFiltering === false
@@ -344,7 +347,7 @@ export function useIncidentQueue(
     const undecided: QueueRow[] = [];
     let pending = false;
     for (const row of data.rows) {
-      const match = rowMatch(row, filters);
+      const match = rowMatch(row, filters, readAt.current);
       if (match === true) rows.push(row);
       else if (match === null) {
         pending = true;
