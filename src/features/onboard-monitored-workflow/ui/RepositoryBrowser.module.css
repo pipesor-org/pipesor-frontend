@@ -218,6 +218,12 @@
   line-height: var(--leading-xs);
 }
 
+.askAccess {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
 .link {
   color: var(--color-accent);
   font-size: var(--text-xs);

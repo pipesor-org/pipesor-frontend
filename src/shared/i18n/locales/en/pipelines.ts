@@ -29,7 +29,7 @@ const pipelines = {
     title: "Add monitored workflow",
     subtitle: "Select an existing GitHub Actions workflow and configure how Pipesor monitors it.",
     workflowTitle: "GitHub workflow",
-    workflowDescription: "Open a repository and choose the workflow to monitor. Workflows already monitored are marked.",
+    workflowDescription: "Open a repository and choose the workflow to monitor. Workflows already monitored, by you or by someone else, are marked.",
     browser: {
       search: "Search repositories",
       accounts_one: "{{countFormatted}} account", accounts_other: "{{countFormatted}} accounts",
@@ -41,6 +41,7 @@ const pipelines = {
       showAll_one: "Show all {{countFormatted}} repositories", showAll_other: "Show all {{countFormatted}} repositories",
       workflowsOf: "Workflows in {{repository}}",
       alreadyMonitored: "Monitored", open: "Open",
+      askAccess: "Ask a repository administrator for access",
       required: "Choose the workflow to monitor.",
     },
     readOnly: "Read-only integration. Workflow files and GitHub permissions remain unchanged.",

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { fetchWorkflows, type GitHubRepository, type GitHubWorkflow } from "../../../entities/github-access";
+import { fetchRepositoryRegistrations } from "../../../entities/monitored-pipeline";
 import { useApiQuery } from "../../../shared/api";
 import { pipelineDetailPath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
@@ -198,6 +199,11 @@ function RepositoryWorkflows({
 }) {
   const { t } = useTranslation("pipelines");
   const workflows = useApiQuery(`github-workflows:${repository.repositoryId}`, (signal) => fetchWorkflows(repository.repositoryId, signal));
+  // Every monitored workflow of the repository, including those registered by others the caller cannot see yet.
+  const registrations = useApiQuery(`registrations:${repository.repositoryId}`, (signal) =>
+    fetchRepositoryRegistrations(repository.repositoryId, signal),
+  );
+  const registered = registrations.state.status === "success" ? registrations.state.data : null;
 
   if (workflows.state.status === "loading") return <p className={styles.note} role="status">{t("onboarding.loadingWorkflows")}</p>;
   if (workflows.state.status === "error") {
@@ -214,16 +220,19 @@ function RepositoryWorkflows({
     <fieldset className={styles.workflowList}>
       <legend className={styles.srOnly}>{t("onboarding.browser.workflowsOf", { repository: repository.fullName })}</legend>
       {workflows.state.data.map((workflow) => {
-        const pipelineId = monitored.get(workflow.workflowId);
+        const registration = registered?.get(workflow.workflowId);
+        // Visible pipelines open their detail; one registered by someone else is marked but cannot be opened yet.
+        const pipelineId = monitored.get(workflow.workflowId) ?? (registration?.accessible ? registration.pipelineId : undefined);
+        const taken = Boolean(pipelineId || registration);
         return (
-          <div key={workflow.workflowId} className={`${styles.workflow}${pipelineId ? ` ${styles.taken}` : ""}`}>
+          <div key={workflow.workflowId} className={`${styles.workflow}${taken ? ` ${styles.taken}` : ""}`}>
             <label className={styles.workflowLabel}>
               <input
                 type="radio"
                 name="workflow"
                 value={`${repository.repositoryId}:${workflow.workflowId}`}
                 checked={chosen?.workflowId === workflow.workflowId}
-                disabled={Boolean(pipelineId)}
+                disabled={taken}
                 onChange={() => onSelect({ repository, workflow })}
               />
               <span className={styles.workflowText}>
@@ -231,10 +240,14 @@ function RepositoryWorkflows({
                 {workflow.file && <span className={styles.mono}>{workflow.file.split("/").pop()}</span>}
               </span>
             </label>
-            {pipelineId && (
+            {taken && (
               <span className={styles.takenActions}>
                 <StatusBadge tone="success">{t("onboarding.browser.alreadyMonitored")}</StatusBadge>
-                <Link className={styles.link} to={pipelineDetailPath(pipelineId)}>{t("onboarding.browser.open")}</Link>
+                {pipelineId ? (
+                  <Link className={styles.link} to={pipelineDetailPath(pipelineId)}>{t("onboarding.browser.open")}</Link>
+                ) : (
+                  <span className={styles.askAccess}>{t("onboarding.browser.askAccess")}</span>
+                )}
               </span>
             )}
           </div>
