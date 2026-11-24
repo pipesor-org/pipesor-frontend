@@ -4,6 +4,7 @@ import { DEFAULT_LANGUAGE, matchSupportedLanguage } from "../config";
 import {
   durationParts,
   formatDate,
+  formatLongDate,
   formatNumber,
   formatPaddedNumber,
   formatPercent,
@@ -16,6 +17,8 @@ export interface Formatters {
   language: string;
   /** Localized `Sep 30, 10:30` rendering of an ISO-8601 UTC instant. */
   formatTimestamp: (iso: string) => string;
+  /** Localized full calendar date of an ISO-8601 date (`November 24, 2026`). */
+  formatLongDate: (iso: string) => string;
   /** Localized day-only rendering of an ISO-8601 UTC instant (`Sep 1`). */
   formatShortDate: (iso: string) => string;
   /** Localized day-only interval (`Sep 1 – 30`). */
@@ -50,6 +53,7 @@ export function useFormatters(): Formatters {
   return {
     language,
     formatTimestamp: (iso) => formatDate(iso, language),
+    formatLongDate: (iso) => formatLongDate(iso, language),
     formatShortDate: (iso) => formatShortDate(iso, language),
     formatShortDateRange: (startIso, endIso) =>
       formatShortDateRange(startIso, endIso, language),

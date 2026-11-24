@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useRef, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import { readInstallReturn, rememberInstallReturn, startGitHubSignIn, useSession } from "../../../entities/session";
 import { safeErrorCode } from "../../../shared/api";
 import {
   DEFAULT_OPERATIONS_QUEUE,
+  LEGAL_DOCUMENTS_VERSION,
   RETURN_TO_PARAM,
   aboutPath,
   githubAppInstallUrl,
@@ -31,15 +32,25 @@ import styles from "./SignIn.module.css";
  * callback failure arrives as `?error=<code>`; the code is shown only when it
  * is a short identifier. Language and theme stay adjustable before sign-in.
  *
+ * Signing in is also where consent is given: an unchecked box accepting the
+ * Privacy policy (with the transfer to the United States) and the Terms of use
+ * must be checked before leaving for GitHub.
+ *
  * Installing the GitHub App happens in this tab (the session is tab-scoped);
  * the onboarding path saved before leaving is where sign-in continues when no
  * other destination was requested.
  */
+/** Callback error from Ingestion when sign-in started without the accepted documents version (ADR-029). */
+const CONSENT_REQUIRED = "consent_required";
+
 export function SignInPage() {
   const { t } = useTranslation("auth");
   const [params] = useSearchParams();
   const { session, endReason } = useSession();
   const [redirecting, setRedirecting] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [consentMissing, setConsentMissing] = useState(false);
+  const consentBox = useRef<HTMLInputElement>(null);
   const returnTo = safeReturnPath(params.get(RETURN_TO_PARAM));
   const errorCode = safeErrorCode(params.get("error"));
 
@@ -53,12 +64,39 @@ export function SignInPage() {
         <p className={styles.lead}>{t("signIn.lead")}</p>
       </div>
 
-      {errorCode ? (
+      {errorCode === CONSENT_REQUIRED ? (
+        <Notice tone="warning" role="alert">{t("signIn.consentRequired")}</Notice>
+      ) : errorCode ? (
         <Notice tone="critical" role="alert">
           {t("complete.failedText")} <span className={styles.code}>{t("complete.reference", { code: errorCode })}</span>
         </Notice>
       ) : endReason ? (
         <Notice tone="info" role="status">{t(`ended.${endReason}`)}</Notice>
+      ) : null}
+
+      <div className={styles.consent}>
+        <input
+          ref={consentBox}
+          id="sign-in-consent"
+          type="checkbox"
+          checked={accepted}
+          aria-invalid={consentMissing || undefined}
+          aria-describedby={consentMissing ? "sign-in-consent-error" : undefined}
+          onChange={(event) => {
+            setAccepted(event.target.checked);
+            if (event.target.checked) setConsentMissing(false);
+          }}
+        />
+        <label htmlFor="sign-in-consent">
+          <Trans
+            t={t}
+            i18nKey="signIn.consent"
+            components={{ privacy: <Link to={aboutPath("privacy")} />, terms: <Link to={aboutPath("terms")} /> }}
+          />
+        </label>
+      </div>
+      {consentMissing ? (
+        <p id="sign-in-consent-error" className={styles.consentError} role="alert">{t("signIn.consentRequired")}</p>
       ) : null}
 
       <Button
@@ -68,8 +106,13 @@ export function SignInPage() {
         disabled={redirecting}
         loading={redirecting}
         onClick={() => {
+          if (!accepted) {
+            setConsentMissing(true);
+            consentBox.current?.focus();
+            return;
+          }
           setRedirecting(true);
-          startGitHubSignIn(returnTo);
+          startGitHubSignIn(returnTo, LEGAL_DOCUMENTS_VERSION);
         }}
       >
         {redirecting ? t("signIn.redirecting") : t("signIn.continue")}

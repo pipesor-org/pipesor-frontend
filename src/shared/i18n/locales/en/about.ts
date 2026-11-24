@@ -2,9 +2,12 @@
  * `about` namespace — English.
  *
  * Copy for the public "About Pipesor" area: how it works (data journey and
- * glossary), getting started, AI transparency and security. Every statement
+ * glossary), getting started, AI transparency, security, and the Privacy policy
+ * and Terms of use (./aboutLegal). Every statement
  * describes the implemented system (fact sheet: docs/content/ficha-tecnica-paginas-informativas.md).
  */
+import { legal, privacy, standards, terms } from "./aboutLegal";
+
 const about = {
   title: "About Pipesor",
   subtitle: "How Pipesor turns a failed GitHub Actions run into a diagnosis a person validates — and how it treats your data.",
@@ -14,6 +17,8 @@ const about = {
     "getting-started": "Getting started",
     ai: "AI transparency",
     security: "Security",
+    privacy: "Privacy",
+    terms: "Terms",
   },
   public: {
     signIn: "Sign in",
@@ -213,7 +218,7 @@ const about = {
     },
     model: {
       title: "The model",
-      text: "Diagnoses come from GPT-6 Luna (version 2026-09-22), a large language model served by Azure OpenAI in Microsoft Foundry, in Microsoft's US data zone (West US 3). Embeddings for retrieval use text-embedding-3-small. Models are used through the API; none is trained or modified. Each diagnosis records the model deployment, its version and the prompt version.",
+      text: "Diagnoses come from GPT-6 Luna (version 2026-09-22), a large language model served by Azure OpenAI in Microsoft Foundry, in Microsoft's US data zone (West US 3). Embeddings for retrieval use text-embedding-3-small. Models are used through the API; none is trained or modified. Microsoft operates them within Azure and, according to Microsoft, prompts and answers are not available to OpenAI. Each diagnosis records the model deployment, its version and the prompt version.",
     },
     inputs: {
       title: "What the model receives",
@@ -262,7 +267,7 @@ const about = {
         masking: "Protection can remove details that would help, such as versions or addresses.",
         variance: "The model is not deterministic: the same failure can be explained differently.",
         expired: "If GitHub has already deleted a run's logs, the run cannot be analysed.",
-        scope: "Results come from three repositories and do not generalize to every kind of pipeline.",
+        scope: "Results come from 10 failure scenarios derived from three repositories of the validation environment, and do not generalize to every kind of pipeline.",
       },
     },
   },
@@ -335,6 +340,10 @@ const about = {
       },
     },
   },
+  legal,
+  privacy,
+  terms,
+  standards,
 } as const;
 
 export default about;

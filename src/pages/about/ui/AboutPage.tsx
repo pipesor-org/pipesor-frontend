@@ -16,6 +16,7 @@ import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GettingStarted } from "./GettingStarted";
 import { HowItWorks } from "./HowItWorks";
 import { AiTransparency, Security } from "./InfoViews";
+import { LegalDocument } from "./LegalDocument";
 import styles from "./About.module.css";
 
 const VIEWS: Record<AboutView, () => ReactNode> = {
@@ -23,6 +24,8 @@ const VIEWS: Record<AboutView, () => ReactNode> = {
   "getting-started": () => <GettingStarted />,
   ai: () => <AiTransparency />,
   security: () => <Security />,
+  privacy: () => <LegalDocument document="privacy" />,
+  terms: () => <LegalDocument document="terms" />,
 };
 
 /** Signed in: inside the app with its sidebar. Signed out: a public bar with the brand, preferences and sign-in. */
@@ -47,7 +50,7 @@ function AboutShell({ children }: { children: ReactNode }) {
 
 /**
  * About Pipesor (`/about/:view`): how it works, getting started, AI
- * transparency and security. Public, so the sign-in screen can link here;
+ * transparency, security, the Privacy policy and the Terms of use. Public, so the sign-in screen can link here;
  * product links inside lead through sign-in when there is no session.
  */
 export function AboutPage() {

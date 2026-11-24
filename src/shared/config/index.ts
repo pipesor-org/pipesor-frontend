@@ -31,3 +31,4 @@ export type {
   HistoryView,
   OperationsQueue,
 } from "./navigation";
+export { LEGAL_DOCUMENTS_VERSION } from "./legal";

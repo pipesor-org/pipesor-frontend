@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { fetchGitHubConnection } from "../../../entities/github-access";
 import { startGitHubSignIn } from "../../../entities/session";
 import { useApiQuery } from "../../../shared/api";
+import { LEGAL_DOCUMENTS_VERSION } from "../../../shared/config";
 import { Button } from "../../../shared/ui/button";
 import { StatusBadge } from "../../../shared/ui/status-badge";
 
@@ -35,7 +36,8 @@ export function GitHubConnectionStatus() {
           GitHub Actions · {label}
         </StatusBadge>
       </span>
-      <Button variant="link" onClick={() => startGitHubSignIn(pathname)}>
+      {/* Only shown with a session, whose sign-in already accepted the documents in force. */}
+      <Button variant="link" onClick={() => startGitHubSignIn(pathname, LEGAL_DOCUMENTS_VERSION)}>
         {t("connection.reconnect")}
       </Button>
     </span>
