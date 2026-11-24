@@ -9,6 +9,7 @@ export {
   fetchLatestActivity,
   fetchPipeline,
   fetchPipelineGrants,
+  fetchRepositoryRegistrations,
   getPipeline,
   invalidatePipeline,
   listPipelines,
@@ -23,6 +24,7 @@ export type {
   PipelineGrant,
   PipelineMonitoringStatus,
   PipelineRecord,
+  WorkflowRegistration,
 } from "./model/api";
 export { OPERATIONAL_ENVIRONMENTS, environmentLabel } from "./ui/environmentLabel";
 export type { OperationalEnvironment } from "./ui/environmentLabel";
