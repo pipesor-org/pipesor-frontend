@@ -33,6 +33,7 @@ const pipelines = {
     readOnly: "Integración de solo lectura. Los archivos de workflow y los permisos de GitHub no cambian.",
     loadingRepositories: "Cargando repositorios desde GitHub…",
     repositoriesError: "No se pudieron cargar los repositorios desde GitHub.",
+    repositoriesTruncated: "Se muestran los primeros {{cap}} repositorios por nombre.",
     access: {
       title: "Acceso a repositorios",
       description: "Pipesor ve los repositorios donde está instalada su GitHub App y que puedes leer en GitHub. Elige organizaciones y repositorios en GitHub; no se modifica nada en ellos.",

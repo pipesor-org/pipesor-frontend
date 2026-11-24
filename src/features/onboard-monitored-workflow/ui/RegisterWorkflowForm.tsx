@@ -1,7 +1,7 @@
 import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { fetchRepositories, fetchWorkflows } from "../../../entities/github-access";
+import { DISCOVERY_CAP, fetchRepositories, fetchWorkflows } from "../../../entities/github-access";
 import {
   OPERATIONAL_ENVIRONMENTS,
   PIPELINE_CRITICALITIES,
@@ -12,6 +12,7 @@ import {
   type PipelineRecord,
 } from "../../../entities/monitored-pipeline";
 import { isApiError, useApiQuery } from "../../../shared/api";
+import { useFormatters } from "../../../shared/i18n";
 import { Button } from "../../../shared/ui/button";
 import { Select, TextInput } from "../../../shared/ui/field";
 import { Notice } from "../../../shared/ui/notice";
@@ -41,6 +42,7 @@ function errorKey(error: unknown): ErrorKey {
  */
 export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (pipeline: PipelineRecord) => void; cancel: ReactNode }) {
   const { t } = useTranslation("pipelines");
+  const { formatNumber } = useFormatters();
   const ids = { repository: useId(), workflow: useId(), criticality: useId(), environment: useId(), team: useId(), error: useId() };
   const repositories = useApiQuery("github-repositories", () => fetchRepositories());
   const [repositoryId, setRepositoryId] = useState("");
@@ -54,7 +56,8 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<ErrorKey | null>(null);
 
-  const repositoryList = repositories.state.status === "success" ? repositories.state.data : [];
+  const repositoryList = repositories.state.status === "success" ? repositories.state.data.repositories : [];
+  const repositoriesTruncated = repositories.state.status === "success" && repositories.state.data.truncated;
   const repository = repositoryList.find((item) => item.repositoryId === repositoryId) ?? null;
   const workflowList = repositoryId && workflows.state.status === "success" ? workflows.state.data : [];
   const workflow = workflowList.find((item) => item.workflowId === workflowId) ?? null;
@@ -123,6 +126,9 @@ export function RegisterWorkflowForm({ onRegistered, cancel }: { onRegistered: (
                   <option value="">{t("onboarding.selectRepository")}</option>
                   {repositoryList.map((item) => <option key={item.repositoryId} value={item.repositoryId}>{item.fullName}</option>)}
                 </Select>
+                {repositoriesTruncated && (
+                  <p className={styles.note}>{t("onboarding.repositoriesTruncated", { cap: formatNumber(DISCOVERY_CAP) })}</p>
+                )}
                 {fieldError(missing.repository, `${ids.repository}-error`)}
               </div>
             </div>

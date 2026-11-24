@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { apiRequest, createRequestCache } from "../../../shared/api";
+import { apiRequest, createRequestCache, isApiError } from "../../../shared/api";
 
 /**
  * GitHub access through Ingestion, always with the signed-in user's own
@@ -29,21 +29,62 @@ const repositorySchema = z.object({
 
 export type GitHubRepository = z.infer<typeof repositorySchema>;
 
-const repositoriesSchema = z.object({ context: contextSchema, repositories: z.array(repositorySchema) });
+const nextPageToken = z.string().min(1).nullish();
+const repositoriesSchema = z.object({ context: contextSchema, repositories: z.array(repositorySchema), nextPageToken });
 
 /**
- * Discovery reads ask for at most this many items, the backend maximum.
- * Ingestion never truncates a list: when the caller can see more items than
- * `limit` it answers 503 VERIFICATION_UNAVAILABLE, so a smaller limit fails for
- * anyone with more repositories (or workflows) than that.
+ * Discovery is read page by page (`pageSize`, then `nextPageToken`), the
+ * largest page the backend allows, up to `DISCOVERY_CAP` items.
+ */
+export const DISCOVERY_PAGE_SIZE = 100;
+export const DISCOVERY_CAP = 1000;
+
+/**
+ * Legacy read of an Ingestion without pages: the complete list in one
+ * response, at most this many items (the backend maximum). It never truncates:
+ * beyond `limit` it answers 503 VERIFICATION_UNAVAILABLE.
  */
 export const DISCOVERY_LIMIT = 100;
+
+interface DiscoveryPage<T> {
+  items: T[];
+  context: z.infer<typeof contextSchema> | null;
+  nextPageToken: string | null;
+}
+
+/**
+ * Every page of a discovery list up to `DISCOVERY_CAP`. An Ingestion without
+ * pages rejects `pageSize` with 400 on the first read; the list is then read
+ * the legacy way (`limit`), as before.
+ */
+async function readDiscoveryList<T>(
+  readPage: (query: { pageSize?: number; pageToken?: string; limit?: number }) => Promise<DiscoveryPage<T>>,
+): Promise<{ items: T[]; context: DiscoveryPage<T>["context"]; truncated: boolean }> {
+  let first: DiscoveryPage<T>;
+  try {
+    first = await readPage({ pageSize: DISCOVERY_PAGE_SIZE });
+  } catch (error) {
+    if (!isApiError(error) || error.status !== 400) throw error;
+    const legacy = await readPage({ limit: DISCOVERY_LIMIT });
+    return { items: legacy.items, context: legacy.context, truncated: false };
+  }
+  const items = [...first.items];
+  let token = first.nextPageToken;
+  while (token && items.length < DISCOVERY_CAP) {
+    const page = await readPage({ pageSize: DISCOVERY_PAGE_SIZE, pageToken: token });
+    items.push(...page.items);
+    token = page.nextPageToken;
+  }
+  return { items: items.slice(0, DISCOVERY_CAP), context: first.context, truncated: token !== null || items.length > DISCOVERY_CAP };
+}
 
 /** One authorized repository discovery: who it was read for and what they can see. */
 export interface RepositoryDiscovery {
   /** The caller's Pipesor principal reference (`tid:oid`). */
   principalRef: string;
   repositories: GitHubRepository[];
+  /** More repositories exist than `DISCOVERY_CAP`; the list holds the first ones by name. */
+  truncated: boolean;
 }
 
 /**
@@ -56,12 +97,19 @@ const discovery = createRequestCache<RepositoryDiscovery>();
 const DISCOVERY_KEY = "repositories";
 
 async function readDiscovery(): Promise<RepositoryDiscovery> {
-  const page = await apiRequest("ingestion", {
-    path: "/api/v1/github/repositories",
-    query: { limit: DISCOVERY_LIMIT },
-    schema: repositoriesSchema,
+  const list = await readDiscoveryList(async (query) => {
+    const page = await apiRequest("ingestion", { path: "/api/v1/github/repositories", query, schema: repositoriesSchema });
+    return { items: page.repositories, context: page.context, nextPageToken: page.nextPageToken ?? null };
   });
-  return { principalRef: `${page.context.tenantId}:${page.context.subjectObjectId}`, repositories: page.repositories };
+  // Every repositories page carries the context; the first one always exists.
+  const context = list.context as z.infer<typeof contextSchema>;
+  return { principalRef: `${context.tenantId}:${context.subjectObjectId}`, repositories: list.items, truncated: list.truncated };
+}
+
+/** Repositories the caller can register workflows from, and whether the list stops at the cap. */
+export interface RepositoryList {
+  repositories: GitHubRepository[];
+  truncated: boolean;
 }
 
 /**
@@ -69,9 +117,10 @@ async function readDiscovery(): Promise<RepositoryDiscovery> {
  * (the user may just have changed access on GitHub); it also refreshes the
  * discovery `fetchSelfPrincipalRef` reuses.
  */
-export async function fetchRepositories(): Promise<GitHubRepository[]> {
+export async function fetchRepositories(): Promise<RepositoryList> {
   discovery.delete(DISCOVERY_KEY);
-  return (await discovery.get(DISCOVERY_KEY, readDiscovery)).repositories;
+  const { repositories, truncated } = await discovery.get(DISCOVERY_KEY, readDiscovery);
+  return { repositories, truncated };
 }
 
 /**
@@ -92,12 +141,18 @@ const workflowSchema = z.object({
 
 export type GitHubWorkflow = z.infer<typeof workflowSchema>;
 
+const workflowsSchema = z.object({ workflows: z.array(workflowSchema), nextPageToken });
+
+/** Workflows of one repository, every page (a repository with more than `DISCOVERY_CAP` is not realistic). */
 export async function fetchWorkflows(repositoryId: string, signal?: AbortSignal): Promise<GitHubWorkflow[]> {
-  const page = await apiRequest("ingestion", {
-    path: `/api/v1/github/repositories/${encodeURIComponent(repositoryId)}/workflows`,
-    query: { limit: DISCOVERY_LIMIT },
-    schema: z.object({ workflows: z.array(workflowSchema) }),
-    signal,
+  const list = await readDiscoveryList(async (query) => {
+    const page = await apiRequest("ingestion", {
+      path: `/api/v1/github/repositories/${encodeURIComponent(repositoryId)}/workflows`,
+      query,
+      schema: workflowsSchema,
+      signal,
+    });
+    return { items: page.workflows, context: null, nextPageToken: page.nextPageToken ?? null };
   });
-  return page.workflows;
+  return list.items;
 }
