@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { DEFAULT_PAGE_SIZE, apiRequest, offsetPageSchema, tokenPageSchema } from "../../../shared/api";
+import { activeQuery, hasIncidentFilters, UNCLASSIFIED_SEVERITY, type IncidentFilters, type SeverityFilter } from "./filters";
 import type { IncidentSeverityLevel, IncidentStage, IncidentStatus } from "./types";
 
 /**
@@ -61,21 +62,71 @@ export type IncidentRecord = z.output<typeof incidentViewSchema>;
 /** Lifecycle queues served by `GET /api/v1/incidents`. `OPEN` is every unresolved incident. */
 export type IncidentQueueState = "OPEN" | "RESOLVED";
 
-const queueSchema = tokenPageSchema(incidentViewSchema);
+/**
+ * `total` and `appliedFilters` are additions requested from Pipeline (filters
+ * applied before paging). They are read leniently: a missing or unexpected
+ * value means "not provided", never a failed queue.
+ */
+const queueSchema = tokenPageSchema(incidentViewSchema).extend({
+  total: z.number().int().nonnegative().nullish().catch(null),
+  appliedFilters: z.record(z.string(), z.unknown()).nullish().catch(null),
+});
 
 export interface IncidentPage {
   items: IncidentRecord[];
   nextPageToken: string | null;
+  /** Exact number of matching incidents the caller can see, when Pipeline reports it. */
+  total: number | null;
+  /** Pipeline confirmed it applied the requested filters (it echoes them back). */
+  filteredByService: boolean;
 }
 
-export async function fetchIncidentQueue(state: IncidentQueueState, pageToken: string | null, signal?: AbortSignal): Promise<IncidentPage> {
+/** Largest page Pipeline serves. */
+export const MAX_PAGE_SIZE = 100;
+
+function invert<K extends string, V extends string>(map: Record<K, V>): Record<V, K> {
+  return Object.fromEntries(Object.entries(map).map(([key, value]) => [value, key])) as Record<V, K>;
+}
+
+const SEVERITY_WIRE = { ...invert(SEVERITY), [UNCLASSIFIED_SEVERITY]: "UNCLASSIFIED" } as Record<SeverityFilter, string>;
+const STAGE_WIRE = invert(STAGE);
+const STATUS_WIRE = invert(STATUS);
+
+/** Filter parameters in the service's vocabulary (repeated parameters for lists). */
+export function incidentFilterQuery(filters: IncidentFilters): Record<string, string | string[]> {
+  const query: Record<string, string | string[]> = {};
+  const q = activeQuery(filters.q);
+  if (q) query.q = q;
+  if (filters.repositories.length) query.repositoryId = filters.repositories;
+  if (filters.severities.length) query.severity = filters.severities.map((value) => SEVERITY_WIRE[value]);
+  if (filters.stages.length) query.stage = filters.stages.map((value) => STAGE_WIRE[value]);
+  if (filters.statuses.length) query.status = filters.statuses.map((value) => STATUS_WIRE[value]);
+  return query;
+}
+
+export async function fetchIncidentQueue(
+  state: IncidentQueueState,
+  pageToken: string | null,
+  options: { filters?: IncidentFilters; pageSize?: number; signal?: AbortSignal } = {},
+): Promise<IncidentPage> {
+  const filtered = options.filters !== undefined && hasIncidentFilters(options.filters);
   const page = await apiRequest("pipeline", {
     path: "/api/v1/incidents",
-    query: { state, pageSize: DEFAULT_PAGE_SIZE, pageToken },
+    query: {
+      state,
+      pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,
+      pageToken,
+      ...(filtered && options.filters ? incidentFilterQuery(options.filters) : {}),
+    },
     schema: queueSchema,
-    signal,
+    signal: options.signal,
   });
-  return { items: page.items, nextPageToken: page.nextPageToken ?? null };
+  return {
+    items: page.items,
+    nextPageToken: page.nextPageToken ?? null,
+    total: page.total ?? null,
+    filteredByService: filtered && page.appliedFilters != null,
+  };
 }
 
 export function fetchIncident(id: string, signal?: AbortSignal): Promise<IncidentRecord> {

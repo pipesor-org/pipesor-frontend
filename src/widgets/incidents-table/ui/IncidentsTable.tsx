@@ -11,8 +11,8 @@ import {
 } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
-import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
-import { CheckIcon, ChevronRightIcon } from "../../../shared/ui/icons";
+import { TableEmptyRow, dataTable, type TableEmpty } from "../../../shared/ui/data-table";
+import { CheckIcon, ChevronRightIcon, SearchIcon } from "../../../shared/ui/icons";
 import { Skeleton } from "../../../shared/ui/skeleton";
 import styles from "./IncidentsTable.module.css";
 
@@ -41,7 +41,7 @@ const HEADER_CELLS = [
 ] as const;
 
 /** Active Incidents queue table. Elapsed time is live from `detectedAt`. */
-export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: number }) {
+export function IncidentsTable({ rows, now, empty, linkState }: { rows: ActiveIncidentRow[]; now: number; empty?: TableEmpty; linkState?: unknown }) {
   const { t } = useTranslation("operations");
   const { formatDuration } = useFormatters();
 
@@ -65,7 +65,11 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
 
         <tbody>
           {rows.length === 0 ? (
-            <TableEmptyRow colSpan={HEADER_CELLS.length} tone="success" icon={<CheckIcon />} title={t("active.empty.title")} text={t("active.empty.text")} />
+            empty ? (
+              <TableEmptyRow colSpan={HEADER_CELLS.length} icon={<SearchIcon />} title={empty.title} text={empty.text} action={empty.action} />
+            ) : (
+              <TableEmptyRow colSpan={HEADER_CELLS.length} tone="success" icon={<CheckIcon />} title={t("active.empty.title")} text={t("active.empty.text")} />
+            )
           ) : (
             rows.map((row) => (
               <tr key={row.id} className={dataTable.interactiveRow}>
@@ -74,7 +78,7 @@ export function IncidentsTable({ rows, now }: { rows: ActiveIncidentRow[]; now: 
                 </td>
                 <td>
                   <div className={dataTable.stack}>
-                    <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "active")}>
+                    <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "active")} state={linkState}>
                       {row.label}
                     </Link>
                     {row.pipeline.kind === "ready" ? (

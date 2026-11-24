@@ -2,6 +2,13 @@ import type { ReactNode } from "react";
 
 import styles from "./DataTable.module.css";
 
+/** What a table says instead of its default empty state (for example, when filters hide every row). */
+export interface TableEmpty {
+  title: string;
+  text?: string;
+  action?: ReactNode;
+}
+
 interface TableEmptyRowProps {
   colSpan: number;
   title?: ReactNode;

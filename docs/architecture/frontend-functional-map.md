@@ -21,7 +21,7 @@ Integration follows the MVP HTTP API v1 and the owner decisions recorded for the
 | Pipeline Detail | Integrated | Pipeline item, grants (per person `tid:oid`) and latest activity; read-only policy (configuration saves stay a non-approved candidate); `features/grant-pipeline-access` grants the caller OPERATE using the subject from Ingestion's discovery context; `features/request-run-analysis` lists failed runs and requests their analysis, following the receipt to the incident |
 | GitHub connection | Integrated (`widgets/github-connection`) | `GET /github/connection`; Reconnect repeats the GitHub sign-in to the same view |
 
-Removed with this integration: search, facets, Mine/Unassigned and the assignee column in Operations and History, the static Insights filters, the incident fixtures and selectors, (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
+Search and facets returned to Operations (Active, Needs Validation) on 2026-11-24 — see D04 implementation status. Still removed: History search and facets, Mine/Unassigned and the assignee column in Operations and History, the static Insights filters, the incident fixtures and selectors, (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
 
 ## How to read this map
 
@@ -137,7 +137,14 @@ The visible dimensions differ by view; this is not a universal filter schema:
 | History — Incidents | Search; no assignment scopes; Date range, Repository, Stage, Validation, Assignee. |
 | History — Insights | No search or assignment scopes; Date range, Repository, Pipeline, Stage, Severity. |
 
-#### D04. Finalized local query contract — Approved — Not Implemented
+#### D04. Finalized local query contract — Approved — Partially implemented (Active, Needs Validation)
+
+**Implementation status (2026-11-24).** `widgets/incident-queue` (`IncidentFilterBar`, `useIncidentFilterParams`, `useIncidentQueue({ filters })`) and `entities/incident/model/filters.ts`:
+
+- **Where it filters.** Criteria go to Pipeline (`GET /api/v1/incidents` with `q`, `repositoryId`, `severity`, `stage`, `status`, requested from the backend); when the response echoes `appliedFilters`, the service filtered before paging. Until then the view reads the whole queue (pages of 100, cap 500) once, filters in the browser, states "N of M" and says when the cap was reached. Diagnoses are read only for shown rows.
+- **Matches D04:** reactive search with URL REPLACE; NFKC/whitespace/lowercase normalization and AND between words; AND across facets; tab counts and summaries stay whole-queue totals; results report N of T; valid zero results keep the criteria and offer Clear; Back from the Workspace restores the criteria (router state, recognized criteria only).
+- **Approved deviations (owner, 2026-11-23):** facets are multi-select (OR within a facet, AND across); search covers the incident number (`INC-123`/`123`, exact), repository and workflow — not diagnosis text (diagnoses load per shown row and the service does not filter by it) and not assignee (no contract); repository options come from the pipeline inventory (stable ids, not base-view membership); unknown facet tokens in a URL are dropped rather than marking the query invalid.
+- **Not implemented:** History search/facets, resolved-date criteria, assignment scopes, workflow facet.
 
 This contract settles local read exploration, not API contracts, domain commands or new architectural boundaries. The current incident controls and selectors remain unchanged. Views share matching/composition rules, not identical facets.
 
