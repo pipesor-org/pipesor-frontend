@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -37,6 +37,17 @@ type ErrorKey = "scopePending" | "forbidden" | "timeout" | "network" | "generic"
 
 const key = (run: WorkflowRun) => `${run.runId}:${run.attempt}`;
 
+/** Failed runs read per page; "Load more" reads the next page from GitHub. */
+const RUNS_PAGE_SIZE = 10;
+
+/** Pages read after the first one, for the current first-page read. */
+interface MoreRuns {
+  items: WorkflowRun[];
+  nextPageToken: string | null;
+  loading: boolean;
+  failed: boolean;
+}
+
 function errorKey(error: unknown): ErrorKey {
   if (error instanceof AnalysisTimeoutError) return "timeout";
   if (!isApiError(error)) return "generic";
@@ -58,28 +69,65 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
   const { t } = useTranslation("pipelines");
   const { formatTimestamp } = useFormatters();
   const runs = useApiQuery(`${workflow.repositoryId}/${workflow.workflowId}/failure`, (signal) =>
-    fetchWorkflowRuns(workflow, "failure", { pageSize: 10, signal }),
+    fetchWorkflowRuns(workflow, "failure", { pageSize: RUNS_PAGE_SIZE, signal }),
   );
   const [rows, setRows] = useState<Record<string, RowState>>({});
-  const items = runs.state.status === "success" ? runs.state.data.items : [];
+  const [more, setMore] = useState<MoreRuns | null>(null);
+  // Receipt checks and "Load more" of the current first-page read; a new read aborts them.
+  const reads = useRef(new AbortController());
+
+  const first = runs.state.status === "success" ? runs.state.data : null;
+  // New runs can shift GitHub's pages while reading: a run seen twice is listed once.
+  const items = useMemo(() => {
+    const byKey = new Map<string, WorkflowRun>();
+    for (const run of [...(first?.items ?? []), ...(more?.items ?? [])]) if (!byKey.has(key(run))) byKey.set(key(run), run);
+    return [...byKey.values()];
+  }, [first, more]);
+  const nextPageToken = more ? more.nextPageToken : (first?.nextPageToken ?? null);
+
+  /** Reads each run's analysis receipt (limited concurrency) and records its row state. */
+  const checkReceipts = useCallback(
+    (list: WorkflowRun[], signal: AbortSignal) => {
+      setRows((previous) => ({ ...previous, ...Object.fromEntries(list.map((run) => [key(run), { kind: "checking" } as RowState])) }));
+      void forEachWithConcurrency(list, 4, async (run) => {
+        let state: RowState;
+        try {
+          const analysis = await fetchRunAnalysis({ ...workflow, runId: run.runId, attempt: run.attempt }, signal);
+          state = analysis ? { kind: "done", analysis } : { kind: "idle" };
+        } catch {
+          state = { kind: "unknown" };
+        }
+        if (!signal.aborted) setRows((previous) => ({ ...previous, [key(run)]: state }));
+      });
+    },
+    [workflow],
+  );
 
   useEffect(() => {
     if (runs.state.status !== "success") return;
-    const list = runs.state.data.items;
     const controller = new AbortController();
-    setRows(Object.fromEntries(list.map((run) => [key(run), { kind: "checking" } as RowState])));
-    void forEachWithConcurrency(list, 4, async (run) => {
-      let state: RowState;
-      try {
-        const analysis = await fetchRunAnalysis({ ...workflow, runId: run.runId, attempt: run.attempt }, controller.signal);
-        state = analysis ? { kind: "done", analysis } : { kind: "idle" };
-      } catch {
-        state = { kind: "unknown" };
-      }
-      if (!controller.signal.aborted) setRows((previous) => ({ ...previous, [key(run)]: state }));
-    });
+    reads.current = controller;
+    setRows({});
+    setMore(null);
+    checkReceipts(runs.state.data.items, controller.signal);
     return () => controller.abort();
-  }, [runs.state, workflow]);
+  }, [runs.state, checkReceipts]);
+
+  async function loadMore() {
+    if (!nextPageToken || more?.loading) return;
+    const { signal } = reads.current;
+    const loaded = more?.items ?? [];
+    setMore({ items: loaded, nextPageToken, loading: true, failed: false });
+    try {
+      const page = await fetchWorkflowRuns(workflow, "failure", { pageSize: RUNS_PAGE_SIZE, pageToken: nextPageToken, signal });
+      if (signal.aborted) return;
+      setMore({ items: [...loaded, ...page.items], nextPageToken: page.nextPageToken, loading: false, failed: false });
+      const known = new Set(items.map(key));
+      checkReceipts(page.items.filter((run) => !known.has(key(run))), signal);
+    } catch {
+      if (!signal.aborted) setMore({ items: loaded, nextPageToken, loading: false, failed: true });
+    }
+  }
 
   async function analyze(run: WorkflowRun) {
     const id = key(run);
@@ -192,6 +240,14 @@ export function FailedRuns({ workflow: { repositoryId, workflowId } }: { workflo
             );
           })}
         </ul>
+      )}
+      {first && nextPageToken && (
+        <div className={styles.more}>
+          {more?.failed && <p className={styles.error} role="alert">{t("runs.loadMoreError")}</p>}
+          <Button onClick={() => void loadMore()} disabled={more?.loading} loading={more?.loading}>
+            {more?.loading ? t("runs.loadingMore") : more?.failed ? t("runs.retry") : t("runs.loadMore")}
+          </Button>
+        </div>
       )}
     </div>
   );
