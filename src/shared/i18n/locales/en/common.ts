@@ -11,6 +11,9 @@ const common = {
     operations: "Operations",
     history: "History",
     pipelines: "Pipelines",
+    /** Accessible name of the sidebar's secondary navigation (About, Settings). */
+    secondary: "More",
+    about: "About Pipesor",
   },
   /** Announced for sidebar destinations whose screen does not exist yet. */
   destinationUnavailable: "not available yet",

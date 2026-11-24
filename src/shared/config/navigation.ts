@@ -20,7 +20,22 @@ export const routes = {
   pipelines: "/pipelines",
   addMonitoredWorkflow: "/pipelines/new",
   pipelineDetail: "/pipelines/:pipelineId",
+  /** Public "About Pipesor" area: how it works, getting started, AI transparency, security. */
+  about: "/about",
+  aboutView: "/about/:view",
 } as const;
+
+/** Views of the About Pipesor area, in tab order. */
+export const ABOUT_VIEWS = ["how-it-works", "getting-started", "ai", "security"] as const;
+export type AboutView = (typeof ABOUT_VIEWS)[number];
+
+export function isAboutView(value: string | undefined): value is AboutView {
+  return ABOUT_VIEWS.some((view) => view === value);
+}
+
+export function aboutPath(view: AboutView = "how-it-works"): string {
+  return `${routes.about}/${view}`;
+}
 
 export function incidentWorkspacePath(id: string, origin: OperationsQueue | "history") {
   return `/incidents/${encodeURIComponent(id)}?from=${origin}`;

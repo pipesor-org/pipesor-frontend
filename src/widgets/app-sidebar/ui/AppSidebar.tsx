@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
 import { pipesorSymbolDark, pipesorSymbolLight } from "../../../shared/assets";
-import { appDestinations, type AppDestinationKey } from "../../../shared/config";
+import { aboutPath, appDestinations, type AppDestinationKey } from "../../../shared/config";
 import { useMediaQuery, useTheme } from "../../../shared/lib";
 import {
+  InfoIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   HistoryIcon,
@@ -38,7 +39,10 @@ const MOBILE_MEDIA_QUERY = "(max-width: 900px)";
  * width; it is opened from a floating trigger and dismissed with the backdrop,
  * the toggle, or Escape.
  */
-export function AppSidebar({ section }: { section?: AppDestinationKey }) {
+/** Secondary destinations at the foot of the sidebar, above the user menu. */
+type SecondarySection = "about";
+
+export function AppSidebar({ section }: { section?: AppDestinationKey | SecondarySection }) {
   const { t } = useTranslation("common");
   const { collapsed, toggleCollapsed, mobileOpen, openMobile, closeMobile } =
     useSidebarLayout();
@@ -270,6 +274,17 @@ export function AppSidebar({ section }: { section?: AppDestinationKey }) {
         </nav>
 
         <div className={styles.spacer} />
+
+        <nav className={styles.nav} aria-label={t("nav.secondary")}>
+          <NavLink
+            to={aboutPath()}
+            title={isCollapsed ? t("nav.about") : undefined}
+            className={() => `${styles.navItem}${section === "about" ? ` ${styles.navItemActive}` : ""}`}
+          >
+            <InfoIcon className={styles.navIcon} />
+            <span className={`${styles.navLabel}${isCollapsed ? ` ${styles.srOnly}` : ""}`}>{t("nav.about")}</span>
+          </NavLink>
+        </nav>
 
         <UserMenu collapsed={isCollapsed} />
       </aside>

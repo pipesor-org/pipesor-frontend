@@ -1,10 +1,8 @@
-import { pipesorLockupDark, pipesorLockupLight } from "../../../shared/assets";
-import { useTheme } from "../../../shared/lib";
+import { Brand as Lockup } from "../../../shared/ui/brand";
 
 import styles from "./SignIn.module.css";
 
-/** Pipesor lockup, using the supplied asset for the applied theme. */
+/** Pipesor lockup at the sign-in card's size. */
 export function Brand() {
-  const { theme } = useTheme();
-  return <img className={styles.lockup} src={theme === "dark" ? pipesorLockupDark : pipesorLockupLight} alt="Pipesor" />;
+  return <Lockup className={styles.lockup} />;
 }

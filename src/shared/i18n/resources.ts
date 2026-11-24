@@ -1,8 +1,10 @@
+import enAbout from "./locales/en/about";
 import enAuth from "./locales/en/auth";
 import enCommon from "./locales/en/common";
 import enHistory from "./locales/en/history";
 import enOperations from "./locales/en/operations";
 import enPipelines from "./locales/en/pipelines";
+import esAbout from "./locales/es/about";
 import esAuth from "./locales/es/auth";
 import esCommon from "./locales/es/common";
 import esHistory from "./locales/es/history";
@@ -26,6 +28,7 @@ export const resources = {
     history: enHistory,
     pipelines: enPipelines,
     auth: enAuth,
+    about: enAbout,
   },
   es: {
     common: esCommon,
@@ -33,5 +36,6 @@ export const resources = {
     history: esHistory,
     pipelines: esPipelines,
     auth: esAuth,
+    about: esAbout,
   },
 } as const;

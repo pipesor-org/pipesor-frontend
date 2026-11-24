@@ -254,3 +254,12 @@ export function CheckIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** "About" / information: a circle with an "i". */
+export function InfoIcon(props: IconProps) {
+  return (
+    <svg width={18} height={18} viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" {...props}>
+      <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm0-8.5V15m0-7.5v.01" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

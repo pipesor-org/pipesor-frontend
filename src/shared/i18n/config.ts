@@ -14,10 +14,10 @@ export const SUPPORTED_LANGUAGES = ["en", "es"] as const;
 /**
  * Translation namespaces. Kept small and meaningful: `common` holds app-level
  * and reusable UI copy, `operations` holds the Operations workspace copy and
- * `history`, `pipelines` and `auth` (sign-in) hold their screen copy. New namespaces are added only
+ * `history`, `pipelines`, `auth` (sign-in) and `about` (the public About Pipesor area) hold their screen copy. New namespaces are added only
  * when a screen that needs them is implemented.
  */
-export const namespaces = ["common", "operations", "history", "pipelines", "auth"] as const;
+export const namespaces = ["common", "operations", "history", "pipelines", "auth", "about"] as const;
 export type Namespace = (typeof namespaces)[number];
 
 /** Namespace used when `t()` is called without an explicit namespace. */

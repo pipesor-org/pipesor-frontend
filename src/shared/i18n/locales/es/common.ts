@@ -9,6 +9,8 @@ const common = {
     operations: "Operaciones",
     history: "Historial",
     pipelines: "Pipelines",
+    secondary: "Más",
+    about: "Acerca de Pipesor",
   },
   destinationUnavailable: "aún no disponible",
   sidebar: {

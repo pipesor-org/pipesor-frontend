@@ -1,0 +1,339 @@
+/* About Pipesor: views share section heads, cards and lists. */
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+
+.sectionHead h2 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-lg);
+}
+
+.sectionHead p {
+  margin: var(--space-1) 0 0;
+  max-width: 72ch;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+/* Two tracks */
+.tracks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.trackGrid,
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.trackCard,
+.card,
+.glance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.trackCard h3,
+.card h3,
+.glance h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-md);
+}
+
+.trackCard p,
+.card p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+/* A chain of states joined by arrows. */
+.chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chain li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chain span {
+  padding: var(--space-0-5) var(--space-3);
+  border: 1px solid var(--color-accent-border);
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--leading-sm);
+}
+
+.chain li:not(:last-child)::after {
+  content: "→";
+  color: var(--color-text-tertiary);
+}
+
+/* At a glance: a tinted summary */
+.glance {
+  border-color: var(--color-accent-border);
+  background-color: var(--color-accent-soft);
+}
+
+.checks,
+.list,
+.yes,
+.no {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.checks li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: start;
+}
+
+.checks svg {
+  margin-top: 2px;
+  color: var(--color-success);
+}
+
+.list li,
+.yes li,
+.no li {
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.list li::before {
+  content: "";
+  position: absolute;
+  top: 0.6em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border-strong);
+}
+
+.yes li::before,
+.no li::before {
+  position: absolute;
+  left: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.yes li::before {
+  content: "+";
+  color: var(--color-success-text);
+}
+
+.no li::before {
+  content: "×";
+  color: var(--color-critical-text);
+}
+
+.compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
+.compare h4 {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--text-2xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.card .callout {
+  padding: var(--space-3);
+  border-left: var(--indicator-thickness) solid var(--color-info);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background-color: var(--color-info-soft);
+  color: var(--color-text-primary);
+}
+
+.limits {
+  border-style: dashed;
+  box-shadow: none;
+}
+
+/* Getting started: the journey's numbered rail, vertical. */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: var(--space-4);
+  animation: step-in var(--duration-slow) var(--ease-out) backwards;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+.stepItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 40px;
+  bottom: calc(-1 * var(--space-4) + 4px);
+  left: 17px;
+  width: 2px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-border);
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.stepCard h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-md);
+}
+
+.stepCard p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.stepFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.who {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+}
+
+/* Page shell without a session */
+.public {
+  min-height: 100vh;
+  background-color: var(--color-bg-app);
+}
+
+.publicBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.publicBar img {
+  display: block;
+  height: 36px;
+}
+
+.publicActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.publicMain {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-8);
+}
+
+@media (max-width: 700px) {
+  .publicBar,
+  .publicMain {
+    padding: var(--space-4);
+  }
+
+  .trackCard,
+  .card,
+  .glance {
+    padding: var(--space-4);
+  }
+}
