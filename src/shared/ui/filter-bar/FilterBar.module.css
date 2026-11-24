@@ -1,4 +1,4 @@
-/* One quiet row between the figures and the table; wraps on narrow screens. */
+/* One quiet row of criteria between a view's figures and its list; wraps on narrow screens. */
 .bar {
   display: flex;
   flex-wrap: wrap;

@@ -135,13 +135,18 @@ function toRows(items: IncidentRecord[]): QueueRow[] {
   }));
 }
 
+/** The row's diagnosis as a criterion value; `null` while it is not known. */
+function diagnosisCriterion(diagnosis: RowDiagnosis): DiagnosisCriterion | null {
+  return diagnosis.kind === "ready" ? diagnosis.status : diagnosis.kind === "absent" ? "ABSENT" : null;
+}
+
 function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
   const repository = row.pipeline.kind === "ready"
     ? { repositoryId: row.pipeline.repositoryId, fullName: row.pipeline.fullName, workflow: row.pipeline.workflow }
     : null;
-  const match = matchesIncidentFilters(row.incident, repository, filters);
-  // A pipeline that cannot be read never matches a repository criterion.
-  return match === null && row.pipeline.kind === "error" ? false : match;
+  const match = matchesIncidentFilters(row.incident, repository, filters, diagnosisCriterion(row.diagnosis));
+  // A pipeline or diagnosis that cannot be read never matches a criterion on it.
+  return match === null && (row.pipeline.kind === "error" || row.diagnosis.kind === "error") ? false : match;
 }
 
 /**
@@ -325,28 +330,33 @@ export function useIncidentQueue(
   }, []);
 
   const view = useMemo(() => {
-    if (data.mode !== "browser") return { rows: data.rows, matched: data.rows.length, pending: false };
+    if (data.mode !== "browser") return { rows: data.rows, matched: data.rows.length, pending: false, undecided: [] as QueueRow[] };
     const rows: QueueRow[] = [];
+    // Rows whose match waits for their diagnosis (a Validation criterion): their diagnosis is read too.
+    const undecided: QueueRow[] = [];
     let pending = false;
     for (const row of data.rows) {
       const match = rowMatch(row, filters);
       if (match === true) rows.push(row);
-      else if (match === null) pending = true;
+      else if (match === null) {
+        pending = true;
+        if (row.pipeline.kind !== "loading") undecided.push(row);
+      }
     }
-    return { rows, matched: rows.length, pending };
+    return { rows, matched: rows.length, pending, undecided };
     // `filtersKey` stands for `filters` (a new object on every render).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.mode, data.rows, filtersKey]);
 
-  // Diagnoses are read only for rows that are shown.
+  // Diagnoses are read only for rows that are shown or that a Validation criterion waits on.
   useEffect(() => {
     if (!enabled || data.status !== "ready") return;
     // Rows that already carry their diagnosis (from Pipeline) need no read.
-    const missing = view.rows
+    const missing = [...view.rows, ...view.undecided]
       .filter((row) => row.diagnosis.kind === "loading" && !requestedDiagnoses.current.has(row.incident.id))
       .map((row) => row.incident);
     if (missing.length) enrichDiagnoses(missing, generation.current);
-  }, [enabled, data.status, view.rows, enrichDiagnoses]);
+  }, [enabled, data.status, view.rows, view.undecided, enrichDiagnoses]);
 
   const scope: QueueScope =
     data.mode === "browser"

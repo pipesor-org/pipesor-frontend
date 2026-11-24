@@ -14,14 +14,14 @@ Integration follows the MVP HTTP API v1 and the owner decisions recorded for the
 | Incident Workspace | Integrated | Pipeline incident, runs and executions; Recommendation diagnosis. Title `repo · Run #<runId>`; `INC-<displayNumber>` when present, else the abbreviated UUID |
 | Incident lifecycle | Integrated (`features/manage-incident-lifecycle`) | Pipeline `POST /incidents/{id}/remediation`, `/verification` and `/resolve` (OPERATE). Verification: the operator picks a successful run (`GET …/runs?conclusion=success`); Ingestion captures it (`POST …/analysis`, polled until `PUBLISHED`) and its `executionId` is linked. Retry-remediation (failed verification) is not offered because only successful runs are linked |
 | Diagnosis review | Integrated (`features/validate-diagnosis`) | Recommendation `GET/POST /diagnoses/{id}/reviews` with `expectedRevision`; Confirm → `CONFIRMED`, Reject → `CORRECTED` with actual cause; notes optional |
-| History — Incidents | Integrated | Pipeline `state=RESOLVED` (all resolved, D03) with diagnosis status; diagnosis time = `diagnosis.createdAt − detectedAt`, resolution time = `resolvedAt − detectedAt`; links open the Workspace with `from=history` |
+| History — Incidents | Integrated | Pipeline `state=RESOLVED` (all resolved, D03) with diagnosis status; search and facets (repository, severity, stage, validation) per D04; diagnosis time = `diagnosis.createdAt − detectedAt`, resolution time = `resolvedAt − detectedAt`; links open the Workspace with `from=history` |
 | History — Insights | Integrated (client-side) | Same loaded population, last 30 days by `resolvedAt`: mean TMD, MTTR, confirmation rate (`CORRECTED` + `REJECTED` = Rejected, `PENDING` excluded), weekly TMD trend, stage distribution, recurring pipeline + stage groups; the scope line states N of M loaded. D05 drill-down not implemented |
 | Pipelines inventory | Integrated | Pipeline `GET /pipelines` (offset/limit, all pages); search and criticality/team/monitoring filters run in the browser over the complete list and stay in the URL |
 | Add monitored workflow | Integrated (`features/onboard-monitored-workflow`) | Ingestion discovery (`/github/repositories`, `/workflows`) with the user's access; `POST /pipelines` (409 duplicate); pipeline owners omitted (no contract) |
 | Pipeline Detail | Integrated | Pipeline item, grants (per person `tid:oid`) and latest activity; read-only policy (configuration saves stay a non-approved candidate); `features/grant-pipeline-access` grants the caller OPERATE using the subject from Ingestion's discovery context; `features/request-run-analysis` lists failed runs and requests their analysis, following the receipt to the incident |
 | GitHub connection | Integrated (`widgets/github-connection`) | `GET /github/connection`; Reconnect repeats the GitHub sign-in to the same view |
 
-Search and facets returned to Operations (Active, Needs Validation) on 2026-11-24 — see D04 implementation status. Still removed: History search and facets, Mine/Unassigned and the assignee column in Operations and History, the static Insights filters, the incident fixtures and selectors, (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
+Search and facets returned to Operations (Active, Needs Validation) and History — Incidents on 2026-11-24 — see D04 implementation status. Still removed: Mine/Unassigned and the assignee column in Operations and History, the static Insights filters, the incident fixtures and selectors, (no server criteria or assignment contract), confidence values, related-PR and full-timeline links, and the local P3 replay/pilot routes.
 
 ## How to read this map
 
@@ -137,15 +137,17 @@ The visible dimensions differ by view; this is not a universal filter schema:
 | History — Incidents | Search; no assignment scopes; Date range, Repository, Stage, Validation, Assignee. |
 | History — Insights | No search or assignment scopes; Date range, Repository, Pipeline, Stage, Severity. |
 
-#### D04. Finalized local query contract — Approved — Partially implemented (Active, Needs Validation)
+#### D04. Finalized local query contract — Approved — Partially implemented (Active, Needs Validation, History — Incidents)
 
-**Implementation status (2026-11-24).** `widgets/incident-queue` (`IncidentFilterBar`, `useIncidentFilterParams`, `useIncidentQueue({ filters })`) and `entities/incident/model/filters.ts`:
+**Implementation status (2026-11-24).** `widgets/incident-queue` (`IncidentFilterBar` on the shared `FilterBar`, `useIncidentFilterParams`, `useIncidentQueue({ filters })`) and `entities/incident/model/filters.ts`:
+
+- **History — Incidents** offers repository, severity, stage and **Validation** (`validation=pending|confirmed|corrected|rejected|none` in the URL, Pipeline `diagnosis=` with `ABSENT` for "No diagnosis"). Insights stays on the whole loaded population (no criteria). The list keeps Pipeline's order (`createdAt` descending) and sorts loaded pages by resolution, as before.
 
 - **Where it filters.** Criteria go to Pipeline (`GET /api/v1/incidents` with `q`, `repositoryId`, `severity`, `stage`, `status`, and `diagnosis=PENDING` for Needs Validation; ADR-027); when the response echoes `appliedFilters`, the service filtered before paging and `total` is exact. Until then the view reads the whole queue (pages of 100, cap 500) once, filters in the browser, states "N of M" and says when the cap was reached. Diagnoses are read only for shown rows.
 - **Row facts and figures (ADR-027).** Queue rows carry repository, workflow and diagnosis summary, so no per-row reads remain when Pipeline provides them. Tab counts and figures use `GET /api/v1/incidents/summary` (exact, no "+"); when it is unavailable they fall back to the loaded pages, as before.
 - **Matches D04:** reactive search with URL REPLACE; NFKC/whitespace/lowercase normalization and AND between words; AND across facets; tab counts and summaries stay whole-queue totals; results report N of T; valid zero results keep the criteria and offer Clear; Back from the Workspace restores the criteria (router state, recognized criteria only).
 - **Approved deviations (owner, 2026-11-23):** facets are multi-select (OR within a facet, AND across); search covers the incident number (`INC-123`/`123`, exact), repository and workflow — not diagnosis text (diagnoses load per shown row and the service does not filter by it) and not assignee (no contract); repository options come from the pipeline inventory (stable ids, not base-view membership); unknown facet tokens in a URL are dropped rather than marking the query invalid.
-- **Not implemented:** History search/facets, resolved-date criteria, assignment scopes, workflow facet.
+- **Not implemented:** resolved-date criteria (Pipeline has none), assignment scopes, workflow facet, criteria on Insights.
 
 This contract settles local read exploration, not API contracts, domain commands or new architectural boundaries. The current incident controls and selectors remain unchanged. Views share matching/composition rules, not identical facets.
 

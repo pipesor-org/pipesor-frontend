@@ -77,6 +77,8 @@ const operations = {
     severity: "Severity",
     stage: "Stage",
     status: "Status",
+    validation: "Validation",
+    noDiagnosis: "No diagnosis",
     selected: "selected",
     clearFacet: "Clear selection",
     clear: "Clear filters",

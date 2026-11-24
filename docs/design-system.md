@@ -102,6 +102,7 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 - **Figures stay whole.** Tab counts and key figures always describe the whole queue; the result line says how many rows match ("N of M") and, when filtering in the browser, how much of the queue was searched.
 - **Zero results** keep the criteria and offer "Clear filters" in the table's empty state.
 - On phones the search takes the full width and facets wrap below it.
+- **Build it from `FilterBar`** (layout, search, result line, Clear) and pass the view's facets; the view owns its criteria, their URL form and how they are applied.
 
 ## Components (`src/shared/ui`)
 
@@ -119,5 +120,6 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 | `dataTable` (class names) + `TableEmptyRow` (`icon`, `tone`, `action`) + `TableSkeleton` | The table system above. Widgets keep only column widths and domain cells. |
 | `StatGroup` + `Stat` (`label`, `value`, `tone`, `live`, `mono`) | Key figures of a view, as a description list. |
 | `Notice` (`tone`) | Inline message with a tinted background and a vivid leading edge; pass `role` when it follows an action. |
+| `FilterBar` | The filtering row: search (debounced, `/` focuses it), a facets slot, the polite result line and "Clear filters". Domain-free. |
 | `FacetMenu` | Multi-select filter facet: a quiet button with the chosen count, opening a non-modal panel of checkboxes (Escape, outside click and tabbing out close it). |
 | `StandalonePage` | Frame for screens without the app shell. |

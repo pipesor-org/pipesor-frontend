@@ -4,6 +4,7 @@ import { Link, useLocation, useParams, useSearchParams } from "react-router-dom"
 
 import { DiagnosisStatusLabel, fetchIncidentDiagnosis, type DiagnosisStatus } from "../../../entities/diagnosis";
 import {
+  DIAGNOSIS_CRITERIA,
   IncidentSeverity,
   IncidentStatusBadge,
   STAGE_LABEL_KEY,
@@ -56,7 +57,7 @@ export function IncidentWorkspaceRoute() {
   const queue = isOperationsQueue(origin) ? origin : "active";
   // Back restores the queue's criteria carried by the row link (recognized criteria only).
   const backTo = origin === "history"
-    ? withReturnFilters(historyViewPath("incidents"), location.state, [])
+    ? withReturnFilters(historyViewPath("incidents"), location.state, [], DIAGNOSIS_CRITERIA)
     : withReturnFilters(operationsQueuePath(queue), location.state, queue === "active" ? UNRESOLVED_INCIDENT_STATUSES : []);
   const loaded = workspace.state.status === "success" ? workspace.state.data : null;
   const notFound = !validId || (workspace.state.status === "error" && isApiError(workspace.state.error) && workspace.state.error.status === 404);

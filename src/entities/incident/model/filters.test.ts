@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  DIAGNOSIS_CRITERIA,
   MAX_QUERY_LENGTH,
   NO_INCIDENT_FILTERS,
   activeQuery,
@@ -49,6 +50,15 @@ describe("criteria in the URL", () => {
 
   test("a shared link's search is cut to what Pipeline accepts", () => {
     expect(readIncidentFilters(new URLSearchParams({ q: "a".repeat(150) })).q).toHaveLength(MAX_QUERY_LENGTH);
+  });
+
+  test("Validation criteria travel as readable tokens where the view offers them", () => {
+    const criteria = filters({ diagnoses: ["CORRECTED", "ABSENT"] });
+    const url = writeIncidentFilters(new URLSearchParams("view=incidents"), criteria);
+    expect(url.toString()).toBe("view=incidents&validation=corrected&validation=none");
+    expect(readIncidentFilters(url, [], DIAGNOSIS_CRITERIA)).toEqual(criteria);
+    // Operations offers no Validation facet: the criterion is dropped there.
+    expect(readIncidentFilters(url, ACTIVE).diagnoses).toEqual([]);
   });
 
   test("a queue without statuses ignores status criteria", () => {
@@ -120,6 +130,21 @@ describe("matching in the browser", () => {
   });
 });
 
+describe("matching by validation", () => {
+  const validation = filters({ diagnoses: ["CONFIRMED", "ABSENT"] });
+
+  test("OR within the facet, including incidents without a diagnosis", () => {
+    expect(matchesIncidentFilters(incident, repository, validation, "CONFIRMED")).toBe(true);
+    expect(matchesIncidentFilters(incident, repository, validation, "ABSENT")).toBe(true);
+    expect(matchesIncidentFilters(incident, repository, validation, "PENDING")).toBe(false);
+  });
+
+  test("an unknown diagnosis leaves the match undecided unless another criterion rules it out", () => {
+    expect(matchesIncidentFilters(incident, repository, validation)).toBeNull();
+    expect(matchesIncidentFilters(incident, repository, filters({ diagnoses: ["CONFIRMED"], stages: ["Testing"] }))).toBe(false);
+  });
+});
+
 describe("returning from the Workspace", () => {
   test("restores the criteria on the queue path", () => {
     const state = returnFiltersState(filters({ q: "CI", severities: ["High"], statuses: ["Open"] }));
@@ -134,6 +159,11 @@ describe("returning from the Workspace", () => {
   test("only recognized criteria reach the URL, never other parameters", () => {
     const state = { incidentFilters: "q=x1&next=https%3A%2F%2Fevil.example&severity=urgent&stage=build" };
     expect(withReturnFilters("/history?view=incidents", state, [])).toBe("/history?view=incidents&q=x1&stage=build");
+  });
+
+  test("History restores its Validation criteria", () => {
+    const state = returnFiltersState(filters({ diagnoses: ["REJECTED"] }));
+    expect(withReturnFilters("/history?view=incidents", state, [], DIAGNOSIS_CRITERIA)).toBe("/history?view=incidents&validation=rejected");
   });
 
   test("foreign state is ignored", () => {

@@ -18,6 +18,13 @@ import {
 export const UNCLASSIFIED_SEVERITY = "Unclassified" as const;
 export type SeverityFilter = IncidentSeverityLevel | typeof UNCLASSIFIED_SEVERITY;
 
+/**
+ * Review state of an incident's diagnosis, as Pipeline filters it
+ * (`diagnosis=`): one of the review statuses, or `ABSENT` (no diagnosis yet).
+ */
+export const DIAGNOSIS_CRITERIA = ["PENDING", "CONFIRMED", "CORRECTED", "REJECTED", "ABSENT"] as const;
+export type DiagnosisCriterion = (typeof DIAGNOSIS_CRITERIA)[number];
+
 export interface IncidentFilters {
   /** Free text: `INC-123`/`123` matches the display number; otherwise repository or workflow name. */
   q: string;
@@ -26,9 +33,11 @@ export interface IncidentFilters {
   severities: SeverityFilter[];
   stages: IncidentStage[];
   statuses: IncidentStatus[];
+  /** Diagnosis review state (History's Validation facet). */
+  diagnoses: DiagnosisCriterion[];
 }
 
-export const NO_INCIDENT_FILTERS: IncidentFilters = { q: "", repositories: [], severities: [], stages: [], statuses: [] };
+export const NO_INCIDENT_FILTERS: IncidentFilters = { q: "", repositories: [], severities: [], stages: [], statuses: [], diagnoses: [] };
 
 /** Shortest text query that filters (one character matches nearly everything); digits always count. */
 export const MIN_QUERY_LENGTH = 2;
@@ -47,7 +56,8 @@ export function hasIncidentFilters(filters: IncidentFilters): boolean {
     filters.repositories.length > 0 ||
     filters.severities.length > 0 ||
     filters.stages.length > 0 ||
-    filters.statuses.length > 0
+    filters.statuses.length > 0 ||
+    filters.diagnoses.length > 0
   );
 }
 
@@ -75,9 +85,24 @@ const STATUS_TOKEN: Record<IncidentStatus, string> = {
   Resolved: "resolved",
 };
 
+const DIAGNOSIS_TOKEN: Record<DiagnosisCriterion, string> = {
+  PENDING: "pending",
+  CONFIRMED: "confirmed",
+  CORRECTED: "corrected",
+  REJECTED: "rejected",
+  ABSENT: "none",
+};
+
 export const SEVERITY_FILTERS: readonly SeverityFilter[] = [...INCIDENT_SEVERITY_LEVELS, UNCLASSIFIED_SEVERITY];
 
-export const FILTER_PARAMS = { q: "q", repository: "repo", severity: "severity", stage: "stage", status: "status" } as const;
+export const FILTER_PARAMS = {
+  q: "q",
+  repository: "repo",
+  severity: "severity",
+  stage: "stage",
+  status: "status",
+  validation: "validation",
+} as const;
 
 function fromTokens<T extends string>(values: string[], tokens: Record<T, string>, allowed: readonly T[]): T[] {
   const byToken = new Map(allowed.map((value) => [tokens[value], value] as const));
@@ -91,9 +116,14 @@ function fromTokens<T extends string>(values: string[], tokens: Record<T, string
 
 /**
  * Criteria from the URL. Unknown or malformed values are dropped (a shared
- * link never breaks the view); `statuses` keeps only those the queue can hold.
+ * link never breaks the view); `statuses` and `diagnoses` keep only those the
+ * view offers.
  */
-export function readIncidentFilters(params: URLSearchParams, allowedStatuses: readonly IncidentStatus[] = []): IncidentFilters {
+export function readIncidentFilters(
+  params: URLSearchParams,
+  allowedStatuses: readonly IncidentStatus[] = [],
+  allowedDiagnoses: readonly DiagnosisCriterion[] = [],
+): IncidentFilters {
   const repositories: string[] = [];
   for (const value of params.getAll(FILTER_PARAMS.repository)) {
     if (/^[1-9][0-9]{0,19}$/.test(value) && !repositories.includes(value)) repositories.push(value);
@@ -104,6 +134,7 @@ export function readIncidentFilters(params: URLSearchParams, allowedStatuses: re
     severities: fromTokens(params.getAll(FILTER_PARAMS.severity), SEVERITY_TOKEN, SEVERITY_FILTERS),
     stages: fromTokens(params.getAll(FILTER_PARAMS.stage), STAGE_TOKEN, INCIDENT_STAGES),
     statuses: fromTokens(params.getAll(FILTER_PARAMS.status), STATUS_TOKEN, allowedStatuses),
+    diagnoses: fromTokens(params.getAll(FILTER_PARAMS.validation), DIAGNOSIS_TOKEN, allowedDiagnoses),
   };
 }
 
@@ -116,6 +147,7 @@ export function writeIncidentFilters(params: URLSearchParams, filters: IncidentF
   for (const value of filters.severities) next.append(FILTER_PARAMS.severity, SEVERITY_TOKEN[value]);
   for (const value of filters.stages) next.append(FILTER_PARAMS.stage, STAGE_TOKEN[value]);
   for (const value of filters.statuses) next.append(FILTER_PARAMS.status, STATUS_TOKEN[value]);
+  for (const value of filters.diagnoses) next.append(FILTER_PARAMS.validation, DIAGNOSIS_TOKEN[value]);
   return next;
 }
 
@@ -149,21 +181,24 @@ function displayNumberQuery(q: string): number | null {
  * normalized (NFKC, collapsed whitespace, lowercase) and every word must
  * appear in the repository or workflow name, unless the text is an incident
  * number. Returns `null` when the answer depends on the incident's repository
- * and that is not known yet.
+ * or diagnosis (`null`: not known yet) and that is not known yet.
  */
 export function matchesIncidentFilters(
   incident: MatchableIncident,
   repository: IncidentRepositoryFacts | null,
   filters: IncidentFilters,
+  diagnosis: DiagnosisCriterion | null = null,
 ): boolean | null {
   if (filters.severities.length && !filters.severities.includes(incident.severity ?? UNCLASSIFIED_SEVERITY)) return false;
   if (filters.stages.length && !filters.stages.includes(incident.stage)) return false;
   if (filters.statuses.length && !filters.statuses.includes(incident.status)) return false;
+  if (filters.diagnoses.length && diagnosis !== null && !filters.diagnoses.includes(diagnosis)) return false;
 
   const q = activeQuery(filters.q);
   const number = q ? displayNumberQuery(q) : null;
   const needsRepository = filters.repositories.length > 0 || (q !== "" && number === null);
   if (needsRepository && !repository) return null;
+  if (filters.diagnoses.length && diagnosis === null) return null;
   if (repository && filters.repositories.length && !filters.repositories.includes(repository.repositoryId)) return false;
   if (number !== null) return incident.displayNumber === number;
   if (q && repository) {
@@ -186,9 +221,14 @@ export function returnFiltersState(filters: IncidentFilters): { incidentFilters:
  * `path` with the criteria carried in router state, re-read and re-written so
  * that only recognized criteria reach the URL; `path` alone otherwise.
  */
-export function withReturnFilters(path: string, state: unknown, allowedStatuses: readonly IncidentStatus[]): string {
+export function withReturnFilters(
+  path: string,
+  state: unknown,
+  allowedStatuses: readonly IncidentStatus[],
+  allowedDiagnoses: readonly DiagnosisCriterion[] = [],
+): string {
   if (!state || typeof state !== "object" || !("incidentFilters" in state) || typeof state.incidentFilters !== "string") return path;
-  const filters = readIncidentFilters(new URLSearchParams(state.incidentFilters), allowedStatuses);
+  const filters = readIncidentFilters(new URLSearchParams(state.incidentFilters), allowedStatuses, allowedDiagnoses);
   if (!hasIncidentFilters(filters)) return path;
   const [pathname, query = ""] = path.split("?", 2);
   return `${pathname}?${writeIncidentFilters(new URLSearchParams(query), filters)}`;
