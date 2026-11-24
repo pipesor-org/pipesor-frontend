@@ -39,6 +39,16 @@ export function aboutPath(view: AboutView = "how-it-works"): string {
   return `${routes.about}/${view}`;
 }
 
+/** DOM id of a section inside an About view, also its URL fragment: `privacy-browser`. */
+export function aboutSectionId(view: AboutView, section: string): string {
+  return `${view}-${section}`;
+}
+
+/** Link to a section of an About view: `/about/privacy#privacy-browser`. */
+export function aboutSectionPath(view: AboutView, section: string): string {
+  return `${aboutPath(view)}#${aboutSectionId(view, section)}`;
+}
+
 export function incidentWorkspacePath(id: string, origin: OperationsQueue | "history") {
   return `/incidents/${encodeURIComponent(id)}?from=${origin}`;
 }

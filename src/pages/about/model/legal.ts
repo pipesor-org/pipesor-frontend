@@ -5,6 +5,8 @@
  * both languages share one structure.
  */
 
+import { githubAuthorizedAppsUrl } from "../../../shared/config";
+
 /** Date of the current version of both documents: the version people accept at sign-in. */
 export { LEGAL_DOCUMENTS_VERSION as LEGAL_UPDATED_AT } from "../../../shared/config";
 
@@ -17,8 +19,6 @@ export const CONTROLLER = [
 /** Microsoft's statement on how Azure OpenAI handles prompts, answers and abuse monitoring. */
 export const AZURE_OPENAI_PRIVACY_URL = "https://learn.microsoft.com/azure/foundry/responsible-ai/openai/data-privacy";
 
-/** Where a person revokes the authorization they gave the Pipesor GitHub App. */
-export const GITHUB_AUTHORIZED_APPS_URL = "https://github.com/settings/apps/authorizations";
 
 /**
  * A piece of a section. Keys are relative to the section (`privacy.sections.<id>.<key>`):
@@ -104,7 +104,7 @@ const PRIVACY: readonly LegalSection[] = [
       { kind: "text", key: "text" },
       { kind: "note", key: "manual" },
       { kind: "text", key: "signOut" },
-      { kind: "link", key: "revoke", href: GITHUB_AUTHORIZED_APPS_URL },
+      { kind: "link", key: "revoke", href: githubAuthorizedAppsUrl },
       { kind: "text", key: "authority" },
     ],
   },
@@ -162,8 +162,3 @@ const TERMS: readonly LegalSection[] = [
 ];
 
 export const LEGAL_DOCUMENTS: Record<LegalDocumentId, readonly LegalSection[]> = { privacy: PRIVACY, terms: TERMS };
-
-/** DOM id of a section, also its URL fragment: `privacy-controller`. */
-export function legalSectionId(document: LegalDocumentId, section: string): string {
-  return `${document}-${section}`;
-}

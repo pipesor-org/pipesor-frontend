@@ -54,7 +54,7 @@ const common = {
         preferences: "Preferencias de tema, idioma y barra lateral.",
         nothing: "Sin cookies ni analítica.",
       },
-      more: "Cómo protege Pipesor tus datos",
+      more: "Política de privacidad: datos en tu navegador",
     },
   },
   destinationUnavailable: "aún no disponible",

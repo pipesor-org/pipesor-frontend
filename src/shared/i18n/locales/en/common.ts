@@ -57,7 +57,7 @@ const common = {
         preferences: "Theme, language and sidebar preferences.",
         nothing: "No cookies and no analytics.",
       },
-      more: "How Pipesor protects your data",
+      more: "Privacy policy: data in your browser",
     },
   },
   /** Announced for sidebar destinations whose screen does not exist yet. */
