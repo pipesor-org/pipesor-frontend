@@ -2,13 +2,12 @@ import { useTranslation } from "react-i18next";
 import { Navigate, useSearchParams } from "react-router-dom";
 
 import {
-  DIAGNOSIS_CRITERIA,
+  FILTER_SCOPES,
   NO_INCIDENT_FILTERS,
   fetchIncidentInsights,
   hasIncidentFilters,
   incidentLabel,
   returnFiltersState,
-  type IncidentStatus,
 } from "../../../entities/incident";
 import {
   DEFAULT_HISTORY_VIEW,
@@ -72,8 +71,6 @@ function toInsightsRecord({ incident, pipeline, diagnosis }: QueueRow): Insights
   };
 }
 
-/** History holds resolved incidents only: no Status facet; Validation offers every review state. */
-const NO_STATUSES: readonly IncidentStatus[] = [];
 
 /**
  * History (`/history?view=incidents|insights`).
@@ -93,7 +90,8 @@ export function HistoryPage() {
   const [searchParams] = useSearchParams();
   const rawView = searchParams.get(HISTORY_VIEW_PARAM);
   const isInsights = parseHistoryView(rawView) === "insights";
-  const [filters, setFilters] = useIncidentFilterParams(NO_STATUSES, DIAGNOSIS_CRITERIA);
+  // Resolved incidents only: no Status facet; Validation offers every review state, plus the Resolved period.
+  const [filters, setFilters] = useIncidentFilterParams(FILTER_SCOPES.history);
   const filtering = !isInsights && hasIncidentFilters(filters);
   // Insights and the unfiltered list share the whole queue; the filtered list reads its own.
   const resolved = useIncidentQueue("RESOLVED", { sort: "resolvedAt", enabled: !filtering });
@@ -131,7 +129,7 @@ export function HistoryPage() {
           filters={filters}
           onChange={setFilters}
           scope={source.scope}
-          facets={{ repository: true, severity: true, stage: true, diagnoses: DIAGNOSIS_CRITERIA }}
+          facets={{ repository: true, severity: true, stage: true, diagnoses: FILTER_SCOPES.history.diagnoses, resolved: true }}
         />
       )}
       {isInsights && serviceInsights.state.status === "loading" ? (

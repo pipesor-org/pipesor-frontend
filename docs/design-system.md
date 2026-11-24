@@ -121,5 +121,5 @@ Do not add hex values in components. If a new role is needed, add a semantic tok
 | `StatGroup` + `Stat` (`label`, `value`, `tone`, `live`, `mono`) | Key figures of a view, as a description list. |
 | `Notice` (`tone`) | Inline message with a tinted background and a vivid leading edge; pass `role` when it follows an action. |
 | `FilterBar` | The filtering row: search (debounced, `/` focuses it), a facets slot, the polite result line and "Clear filters". Domain-free. |
-| `FacetMenu` | Multi-select filter facet: a quiet button with the chosen count, opening a non-modal panel of checkboxes (Escape, outside click and tabbing out close it). |
+| `FacetMenu` (`single`) | Filter facet: a quiet button with the chosen count, opening a non-modal panel of checkboxes (Escape, outside click and tabbing out close it). With `single`, radio buttons and the chosen value shown on the button (e.g. Resolved · Last 7 days). |
 | `StandalonePage` | Frame for screens without the app shell. |

@@ -31,8 +31,10 @@ describe("filter parameters for Pipeline", () => {
         stages: ["Quality Gate"],
         statuses: ["In remediation"],
         diagnoses: ["CONFIRMED", "ABSENT"],
-      }),
+        resolvedWithin: "24h",
+      }, Date.parse("2026-11-24T12:00:00Z")),
     ).toEqual({
+      resolvedFrom: "2026-11-23T12:00:00.000Z",
       q: "INC-7",
       repositoryId: ["1001"],
       severity: ["CRITICAL", "UNCLASSIFIED"],
@@ -110,6 +112,20 @@ describe("row facts Pipeline adds to incidents", () => {
     const [row] = (await fetchIncidentQueue("OPEN", null)).items;
     expect(row.repository).toBeNull();
     expect(row.diagnosis).toBeUndefined();
+  });
+});
+
+describe("a Resolved period", () => {
+  test("sends the same instant on every page of one read (tokens are bound to it)", async () => {
+    service = fakeFetch(() => json({ items: [], nextPageToken: null, appliedFilters: {} }));
+    const filters = { ...NO_INCIDENT_FILTERS, resolvedWithin: "7d" as const };
+    const nowMs = Date.parse("2026-11-24T12:00:00Z");
+    await fetchIncidentQueue("RESOLVED", null, { filters, nowMs });
+    await fetchIncidentQueue("RESOLVED", "token-2", { filters, nowMs });
+    expect(service.requests.map((request) => request.url.searchParams.get("resolvedFrom"))).toEqual([
+      "2026-11-17T12:00:00.000Z",
+      "2026-11-17T12:00:00.000Z",
+    ]);
   });
 });
 

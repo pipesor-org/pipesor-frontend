@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   INCIDENT_STAGES,
   NO_INCIDENT_FILTERS,
+  RESOLVED_WITHIN,
   SEVERITY_FILTERS,
   SEVERITY_LABEL_KEY,
   STAGE_LABEL_KEY,
@@ -15,6 +16,7 @@ import {
   type IncidentFilters,
   type IncidentStage,
   type IncidentStatus,
+  type ResolvedWithin,
   type SeverityFilter,
 } from "../../../entities/incident";
 import { listPipelines } from "../../../entities/monitored-pipeline";
@@ -49,6 +51,8 @@ interface IncidentFilterBarProps {
     stage?: boolean;
     statuses?: readonly IncidentStatus[];
     diagnoses?: readonly DiagnosisCriterion[];
+    /** Resolved within a period (views of resolved incidents). */
+    resolved?: boolean;
   };
   /**
    * Result line when the shown rows are a further selection of the matching
@@ -152,6 +156,16 @@ export function IncidentFilterBar({ filters, onChange, scope, facets, result }: 
               options={facets.diagnoses.map((value) => ({ value, label: t(DIAGNOSIS_LABEL_KEY[value]) }))}
               selected={filters.diagnoses}
               onChange={(diagnoses) => onChange({ ...filters, diagnoses: diagnoses as DiagnosisCriterion[] })}
+            />
+          ) : null}
+          {facets.resolved ? (
+            <FacetMenu
+              {...common}
+              single
+              label={t("filters.resolved")}
+              options={RESOLVED_WITHIN.map((value) => ({ value, label: t(`filters.resolvedWithin.${value}`) }))}
+              selected={filters.resolvedWithin ? [filters.resolvedWithin] : []}
+              onChange={([value]) => onChange({ ...filters, resolvedWithin: (value as ResolvedWithin | undefined) ?? null })}
             />
           ) : null}
         </>

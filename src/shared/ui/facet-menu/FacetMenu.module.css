@@ -50,6 +50,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The chosen value of a single-choice facet, set off from its name by a hairline. */
+.value {
+  padding-left: var(--space-1-5);
+  border-left: 1px solid var(--color-accent-border);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
 .chevron {
   flex-shrink: 0;
   color: var(--color-text-tertiary);

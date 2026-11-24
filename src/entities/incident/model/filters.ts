@@ -1,6 +1,7 @@
 import {
   INCIDENT_SEVERITY_LEVELS,
   INCIDENT_STAGES,
+  UNRESOLVED_INCIDENT_STATUSES,
   type IncidentSeverityLevel,
   type IncidentStage,
   type IncidentStatus,
@@ -25,6 +26,27 @@ export type SeverityFilter = IncidentSeverityLevel | typeof UNCLASSIFIED_SEVERIT
 export const DIAGNOSIS_CRITERIA = ["PENDING", "CONFIRMED", "CORRECTED", "REJECTED", "ABSENT"] as const;
 export type DiagnosisCriterion = (typeof DIAGNOSIS_CRITERIA)[number];
 
+/**
+ * Resolved within the last period (a rolling window ending now): Pipeline's
+ * `resolvedFrom`, for views of resolved incidents. The value is also its URL
+ * token.
+ */
+export const RESOLVED_WITHIN = ["24h", "7d", "30d", "90d"] as const;
+export type ResolvedWithin = (typeof RESOLVED_WITHIN)[number];
+
+const HOUR_MS = 3_600_000;
+const RESOLVED_WITHIN_MS: Record<ResolvedWithin, number> = {
+  "24h": 24 * HOUR_MS,
+  "7d": 7 * 24 * HOUR_MS,
+  "30d": 30 * 24 * HOUR_MS,
+  "90d": 90 * 24 * HOUR_MS,
+};
+
+/** Start of the window (epoch ms) for a period, measured back from `nowMs`. */
+export function resolvedFromMs(within: ResolvedWithin, nowMs: number): number {
+  return nowMs - RESOLVED_WITHIN_MS[within];
+}
+
 export interface IncidentFilters {
   /** Free text: `INC-123`/`123` matches the display number; otherwise repository or workflow name. */
   q: string;
@@ -35,9 +57,39 @@ export interface IncidentFilters {
   statuses: IncidentStatus[];
   /** Diagnosis review state (History's Validation facet). */
   diagnoses: DiagnosisCriterion[];
+  /** Resolved within this period (views of resolved incidents); `null`: any time. */
+  resolvedWithin: ResolvedWithin | null;
 }
 
-export const NO_INCIDENT_FILTERS: IncidentFilters = { q: "", repositories: [], severities: [], stages: [], statuses: [], diagnoses: [] };
+export const NO_INCIDENT_FILTERS: IncidentFilters = {
+  q: "",
+  repositories: [],
+  severities: [],
+  stages: [],
+  statuses: [],
+  diagnoses: [],
+  resolvedWithin: null,
+};
+
+/**
+ * The criteria a view offers beyond search, repository, severity and stage.
+ * The URL and the return from the Workspace keep only these.
+ */
+export interface IncidentFilterScope {
+  /** Status values the view's queue can hold (its Status facet). */
+  statuses?: readonly IncidentStatus[];
+  /** Validation facet values. */
+  diagnoses?: readonly DiagnosisCriterion[];
+  /** The view lists resolved incidents: the Resolved (period) facet applies. */
+  resolved?: boolean;
+}
+
+/** The scope of each incident view (stable objects, safe as hook dependencies). */
+export const FILTER_SCOPES = {
+  active: { statuses: UNRESOLVED_INCIDENT_STATUSES },
+  validation: { resolved: true },
+  history: { diagnoses: DIAGNOSIS_CRITERIA, resolved: true },
+} as const satisfies Record<string, IncidentFilterScope>;
 
 /** Shortest text query that filters (one character matches nearly everything); digits always count. */
 export const MIN_QUERY_LENGTH = 2;
@@ -57,7 +109,8 @@ export function hasIncidentFilters(filters: IncidentFilters): boolean {
     filters.severities.length > 0 ||
     filters.stages.length > 0 ||
     filters.statuses.length > 0 ||
-    filters.diagnoses.length > 0
+    filters.diagnoses.length > 0 ||
+    filters.resolvedWithin !== null
   );
 }
 
@@ -102,6 +155,7 @@ export const FILTER_PARAMS = {
   stage: "stage",
   status: "status",
   validation: "validation",
+  resolved: "resolved",
 } as const;
 
 function fromTokens<T extends string>(values: string[], tokens: Record<T, string>, allowed: readonly T[]): T[] {
@@ -116,14 +170,9 @@ function fromTokens<T extends string>(values: string[], tokens: Record<T, string
 
 /**
  * Criteria from the URL. Unknown or malformed values are dropped (a shared
- * link never breaks the view); `statuses` and `diagnoses` keep only those the
- * view offers.
+ * link never breaks the view), and so are criteria the view does not offer.
  */
-export function readIncidentFilters(
-  params: URLSearchParams,
-  allowedStatuses: readonly IncidentStatus[] = [],
-  allowedDiagnoses: readonly DiagnosisCriterion[] = [],
-): IncidentFilters {
+export function readIncidentFilters(params: URLSearchParams, scope: IncidentFilterScope = {}): IncidentFilters {
   const repositories: string[] = [];
   for (const value of params.getAll(FILTER_PARAMS.repository)) {
     if (/^[1-9][0-9]{0,19}$/.test(value) && !repositories.includes(value)) repositories.push(value);
@@ -133,8 +182,9 @@ export function readIncidentFilters(
     repositories,
     severities: fromTokens(params.getAll(FILTER_PARAMS.severity), SEVERITY_TOKEN, SEVERITY_FILTERS),
     stages: fromTokens(params.getAll(FILTER_PARAMS.stage), STAGE_TOKEN, INCIDENT_STAGES),
-    statuses: fromTokens(params.getAll(FILTER_PARAMS.status), STATUS_TOKEN, allowedStatuses),
-    diagnoses: fromTokens(params.getAll(FILTER_PARAMS.validation), DIAGNOSIS_TOKEN, allowedDiagnoses),
+    statuses: fromTokens(params.getAll(FILTER_PARAMS.status), STATUS_TOKEN, scope.statuses ?? []),
+    diagnoses: fromTokens(params.getAll(FILTER_PARAMS.validation), DIAGNOSIS_TOKEN, scope.diagnoses ?? []),
+    resolvedWithin: (scope.resolved && RESOLVED_WITHIN.find((value) => value === params.get(FILTER_PARAMS.resolved))) || null,
   };
 }
 
@@ -148,6 +198,7 @@ export function writeIncidentFilters(params: URLSearchParams, filters: IncidentF
   for (const value of filters.stages) next.append(FILTER_PARAMS.stage, STAGE_TOKEN[value]);
   for (const value of filters.statuses) next.append(FILTER_PARAMS.status, STATUS_TOKEN[value]);
   for (const value of filters.diagnoses) next.append(FILTER_PARAMS.validation, DIAGNOSIS_TOKEN[value]);
+  if (filters.resolvedWithin) next.set(FILTER_PARAMS.resolved, filters.resolvedWithin);
   return next;
 }
 
@@ -163,6 +214,17 @@ interface MatchableIncident {
   severity: IncidentSeverityLevel | null;
   stage: IncidentStage;
   status: IncidentStatus;
+  resolvedAt: string | null;
+}
+
+/** What matching knows about an incident beyond its own fields. */
+export interface IncidentMatchFacts {
+  /** `null` while the incident's repository is not known. */
+  repository: IncidentRepositoryFacts | null;
+  /** `null` (or absent) while the diagnosis is not known. */
+  diagnosis?: DiagnosisCriterion | null;
+  /** "Now" for the Resolved period: the moment the queue was read. */
+  nowMs?: number;
 }
 
 /** D04 matching form: NFKC, trimmed, whitespace collapsed, locale-independent lowercase. */
@@ -185,10 +247,13 @@ function displayNumberQuery(q: string): number | null {
  */
 export function matchesIncidentFilters(
   incident: MatchableIncident,
-  repository: IncidentRepositoryFacts | null,
   filters: IncidentFilters,
-  diagnosis: DiagnosisCriterion | null = null,
+  { repository, diagnosis = null, nowMs = Date.now() }: IncidentMatchFacts,
 ): boolean | null {
+  if (filters.resolvedWithin) {
+    const resolvedMs = incident.resolvedAt ? Date.parse(incident.resolvedAt) : Number.NaN;
+    if (!(resolvedMs >= resolvedFromMs(filters.resolvedWithin, nowMs))) return false;
+  }
   if (filters.severities.length && !filters.severities.includes(incident.severity ?? UNCLASSIFIED_SEVERITY)) return false;
   if (filters.stages.length && !filters.stages.includes(incident.stage)) return false;
   if (filters.statuses.length && !filters.statuses.includes(incident.status)) return false;
@@ -221,14 +286,9 @@ export function returnFiltersState(filters: IncidentFilters): { incidentFilters:
  * `path` with the criteria carried in router state, re-read and re-written so
  * that only recognized criteria reach the URL; `path` alone otherwise.
  */
-export function withReturnFilters(
-  path: string,
-  state: unknown,
-  allowedStatuses: readonly IncidentStatus[],
-  allowedDiagnoses: readonly DiagnosisCriterion[] = [],
-): string {
+export function withReturnFilters(path: string, state: unknown, scope: IncidentFilterScope): string {
   if (!state || typeof state !== "object" || !("incidentFilters" in state) || typeof state.incidentFilters !== "string") return path;
-  const filters = readIncidentFilters(new URLSearchParams(state.incidentFilters), allowedStatuses, allowedDiagnoses);
+  const filters = readIncidentFilters(new URLSearchParams(state.incidentFilters), scope);
   if (!hasIncidentFilters(filters)) return path;
   const [pathname, query = ""] = path.split("?", 2);
   return `${pathname}?${writeIncidentFilters(new URLSearchParams(query), filters)}`;

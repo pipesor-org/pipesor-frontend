@@ -4,6 +4,7 @@ import { DEFAULT_PAGE_SIZE, apiRequest, offsetPageSchema, tokenPageSchema } from
 import {
   activeQuery,
   hasIncidentFilters,
+  resolvedFromMs,
   UNCLASSIFIED_SEVERITY,
   type DiagnosisCriterion,
   type IncidentFilters,
@@ -128,7 +129,7 @@ const STAGE_WIRE = invert(STAGE);
 const STATUS_WIRE = invert(STATUS);
 
 /** Filter parameters in the service's vocabulary (repeated parameters for lists). */
-export function incidentFilterQuery(filters: IncidentFilters): Record<string, string | string[]> {
+export function incidentFilterQuery(filters: IncidentFilters, nowMs: number = Date.now()): Record<string, string | string[]> {
   const query: Record<string, string | string[]> = {};
   const q = activeQuery(filters.q);
   if (q) query.q = q;
@@ -137,6 +138,7 @@ export function incidentFilterQuery(filters: IncidentFilters): Record<string, st
   if (filters.stages.length) query.stage = filters.stages.map((value) => STAGE_WIRE[value]);
   if (filters.statuses.length) query.status = filters.statuses.map((value) => STATUS_WIRE[value]);
   if (filters.diagnoses.length) query.diagnosis = [...filters.diagnoses];
+  if (filters.resolvedWithin) query.resolvedFrom = new Date(resolvedFromMs(filters.resolvedWithin, nowMs)).toISOString();
   return query;
 }
 
@@ -145,10 +147,15 @@ export interface QueueQuery {
   filters?: IncidentFilters;
   /** Criteria that define the queue itself (Needs Validation: `PENDING`). */
   diagnosis?: readonly DiagnosisCriterion[];
+  /**
+   * "Now" for a Resolved period. Page tokens are bound to the criteria, so
+   * every page of one read must send the same instant.
+   */
+  nowMs?: number;
 }
 
-function queueCriteria({ filters, diagnosis }: QueueQuery): Record<string, string | string[]> | null {
-  const query: Record<string, string | string[]> = filters && hasIncidentFilters(filters) ? incidentFilterQuery(filters) : {};
+function queueCriteria({ filters, diagnosis, nowMs }: QueueQuery): Record<string, string | string[]> | null {
+  const query: Record<string, string | string[]> = filters && hasIncidentFilters(filters) ? incidentFilterQuery(filters, nowMs) : {};
   // The queue's own criterion wins: no view offers a Validation facet on a queue that defines one.
   if (diagnosis?.length) query.diagnosis = [...diagnosis];
   return Object.keys(query).length ? query : null;
