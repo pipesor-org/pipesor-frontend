@@ -156,3 +156,52 @@ export async function fetchWorkflows(repositoryId: string, signal?: AbortSignal)
   });
   return list.items;
 }
+
+/** Repository roles GitHub reports for a collaborator (custom roles reduced to their base). */
+export const GITHUB_ROLES = ["READ", "TRIAGE", "WRITE", "MAINTAIN", "ADMIN"] as const;
+export type GitHubRole = (typeof GITHUB_ROLES)[number];
+
+const collaboratorSchema = z.object({
+  githubUserId: z.string().regex(/^[1-9][0-9]*$/),
+  login: z.string().min(1),
+  avatarUrl: z.string().nullish(),
+  role: z.enum(GITHUB_ROLES),
+  /** Exactly the principal a grant targets (`tid:oid`). */
+  principalRef: z.string().regex(/^[^:\s]+:[^:\s]+$/),
+  /** `ACTIVE`: has a Pipesor GitHub link (a grant can still require them to sign in again); `NONE`: never signed in. */
+  pipesorConnection: z.enum(["ACTIVE", "NONE"]),
+});
+
+export type GitHubCollaborator = z.infer<typeof collaboratorSchema>;
+
+const collaboratorsPageSchema = z.object({ items: z.array(collaboratorSchema), nextPageToken });
+
+/** Collaborators read per repository at most (pages of 100). */
+export const COLLABORATORS_CAP = 1000;
+
+export interface CollaboratorList {
+  collaborators: GitHubCollaborator[];
+  /** Every page was read: absence from the list means "no access on GitHub". */
+  complete: boolean;
+}
+
+/**
+ * People with access to a repository on GitHub (users only), read with the
+ * caller's own GitHub authorization; the caller must administer the
+ * repository (`403 DENIED` otherwise). Every page up to `COLLABORATORS_CAP`.
+ */
+export async function fetchCollaborators(repositoryId: string, signal?: AbortSignal): Promise<CollaboratorList> {
+  const collaborators: GitHubCollaborator[] = [];
+  let pageToken: string | undefined;
+  do {
+    const page = await apiRequest("ingestion", {
+      path: `/api/v1/github/repositories/${encodeURIComponent(repositoryId)}/collaborators`,
+      query: { pageSize: DISCOVERY_PAGE_SIZE, pageToken },
+      schema: collaboratorsPageSchema,
+      signal,
+    });
+    collaborators.push(...page.items);
+    pageToken = page.nextPageToken ?? undefined;
+  } while (pageToken && collaborators.length < COLLABORATORS_CAP);
+  return { collaborators: collaborators.slice(0, COLLABORATORS_CAP), complete: pageToken === undefined };
+}
