@@ -1,14 +1,14 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 
-import { aboutPath } from "../../../shared/config";
+import { aboutPath, aboutSectionId } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
 import { dataTable } from "../../../shared/ui/data-table";
 import {
   CONTROLLER,
   LEGAL_DOCUMENTS,
   LEGAL_UPDATED_AT,
-  legalSectionId,
   type LegalBlock,
   type LegalDocumentId,
 } from "../model/legal";
@@ -98,20 +98,26 @@ function Block({ block, base, caption }: { block: LegalBlock; base: string; capt
 /**
  * A legal document of the About area (Privacy policy, Terms of use): title,
  * date of the current version, a table of contents and its sections. Section
- * ids double as URL fragments (`/about/privacy#privacy-retention`).
+ * ids double as URL fragments (`/about/privacy#privacy-retention`); arriving
+ * with one, from another page or by reload, scrolls to that section.
  */
 export function LegalDocument({ document }: { document: LegalDocumentId }) {
   const { t } = useTranslation("about");
   const { formatLongDate } = useFormatters();
   const { hash } = useLocation();
   const sections = LEGAL_DOCUMENTS[document];
+
+  // In-app links to a section (`/about/privacy#privacy-browser`) change the URL without scrolling.
+  useEffect(() => {
+    if (hash) window.document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: "start" });
+  }, [hash]);
   const title = (section: string) => t(`${document}.sections.${section}.title` as never) as string;
   const titleId = `${document}-title`;
 
   const contents = (
     <ol>
       {sections.map((section) => {
-        const id = legalSectionId(document, section.id);
+        const id = aboutSectionId(document, section.id);
         return (
           <li key={section.id}>
             <a href={`#${id}`} aria-current={hash === `#${id}` ? "location" : undefined}>{title(section.id)}</a>
@@ -141,7 +147,7 @@ export function LegalDocument({ document }: { document: LegalDocumentId }) {
         </header>
 
         {sections.map((section) => {
-          const id = legalSectionId(document, section.id);
+          const id = aboutSectionId(document, section.id);
           return (
             <section key={section.id} id={id} className={styles.section} aria-labelledby={`${id}-title`}>
               <h3 id={`${id}-title`}>{title(section.id)}</h3>

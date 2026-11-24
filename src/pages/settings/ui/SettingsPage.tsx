@@ -6,7 +6,7 @@ import { githubAvatarUrl, rememberInstallReturn, signOut, useSession } from "../
 import { listPipelines, pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
 import { levelOf } from "../../../features/grant-pipeline-access";
 import { useApiQuery } from "../../../shared/api";
-import { aboutPath, githubAppInstallUrl, githubAuthorizedAppsUrl, pipelineDetailPath, routes } from "../../../shared/config";
+import { aboutSectionPath, githubAppInstallUrl, githubAuthorizedAppsUrl, pipelineDetailPath, routes } from "../../../shared/config";
 import { LanguageSelector, useFormatters } from "../../../shared/i18n";
 import { getThemePreference, useTheme, type ThemePreference } from "../../../shared/lib";
 import { AppLayout } from "../../../shared/ui/app-layout";
@@ -163,7 +163,7 @@ export function SettingsPage() {
           <ul className={styles.list}>
             {(["session", "preferences", "nothing"] as const).map((item) => <li key={item}>{t(`settings.browser.items.${item}`)}</li>)}
           </ul>
-          <Link className={styles.link} to={aboutPath("security")}>{t("settings.browser.more")} →</Link>
+          <Link className={styles.link} to={aboutSectionPath("privacy", "browser")}>{t("settings.browser.more")} →</Link>
         </section>
       </div>
     </AppLayout>

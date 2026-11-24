@@ -6,6 +6,8 @@ export {
   RETURN_TO_PARAM,
   OPERATIONS_QUEUE_PARAM,
   aboutPath,
+  aboutSectionId,
+  aboutSectionPath,
   appDestinations,
   authRoutes,
   historyViewPath,
