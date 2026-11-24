@@ -6,6 +6,7 @@ import { readInstallReturn, rememberInstallReturn, startGitHubSignIn, useSession
 import { safeErrorCode } from "../../../shared/api";
 import {
   DEFAULT_OPERATIONS_QUEUE,
+  LEGAL_DOCUMENTS_VERSION,
   RETURN_TO_PARAM,
   aboutPath,
   githubAppInstallUrl,
@@ -39,6 +40,9 @@ import styles from "./SignIn.module.css";
  * the onboarding path saved before leaving is where sign-in continues when no
  * other destination was requested.
  */
+/** Callback error from Ingestion when sign-in started without the accepted documents version (ADR-029). */
+const CONSENT_REQUIRED = "consent_required";
+
 export function SignInPage() {
   const { t } = useTranslation("auth");
   const [params] = useSearchParams();
@@ -60,7 +64,9 @@ export function SignInPage() {
         <p className={styles.lead}>{t("signIn.lead")}</p>
       </div>
 
-      {errorCode ? (
+      {errorCode === CONSENT_REQUIRED ? (
+        <Notice tone="warning" role="alert">{t("signIn.consentRequired")}</Notice>
+      ) : errorCode ? (
         <Notice tone="critical" role="alert">
           {t("complete.failedText")} <span className={styles.code}>{t("complete.reference", { code: errorCode })}</span>
         </Notice>
@@ -106,7 +112,7 @@ export function SignInPage() {
             return;
           }
           setRedirecting(true);
-          startGitHubSignIn(returnTo);
+          startGitHubSignIn(returnTo, LEGAL_DOCUMENTS_VERSION);
         }}
       >
         {redirecting ? t("signIn.redirecting") : t("signIn.continue")}

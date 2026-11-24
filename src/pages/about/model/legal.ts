@@ -5,8 +5,8 @@
  * both languages share one structure.
  */
 
-/** Date of the current version of both documents (ISO calendar date). */
-export const LEGAL_UPDATED_AT = "2026-11-24";
+/** Date of the current version of both documents: the version people accept at sign-in. */
+export { LEGAL_DOCUMENTS_VERSION as LEGAL_UPDATED_AT } from "../../../shared/config";
 
 /** Controller of the personal data: the thesis authors, surnames first. Names and addresses are not translated. */
 export const CONTROLLER = [
@@ -52,7 +52,7 @@ const PRIVACY: readonly LegalSection[] = [
         kind: "table",
         key: "table",
         columns: ["data", "purpose", "audience"],
-        rows: ["githubId", "githubLogin", "internalId", "githubToken", "reviews", "pipelineData", "logExcerpts", "accessLogs", "report"],
+        rows: ["githubId", "githubLogin", "internalId", "githubToken", "consent", "reviews", "pipelineData", "logExcerpts", "accessLogs", "report"],
       },
       { kind: "text", key: "source" },
       { kind: "note", key: "noEmail" },
@@ -94,7 +94,7 @@ const PRIVACY: readonly LegalSection[] = [
         kind: "table",
         key: "table",
         columns: ["data", "period"],
-        rows: ["diagnoses", "operational", "identity", "token", "messages", "serviceLogs", "accessLogs", "backups", "originalLogs", "report"],
+        rows: ["diagnoses", "operational", "identity", "token", "consent", "messages", "serviceLogs", "accessLogs", "backups", "originalLogs", "report"],
       },
     ],
   },

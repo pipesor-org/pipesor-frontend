@@ -66,6 +66,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 | Nombre del repositorio y workflow, rama, commit, ejecuciones | Servicio de pipelines (base de datos) | Operación | Quien puede ver el pipeline |
 | Extractos de log saneados (≤ 40 líneas) | Servicios de evidencias y recomendación | Evidencia del diagnóstico | Quien puede ver el pipeline |
 | Dirección IP, fecha, ruta y navegador de cada visita al dashboard | Registros técnicos del servidor del dashboard (Azure Log Analytics, 30 días) | Operación técnica y diagnóstico de fallos | Operación técnica |
+| Registro de consentimiento: versión de los documentos aceptada, fecha y hora de aceptación, id de GitHub, origen (casilla del login) | Servicio de ingestión, `consent_records` (solo anexado; la revocación se marca una vez, manualmente) | Acreditar el consentimiento (Reglamento de la Ley N.º 29733, art. 9) | Pipesor Team |
 | Reporte del diagnóstico (opcional): diagnóstico, evidencias saneadas y fuentes, **sin revisiones** | Artefacto de la ejecución fallida en GitHub, si el repositorio añade el workflow `pipesor-report` (obtiene el reporte con el token OIDC de GitHub Actions; ruta de Recommendation, contrato de identidad §6) | Conservar el diagnóstico junto a la ejecución | Quien puede ver los artefactos de Actions del repositorio |
 
 **No se guarda el correo electrónico** de nadie; los correos dentro de los logs se enmascaran. **Advertencia:** los extractos pueden contener nombres de personas o usuarios (p. ej., autor de un commit o rutas): el saneamiento **no detecta nombres**.
@@ -96,6 +97,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 | Registros de acceso del dashboard (IP, fecha, ruta, navegador) | 30 días en Azure Log Analytics | Aplicado |
 | Revisiones humanas (incluido el identificador de quien revisa) | 365 días (RET-001, documentado) | **Sin purga: se conservan** |
 | Conexión con GitHub, sus generaciones e intentos de inicio de sesión (con el login) | — | **Sin plazo definido**; sobreviven al cierre de sesión |
+| Registros de consentimiento | Mientras la persona tenga datos en Pipesor y hasta 1 año después de revocar o de su último acceso (ADR-029, documentado) | **Sin purga implementada** |
 | Token de GitHub en Key Vault | — | **Sin plazo definido**; cerrar sesión no lo borra (si se borrara: 30 días de *soft-delete* con protección de purga) |
 | Reporte del diagnóstico en GitHub (opcional) | Lo fija el repositorio (90 días en `pipesor-validation-scenarios`) | Fuera de Pipesor |
 | Logs originales en GitHub | 90 días por defecto (política de GitHub) | Fuera de Pipesor |
@@ -131,7 +133,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 - Los repositorios y su contenido pertenecen a sus titulares; Pipesor solo procesa extractos saneados con la finalidad de diagnosticar.
 - Quien administra un pipeline decide a quién da acceso; el acceso se pierde si se pierde el acceso en GitHub.
 - Si el repositorio añade el workflow `pipesor-report`, el diagnóstico (sin revisiones) se guarda como artefacto de la ejecución en GitHub.
-- **Consentimiento:** casilla sin marcar en la pantalla de inicio de sesión que acepta la Política de privacidad (con la transferencia a EE. UU., Microsoft y GitHub) y los Términos de uso; sin ella no se continúa con GitHub. Hoy el consentimiento **no se registra** en el servidor.
+- **Consentimiento:** casilla sin marcar en la pantalla de inicio de sesión que acepta la Política de privacidad (con la transferencia a EE. UU., Microsoft y GitHub) y los Términos de uso; sin ella no se continúa con GitHub. El frontend envía la versión aceptada (`consent_version`, hoy `2026-11-24`) al iniciar el login; Ingestion **la exige** (sin ella redirige con `error=consent_required`) y **registra cada consentimiento** al completar el login (ADR-029).
 - Uso a partir de 18 años; prohibido usar los diagnósticos para evaluar el desempeño de personas (aleja a Pipesor de los usos de riesgo alto del Reglamento de la Ley N.º 31814).
 - Ley peruana; primero un intento de buena fe por correo y, si no se resuelve en 30 días, jueces del Cercado de Lima, sin limitar las vías ante la ANPD, el INDECOPI o los jueces del domicilio; prevalece la versión en español.
 
@@ -150,4 +152,4 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 4. ~~Retención~~ — resuelto: se publica como "documentada, aún no aplicada", con "sin plazo definido" donde no hay política.
 5. ~~Visibilidad de la autoría de revisiones~~ — resuelto: se declara.
 6. ~~IP en los registros del dashboard~~ — resuelto: se declara tal cual (30 días), sin anonimizar.
-7. **Pendientes fuera del código** (investigación del 24/11/2026; apoyo, no asesoría legal): inscribir el banco de datos en el Registro Nacional de Protección de Datos Personales (SIPDP, gratuito, aprobación automática) y comunicar el flujo transfronterizo a EE. UU. (Reglamento D. S. N.º 016-2024-JUS, arts. 21.2, 42 y 43); registrar el consentimiento en el servidor (versión, fecha y persona) como prueba (art. 9). Esto último corresponde al backend.
+7. **Pendientes fuera del código** (investigación del 24/11/2026; apoyo, no asesoría legal): inscribir el banco de datos en el Registro Nacional de Protección de Datos Personales (SIPDP, gratuito, aprobación automática) y comunicar el flujo transfronterizo a EE. UU. (Reglamento D. S. N.º 016-2024-JUS, arts. 21.2, 42 y 43); ~~registrar el consentimiento en el servidor~~ — resuelto en el backend (ADR-029): el servidor exige la versión y guarda un registro por inicio de sesión.

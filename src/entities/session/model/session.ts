@@ -116,6 +116,9 @@ export function endSession(reason: SessionEndReason): void {
   setState({ session: null, endReason: reason });
 }
 
+/** Query parameter of `auth/github/start` carrying the accepted documents version (ADR-029). */
+const CONSENT_VERSION_PARAM = "consent_version";
+
 /**
  * Starts the GitHub sign-in (identity contract §5 step 1) with a full-page
  * navigation to Ingestion, which redirects to GitHub and back to
@@ -124,11 +127,20 @@ export function endSession(reason: SessionEndReason): void {
  *
  * Ingestion currently accepts a path without query (`?…` answers 400), so the
  * query is dropped and the view returns with its default criteria.
+ *
+ * `consentVersion` is the version of the Privacy policy and Terms of use the
+ * person accepted (ADR-029). Ingestion records it with the sign-in and refuses
+ * to start without it (`/auth/complete?error=consent_required`).
  */
-export function startGitHubSignIn(returnTo?: string | null): void {
+export function startGitHubSignIn(returnTo: string | null | undefined, consentVersion: string): void {
   // Without a requested destination, continue where an App installation started.
   const safe = safeReturnPath(safeReturnPath(returnTo ?? readInstallReturn())?.split(/[?#]/, 1)[0]);
-  window.location.assign(apiUrl("ingestion", "/api/v1/auth/github/start", safe ? { [RETURN_TO_PARAM]: safe } : undefined));
+  window.location.assign(
+    apiUrl("ingestion", "/api/v1/auth/github/start", {
+      ...(safe ? { [RETURN_TO_PARAM]: safe } : {}),
+      [CONSENT_VERSION_PARAM]: consentVersion,
+    }),
+  );
 }
 
 const exchanges = new Map<string, Promise<string | null>>();

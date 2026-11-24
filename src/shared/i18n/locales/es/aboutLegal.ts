@@ -50,6 +50,11 @@ export const privacy = {
             purpose: "Leer GitHub en tu nombre, solo con permisos de lectura",
             audience: "Solo los servicios de Pipesor. Nunca llega a tu navegador",
           },
+          consent: {
+            data: "Un registro de cada consentimiento: la versión de estos documentos que aceptaste, la fecha y hora, y tu identificador de GitHub",
+            purpose: "Acreditar que diste tu consentimiento, como exige la ley",
+            audience: "Pipesor Team",
+          },
           reviews: {
             data: "El texto de tus revisiones (comentario y causa real, hasta 1500 caracteres)",
             purpose: "Validar el diagnóstico",
@@ -97,8 +102,8 @@ export const privacy = {
     },
     basis: {
       title: "Base legal y consentimiento",
-      consent: "Tratamos tus datos con tu consentimiento. Lo das en la pantalla de inicio de sesión, al marcar la casilla que acepta esta política y los Términos de uso antes de continuar con GitHub. También cubre la transferencia internacional descrita en «Encargados y transferencias internacionales».",
-      withdraw: "Puedes revocarlo en cualquier momento: cierra sesión y escribe a Pipesor Team. Revocarlo no afecta al tratamiento realizado antes.",
+      consent: "Tratamos tus datos con tu consentimiento. Lo das en la pantalla de inicio de sesión, al marcar la casilla que acepta esta política y los Términos de uso antes de continuar con GitHub; Pipesor no permite iniciar sesión sin ella. También cubre la transferencia internacional descrita en «Encargados y transferencias internacionales». Cada inicio de sesión registra la versión que aceptaste y cuándo, como prueba.",
+      withdraw: "Puedes revocarlo en cualquier momento: cierra sesión y escribe a Pipesor Team. Registraremos la revocación, y tu próximo inicio de sesión volverá a pedir tu consentimiento. Revocarlo no afecta al tratamiento realizado antes.",
     },
     browser: {
       title: "Datos en tu navegador",
@@ -142,6 +147,10 @@ export const privacy = {
           token: {
             data: "Tu token de GitHub, en Azure Key Vault",
             period: "Sin plazo definido. Cerrar sesión no lo borra; si se borrara, Key Vault lo conservaría 30 días más antes de eliminarlo definitivamente.",
+          },
+          consent: {
+            data: "Registros de consentimiento",
+            period: "Mientras tengas datos en Pipesor y hasta un año después de revocar tu consentimiento o de tu último inicio de sesión. Documentado; todavía sin borrado automático.",
           },
           messages: { data: "Mensajes internos entre servicios", period: "14 días." },
           serviceLogs: {

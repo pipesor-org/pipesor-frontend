@@ -49,6 +49,11 @@ export const privacy = {
             purpose: "Read GitHub on your behalf, with read-only permissions",
             audience: "Pipesor's services only. It never reaches your browser",
           },
+          consent: {
+            data: "A record of each consent: the version of these documents you accepted, the date and time, and your GitHub ID",
+            purpose: "Prove that you gave your consent, as the law requires",
+            audience: "The Pipesor Team",
+          },
           reviews: {
             data: "The text of your reviews (comment and actual cause, up to 1,500 characters)",
             purpose: "Validate the diagnosis",
@@ -96,8 +101,8 @@ export const privacy = {
     },
     basis: {
       title: "Legal basis and consent",
-      consent: "We process your data with your consent. You give it on the sign-in screen, by checking the box that accepts this policy and the Terms of use before continuing with GitHub. It also covers the international transfer described under “Processors and international transfers”.",
-      withdraw: "You can withdraw it at any time by signing out and writing to the Pipesor Team. Withdrawing does not affect processing carried out before.",
+      consent: "We process your data with your consent. You give it on the sign-in screen, by checking the box that accepts this policy and the Terms of use before continuing with GitHub; Pipesor does not let you sign in without it. It also covers the international transfer described under “Processors and international transfers”. Each sign-in records the version you accepted and when, as proof.",
+      withdraw: "You can withdraw it at any time by signing out and writing to the Pipesor Team. We record the withdrawal, and your next sign-in asks for your consent again. Withdrawing does not affect processing carried out before.",
     },
     browser: {
       title: "Data in your browser",
@@ -141,6 +146,10 @@ export const privacy = {
           token: {
             data: "Your GitHub token, in Azure Key Vault",
             period: "No defined period. Signing out does not delete it; if it were deleted, Key Vault would keep it 30 more days before purging it.",
+          },
+          consent: {
+            data: "Consent records",
+            period: "While you have data in Pipesor and up to one year after you withdraw your consent or last sign in. Documented; no automatic deletion yet.",
           },
           messages: { data: "Internal messages between services", period: "14 days." },
           serviceLogs: {
