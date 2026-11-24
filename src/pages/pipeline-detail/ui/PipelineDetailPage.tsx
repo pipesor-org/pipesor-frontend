@@ -7,7 +7,6 @@ import {
   CriticalityBadge,
   MonitoringBadge,
   environmentLabel,
-  fetchLatestActivity,
   fetchPipeline,
   fetchPipelineGrants,
   pipelineGithubLinks,
@@ -16,7 +15,6 @@ import {
 import { GrantSelfOperate, PipelinePeople } from "../../../features/grant-pipeline-access";
 import { FailedRuns } from "../../../features/request-run-analysis";
 import { isApiError, useApiQuery } from "../../../shared/api";
-import { useFormatters } from "../../../shared/i18n";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button } from "../../../shared/ui/button";
 import { Skeleton } from "../../../shared/ui/skeleton";
@@ -25,6 +23,7 @@ import { PageHeader } from "../../../shared/ui/page-header";
 import { AppSidebar } from "../../../widgets/app-sidebar";
 import { GitHubConnectionStatus } from "../../../widgets/github-connection";
 
+import { PipelineActivity } from "./PipelineActivity";
 import styles from "./PipelineDetailPage.module.css";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -36,18 +35,9 @@ function DetailFields({ fields }: { fields: readonly (readonly [string, ReactNod
 }
 
 /** `tid:oid` shortened for display; the full reference stays in the title. */
-function shortRef(ref: string): string {
-  const [tenant, object] = ref.split(":");
-  return object ? `${tenant.slice(0, 8)}…:${object.slice(0, 8)}…` : `${ref.slice(0, 12)}…`;
-}
-
 async function loadDetail(id: string, signal: AbortSignal) {
-  const [pipeline, grants, activity] = await Promise.all([
-    fetchPipeline(id, signal),
-    fetchPipelineGrants(id, signal).catch(() => null),
-    fetchLatestActivity(id, signal).catch(() => null),
-  ]);
-  return { pipeline, grants, activity };
+  const [pipeline, grants] = await Promise.all([fetchPipeline(id, signal), fetchPipelineGrants(id, signal).catch(() => null)]);
+  return { pipeline, grants };
 }
 
 /**
@@ -57,7 +47,6 @@ async function loadDetail(id: string, signal: AbortSignal) {
  */
 export function PipelineDetailPage({ backTo }: { backTo: string }) {
   const { t } = useTranslation("pipelines");
-  const { formatTimestamp } = useFormatters();
   const { pipelineId = "" } = useParams();
   const validId = UUID.test(pipelineId);
   const detail = useApiQuery(validId ? pipelineId : null, (signal) => loadDetail(pipelineId, signal));
@@ -96,7 +85,7 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
       {detail.state.status === "error" && !notFound && <Button onClick={detail.reload}>{t("retry")}</Button>}
 
       {loaded && (() => {
-        const { pipeline, grants, activity } = loaded;
+        const { pipeline, grants } = loaded;
         const links = pipelineGithubLinks(pipeline);
         const external = (href: string | null, text: string) =>
           href ? <a href={href} target="_blank" rel="noreferrer noopener">{text} ↗<span className={styles.srOnly}> {t("opensInNewTab")}</span></a> : null;
@@ -153,16 +142,15 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
               <FailedRuns workflow={{ repositoryId: pipeline.githubRepositoryId, workflowId: pipeline.githubWorkflowId }} />
             </section>
 
-            <section className={styles.update} aria-labelledby="pipeline-update">
-              <h2 id="pipeline-update">{t("update.title")}</h2>
-              {activity ? (
-                <p>
-                  <span className={styles.mono}>{activity.action}</span> · <time dateTime={activity.occurredAt}>{formatTimestamp(activity.occurredAt)}</time>
-                  {activity.actorRef && <> · {activity.actorRef === selfRef ? t("access.you") : <span className={styles.mono} title={activity.actorRef}>{shortRef(activity.actorRef)}</span>}</>}
-                </p>
-              ) : (
-                <p className={styles.empty}>{t("update.empty")}</p>
-              )}
+            <section aria-labelledby="pipeline-activity">
+              <h2 id="pipeline-activity">{t("activity.title")}</h2>
+              <p className={styles.note}>{t("activity.description")}</p>
+              <PipelineActivity
+                pipelineId={pipeline.id}
+                repositoryId={pipeline.githubRepositoryId}
+                canConfigure={caps.includes("CONFIGURE")}
+                selfRef={selfRef}
+              />
             </section>
           </div>
         );

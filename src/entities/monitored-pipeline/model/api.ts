@@ -139,6 +139,40 @@ export async function fetchRepositoryRegistrations(
   }
 }
 
+const stateSchema = z.record(z.string(), z.unknown()).nullish().catch(null);
+const activityEntrySchema = activitySchema.extend({ id: z.string().min(1), beforeState: stateSchema, afterState: stateSchema });
+const activitiesPageSchema = z.object({ items: z.array(activityEntrySchema), historyComplete: z.boolean().nullish() });
+
+export type PipelineActivityEntry = z.infer<typeof activityEntrySchema>;
+
+/** Activity read per page; the service returns the latest first. */
+export const ACTIVITY_PAGE_SIZE = 20;
+
+/**
+ * `GET /api/v1/pipelines/{id}/activities` (CONFIGURE plus current GitHub
+ * administration): the sanitized configuration history — registration,
+ * policy and ownership changes, access given and removed — newest first.
+ * `hasMore` when the page was full; `complete` is the service's statement that
+ * the history holds every change (older records may lack fields).
+ */
+export async function fetchPipelineActivities(
+  id: string,
+  offset: number,
+  signal?: AbortSignal,
+): Promise<{ items: PipelineActivityEntry[]; hasMore: boolean; complete: boolean }> {
+  const page = await apiRequest("pipeline", {
+    path: `/api/v1/pipelines/${encodeURIComponent(id)}/activities`,
+    query: { offset, limit: ACTIVITY_PAGE_SIZE },
+    schema: activitiesPageSchema,
+    signal,
+  });
+  return {
+    items: [...page.items].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)),
+    hasMore: page.items.length === ACTIVITY_PAGE_SIZE,
+    complete: page.historyComplete === true,
+  };
+}
+
 /** Most recent configuration activity, or `null` when none is recorded. */
 export async function fetchLatestActivity(id: string, signal?: AbortSignal): Promise<PipelineActivity | null> {
   const page = await apiRequest("pipeline", {

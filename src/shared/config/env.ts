@@ -82,3 +82,6 @@ function optionalHttpsUrl(raw: string | undefined): string | null {
 export const githubAppInstallUrl = optionalHttpsUrl(
   runtime.githubAppInstallUrl || import.meta.env.VITE_PIPESOR_GITHUB_APP_INSTALL_URL,
 );
+
+/** Where a person revokes the authorization they gave the Pipesor GitHub App (signing out does not revoke it). */
+export const githubAuthorizedAppsUrl = "https://github.com/settings/apps/authorizations";

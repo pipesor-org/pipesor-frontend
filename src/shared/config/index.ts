@@ -21,7 +21,7 @@ export {
   safeReturnPath,
   signInPath,
 } from "./navigation";
-export { apiOrigins, githubAppInstallUrl } from "./env";
+export { apiOrigins, githubAppInstallUrl, githubAuthorizedAppsUrl } from "./env";
 export type { ApiService } from "./env";
 export type {
   AboutView,

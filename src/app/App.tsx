@@ -8,6 +8,7 @@ import { NotFoundPage } from "../pages/not-found";
 import { OperationsPage } from "../pages/operations";
 import { PipelineDetailPage } from "../pages/pipeline-detail";
 import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
+import { SettingsPage } from "../pages/settings";
 import { AuthCompletePage, SignInPage } from "../pages/sign-in";
 import { aboutPath, authRoutes, operationsQueuePath, routes } from "../shared/config";
 import { RequireSession } from "./RequireSession";
@@ -54,6 +55,7 @@ export function App() {
         <Route path={routes.pipelines} element={<PipelinesPage />} />
         <Route path={routes.addMonitoredWorkflow} element={<AddMonitoredWorkflowRoute />} />
         <Route path={routes.pipelineDetail} element={<PipelineDetailRoute />} />
+        <Route path={routes.settings} element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

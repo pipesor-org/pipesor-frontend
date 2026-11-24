@@ -12,15 +12,16 @@ const LABEL_ID = "language-selector-label";
  * Uses `aria-pressed` (rather than a `<select>`) so the active language is
  * exposed unambiguously and the control matches the segmented controls already
  * used in the app. Each button is reachable by keyboard and shows its own
- * language name as the accessible label.
+ * language name as the accessible label. `labelHidden` keeps the label for
+ * assistive technology only, where the surrounding form already shows one.
  */
-export function LanguageSelector() {
+export function LanguageSelector({ labelHidden = false }: { labelHidden?: boolean }) {
   const { t } = useTranslation("common");
   const { language, options, setLanguage } = useLanguage();
 
   return (
     <div className={styles.root}>
-      <span className={styles.label} id={LABEL_ID}>
+      <span className={labelHidden ? styles.srOnly : styles.label} id={LABEL_ID}>
         {t("language.label")}
       </span>
 
