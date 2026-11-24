@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 
 import type { Diagnosis } from "../../../entities/diagnosis";
 import { STAGE_LABEL_KEY, githubCommitUrl, githubRunUrl, incidentLabel } from "../../../entities/incident";
-import { pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
 import { useFormatters } from "../../../shared/i18n";
 import { durationMs } from "../../../shared/lib";
 
@@ -19,15 +18,17 @@ interface DetailsRailProps {
 export function DetailsRail({ data, diagnosis, now }: DetailsRailProps) {
   const { t } = useTranslation("operations");
   const { formatTimestamp, formatPreciseDuration } = useFormatters();
-  const { incident, pipeline, origin } = data;
+  const { incident, pipeline, repository, workflow, origin } = data;
   const unavailable = <span className={styles.muted}>{t("workspace.details.unavailable")}</span>;
-  const runUrl = pipeline && origin ? githubRunUrl(pipeline.fullName, origin) : null;
-  const commitUrl = pipeline && origin?.commitSha ? githubCommitUrl(pipeline.fullName, origin.commitSha) : null;
+  const runUrl = repository && origin ? githubRunUrl(repository, origin) : null;
+  const commitUrl = repository && origin?.commitSha ? githubCommitUrl(repository, origin.commitSha) : null;
+  // Recommendation's diagnosis, or the summary Pipeline attaches to the incident while it loads or if it fails.
+  const diagnosedAt = diagnosis?.createdAt ?? incident.diagnosis?.createdAt ?? null;
   const newTab = <span className={styles.srOnly}> {t("workspace.opensInNewTab")}</span>;
 
   const timeline = [
     { key: "detected", at: incident.detectedAt },
-    { key: "diagnosisReady", at: diagnosis?.createdAt ?? null },
+    { key: "diagnosisReady", at: diagnosedAt },
     { key: "remediationStarted", at: incident.remediationStartedAt },
     { key: "verificationStarted", at: incident.verificationStartedAt },
     { key: "resolved", at: incident.resolvedAt },
@@ -41,8 +42,8 @@ export function DetailsRail({ data, diagnosis, now }: DetailsRailProps) {
         <h2>{t("workspace.details.title")}</h2>
         <dl>
           <div><dt>{t("workspace.details.incident")}</dt><dd className={styles.mono}>{incidentLabel(incident)}</dd></div>
-          <div><dt>{t("workspace.details.repository")}</dt><dd className={styles.mono}>{pipeline?.fullName ?? unavailable}</dd></div>
-          <div><dt>{t("workspace.details.workflow")}</dt><dd>{(pipeline && pipelineWorkflowLabel(pipeline)) ?? unavailable}</dd></div>
+          <div><dt>{t("workspace.details.repository")}</dt><dd className={styles.mono}>{repository ?? unavailable}</dd></div>
+          <div><dt>{t("workspace.details.workflow")}</dt><dd>{workflow ?? unavailable}</dd></div>
           <div><dt>{t("workspace.details.stage")}</dt><dd>{t(STAGE_LABEL_KEY[incident.stage])}</dd></div>
           <div>
             <dt>{t("workspace.details.run")}</dt>
@@ -80,8 +81,8 @@ export function DetailsRail({ data, diagnosis, now }: DetailsRailProps) {
         <h2>{t("workspace.timing.title")}</h2>
         <dl>
           <div><dt>{t("workspace.timing.detected")}</dt><dd><time dateTime={incident.detectedAt}>{formatTimestamp(incident.detectedAt)}</time></dd></div>
-          {diagnosis && (
-            <div><dt>{t("workspace.timing.timeToDiagnosis")}</dt><dd className={styles.mono}>{formatPreciseDuration(durationMs(incident.detectedAt, diagnosis.createdAt))}</dd></div>
+          {diagnosedAt && (
+            <div><dt>{t("workspace.timing.timeToDiagnosis")}</dt><dd className={styles.mono}>{formatPreciseDuration(durationMs(incident.detectedAt, diagnosedAt))}</dd></div>
           )}
           {incident.resolvedAt ? (
             <div><dt>{t("workspace.timing.timeToResolution")}</dt><dd className={styles.mono}>{formatPreciseDuration(durationMs(incident.detectedAt, incident.resolvedAt))}</dd></div>

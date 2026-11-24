@@ -13,7 +13,6 @@ import {
   incidentLabel,
   withReturnFilters,
 } from "../../../entities/incident";
-import { pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
 import { IncidentLifecycle } from "../../../features/manage-incident-lifecycle";
 import { DiagnosisReview } from "../../../features/validate-diagnosis";
 import { isApiError, useApiQuery } from "../../../shared/api";
@@ -62,7 +61,9 @@ export function IncidentWorkspaceRoute() {
   const loaded = workspace.state.status === "success" ? workspace.state.data : null;
   const notFound = !validId || (workspace.state.status === "error" && isApiError(workspace.state.error) && workspace.state.error.status === 404);
   const diagnosis = diagnosisQuery.state.status === "success" && diagnosisQuery.state.data.kind === "ready" ? diagnosisQuery.state.data.diagnosis : null;
-  const diagnosisStatus = reviewedStatus ?? diagnosis?.status ?? null;
+  // A review just made, then Recommendation's diagnosis, then the status Pipeline attaches to the incident
+  // (shown at once; it trails a review by a few seconds, so it never overrides the other two).
+  const diagnosisStatus = reviewedStatus ?? diagnosis?.status ?? loaded?.incident.diagnosis?.status ?? null;
 
   useEffect(() => {
     setReviewedStatus(null);
@@ -81,11 +82,10 @@ export function IncidentWorkspaceRoute() {
   if (notFound) title = t("workspace.notFound");
   else if (workspace.state.status === "error") title = t("workspace.loadError");
   else if (loaded) {
-    const repo = loaded.pipeline?.fullName;
     const run = loaded.origin ? t("workspace.runTitle", { runId: loaded.origin.githubRunId }) : null;
-    title = [repo, run].filter(Boolean).join(" · ") || incidentLabel(loaded.incident);
+    title = [loaded.repository, run].filter(Boolean).join(" · ") || incidentLabel(loaded.incident);
   }
-  const runUrl = loaded?.pipeline && loaded.origin ? githubRunUrl(loaded.pipeline.fullName, loaded.origin) : null;
+  const runUrl = loaded?.repository && loaded.origin ? githubRunUrl(loaded.repository, loaded.origin) : null;
 
   return (
     <AppLayout sidebar={<AppSidebar section={origin === "history" ? "history" : "operations"} />}>
@@ -103,7 +103,7 @@ export function IncidentWorkspaceRoute() {
         subtitle={loaded && (
           <>
             <span className={styles.mono}>{incidentLabel(loaded.incident)}</span>
-            {loaded.pipeline && pipelineWorkflowLabel(loaded.pipeline) && <> · {pipelineWorkflowLabel(loaded.pipeline)}</>}
+            {loaded.workflow && <> · {loaded.workflow}</>}
             {loaded.incident.summary && <> · {loaded.incident.summary}</>}
           </>
         )}
