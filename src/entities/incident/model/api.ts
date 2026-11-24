@@ -27,6 +27,20 @@ function enumOf<T extends Record<string, string>>(map: T) {
   return z.enum(Object.keys(map) as [keyof T & string, ...(keyof T & string)[]]);
 }
 
+/**
+ * Row facts Pipeline adds to incident reads (queue, item, per pipeline):
+ * repository, workflow and the diagnosis summary. Read leniently — when
+ * absent or unexpected they are "not provided" and the client reads them
+ * itself, as before. `diagnosis: null` means no diagnosis yet (ABSENT).
+ */
+const repositoryFactSchema = z.object({ repositoryId: z.string().regex(/^[1-9][0-9]*$/), fullName: z.string().min(1) });
+const workflowFactSchema = z.object({ workflowId: z.string().regex(/^[1-9][0-9]*$/), name: z.string().min(1) });
+const diagnosisFactSchema = z.object({
+  status: z.enum(["PENDING", "CONFIRMED", "CORRECTED", "REJECTED"]),
+  probableCause: z.string().nullish(),
+  createdAt: instant,
+});
+
 const incidentViewSchema = z
   .object({
     id: z.guid(),
@@ -41,6 +55,9 @@ const incidentViewSchema = z
     remediationStartedAt: instant.nullish(),
     verificationStartedAt: instant.nullish(),
     resolvedAt: instant.nullish(),
+    repository: repositoryFactSchema.nullish().catch(undefined),
+    workflow: workflowFactSchema.nullish().catch(undefined),
+    diagnosis: diagnosisFactSchema.nullable().optional().catch(undefined),
   })
   .transform((view) => ({
     id: view.id,
@@ -54,6 +71,16 @@ const incidentViewSchema = z
     remediationStartedAt: view.remediationStartedAt ?? null,
     verificationStartedAt: view.verificationStartedAt ?? null,
     resolvedAt: view.resolvedAt ?? null,
+    /** Repository and workflow when Pipeline provides them with the row. */
+    repository: view.repository && view.workflow
+      ? { repositoryId: view.repository.repositoryId, fullName: view.repository.fullName, workflow: view.workflow.name }
+      : null,
+    /** `undefined`: not provided; `null`: no diagnosis yet; otherwise its summary. */
+    diagnosis: view.diagnosis === undefined
+      ? undefined
+      : view.diagnosis === null
+        ? null
+        : { status: view.diagnosis.status, probableCause: view.diagnosis.probableCause?.trim() || null, createdAt: view.diagnosis.createdAt },
   }));
 
 /** An incident as read from Pipeline, in domain vocabulary. */
@@ -104,19 +131,36 @@ export function incidentFilterQuery(filters: IncidentFilters): Record<string, st
   return query;
 }
 
+/** Diagnosis criterion Pipeline accepts on incident reads (`ABSENT`: none yet). */
+export type DiagnosisCriterion = "PENDING" | "CONFIRMED" | "CORRECTED" | "REJECTED" | "ABSENT";
+
+export interface QueueQuery {
+  /** The user's criteria. */
+  filters?: IncidentFilters;
+  /** Criteria that define the queue itself (Needs Validation: `PENDING`). */
+  diagnosis?: readonly DiagnosisCriterion[];
+}
+
+function queueCriteria({ filters, diagnosis }: QueueQuery): Record<string, string | string[]> | null {
+  const query: Record<string, string | string[]> = filters && hasIncidentFilters(filters) ? incidentFilterQuery(filters) : {};
+  if (diagnosis?.length) query.diagnosis = [...diagnosis];
+  return Object.keys(query).length ? query : null;
+}
+
 export async function fetchIncidentQueue(
   state: IncidentQueueState,
   pageToken: string | null,
-  options: { filters?: IncidentFilters; pageSize?: number; signal?: AbortSignal } = {},
+  options: QueueQuery & { pageSize?: number; signal?: AbortSignal } = {},
 ): Promise<IncidentPage> {
-  const filtered = options.filters !== undefined && hasIncidentFilters(options.filters);
+  const criteria = queueCriteria(options);
+  const filtered = criteria !== null;
   const page = await apiRequest("pipeline", {
     path: "/api/v1/incidents",
     query: {
       state,
       pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,
       pageToken,
-      ...(filtered && options.filters ? incidentFilterQuery(options.filters) : {}),
+      ...criteria,
     },
     schema: queueSchema,
     signal: options.signal,
@@ -127,6 +171,55 @@ export async function fetchIncidentQueue(
     total: page.total ?? null,
     filteredByService: filtered && page.appliedFilters != null,
   };
+}
+
+const countsSchema = z.record(z.string(), z.number().int().nonnegative());
+const summarySchema = z.object({
+  total: z.number().int().nonnegative(),
+  bySeverity: countsSchema,
+  byStatus: countsSchema,
+  byDiagnosis: countsSchema,
+  appliedFilters: z.record(z.string(), z.unknown()),
+});
+
+/** Exact counts over a whole queue (with the same criteria), from Pipeline. */
+export interface IncidentSummary {
+  total: number;
+  bySeverity: Record<SeverityFilter, number>;
+  byDiagnosis: Record<DiagnosisCriterion, number>;
+}
+
+/**
+ * `GET /api/v1/incidents/summary`: exact totals instead of figures over the
+ * loaded pages. `null` when the service does not provide it (an older
+ * deployment) or it cannot be read; the view then keeps its loaded-page
+ * figures.
+ */
+export async function fetchIncidentSummary(state: IncidentQueueState, query: QueueQuery = {}, signal?: AbortSignal): Promise<IncidentSummary | null> {
+  try {
+    const summary = await apiRequest("pipeline", {
+      path: "/api/v1/incidents/summary",
+      query: { state, ...queueCriteria(query) },
+      schema: summarySchema,
+      signal,
+    });
+    const severity = (wire: string) => summary.bySeverity[wire] ?? 0;
+    const diagnosis = (wire: DiagnosisCriterion) => summary.byDiagnosis[wire] ?? 0;
+    return {
+      total: summary.total,
+      bySeverity: { Critical: severity("CRITICAL"), High: severity("HIGH"), Medium: severity("MEDIUM"), Low: severity("LOW"), Unclassified: severity("UNCLASSIFIED") },
+      byDiagnosis: {
+        PENDING: diagnosis("PENDING"),
+        CONFIRMED: diagnosis("CONFIRMED"),
+        CORRECTED: diagnosis("CORRECTED"),
+        REJECTED: diagnosis("REJECTED"),
+        ABSENT: diagnosis("ABSENT"),
+      },
+    };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    return null;
+  }
 }
 
 export function fetchIncident(id: string, signal?: AbortSignal): Promise<IncidentRecord> {

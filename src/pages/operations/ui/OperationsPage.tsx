@@ -4,11 +4,14 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import {
   NO_INCIDENT_FILTERS,
   UNRESOLVED_INCIDENT_STATUSES,
+  fetchIncidentSummary,
   hasIncidentFilters,
   incidentLabel,
   returnFiltersState,
+  type DiagnosisCriterion,
   type IncidentStatus,
 } from "../../../entities/incident";
+import { useApiQuery } from "../../../shared/api";
 import {
   DEFAULT_OPERATIONS_QUEUE,
   OPERATIONS_QUEUE_PARAM,
@@ -85,6 +88,8 @@ function toPendingRow(row: QueueRow): PendingValidationRow | null {
 /** Facets per queue: Needs Validation holds resolved incidents only, so it has no status facet. */
 const ACTIVE_STATUSES = UNRESOLVED_INCIDENT_STATUSES;
 const NO_STATUSES: readonly IncidentStatus[] = [];
+/** Needs Validation is the resolved queue whose diagnosis awaits review. */
+const PENDING: readonly DiagnosisCriterion[] = ["PENDING"];
 
 export function OperationsPage() {
   const { t } = useTranslation("operations");
@@ -95,10 +100,13 @@ export function OperationsPage() {
   const filtering = hasIncidentFilters(filters);
   // Whole queues: tab counts and figures always describe the queue, not the filter.
   const open = useIncidentQueue("OPEN");
-  const resolved = useIncidentQueue("RESOLVED");
+  const resolved = useIncidentQueue("RESOLVED", { diagnosis: PENDING });
   // The table reads its own filtered queue only while criteria are set.
   const openFiltered = useIncidentQueue("OPEN", { filters, enabled: filtering && !isValidation });
-  const resolvedFiltered = useIncidentQueue("RESOLVED", { filters, enabled: filtering && isValidation });
+  const resolvedFiltered = useIncidentQueue("RESOLVED", { filters, diagnosis: PENDING, enabled: filtering && isValidation });
+  // Exact counts over the whole queues when Pipeline provides them (otherwise the loaded-page figures below).
+  const openCounts = useApiQuery("operations-summary-open", (signal) => fetchIncidentSummary("OPEN", {}, signal));
+  const pendingCounts = useApiQuery("operations-summary-pending", (signal) => fetchIncidentSummary("RESOLVED", { diagnosis: PENDING }, signal));
   const now = useNow();
 
   if (!isOperationsQueue(queue)) {
@@ -122,9 +130,17 @@ export function OperationsPage() {
   const resolving = settling(resolved.rows);
   const tableResolving = filtering ? settling(validationTable.rows) : resolving;
 
+  const openSummary = openCounts.state.status === "success" ? openCounts.state.data : null;
+  const pendingSummary = pendingCounts.state.status === "success" ? pendingCounts.state.data : null;
+  const countsLoading = (query: { state: { status: string } }) => query.state.status === "loading";
+
   const counts = {
-    active: open.status === "ready" ? { value: open.rows.length, more: open.hasMore } : null,
-    validation: resolved.status === "ready" && !resolving ? { value: pendingRows.length, more: resolved.hasMore } : null,
+    active: openSummary
+      ? { value: openSummary.total, more: false }
+      : open.status === "ready" && !countsLoading(openCounts) ? { value: open.rows.length, more: open.hasMore } : null,
+    validation: pendingSummary
+      ? { value: pendingSummary.total, more: false }
+      : resolved.status === "ready" && !resolving && !countsLoading(pendingCounts) ? { value: pendingRows.length, more: resolved.hasMore } : null,
   };
   const filteredEmpty = filtering
     ? {
@@ -133,8 +149,9 @@ export function OperationsPage() {
         action: <Button size="sm" onClick={() => setFilters(NO_INCIDENT_FILTERS)}>{t("filters.clear")}</Button>,
       }
     : undefined;
-  const refresh = (whole: { reload: () => void }, table: { reload: () => void }) => () => {
+  const refresh = (whole: { reload: () => void }, table: { reload: () => void }, figures: { reload: () => void }) => () => {
     whole.reload();
+    figures.reload();
     if (filtering) table.reload();
   };
 
@@ -147,12 +164,12 @@ export function OperationsPage() {
         <>
           <OperationsSummary
             variant="validation"
-            pending={pendingRows.length}
-            more={resolved.hasMore}
+            pending={pendingSummary?.total ?? pendingRows.length}
+            more={pendingSummary ? false : resolved.hasMore}
             oldestPendingMs={pendingRows.length ? Math.max(0, now - Date.parse(pendingRows[0].resolvedAt)) : null}
             loadedAt={resolved.loadedAt}
-            onRefresh={refresh(resolved, resolvedFiltered)}
-            loading={resolved.status === "loading" || resolving}
+            onRefresh={refresh(resolved, resolvedFiltered, pendingCounts)}
+            loading={resolved.status === "loading" || resolving || countsLoading(pendingCounts)}
             unavailable={resolved.status === "error"}
           />
           <IncidentFilterBar
@@ -161,7 +178,10 @@ export function OperationsPage() {
             scope={validationTable.scope}
             facets={{ repository: true, severity: true, stage: true }}
             result={
-              !filtering || tableResolving
+              // The service selected pending incidents itself: its total is the answer ("N matching incidents").
+              validationTable.scope.kind === "service"
+                ? undefined
+                : !filtering || tableResolving
                 ? null
                 : validationTable.scope.kind === "browser"
                   ? t("filters.scope.validationBrowser", { pending: pendingTableRows.length, count: validationTable.scope.loaded })
@@ -174,7 +194,9 @@ export function OperationsPage() {
             <div className={styles.tableArea}>
               {tableResolving && <p className={styles.status} role="status">{t("diagnosis.loading")}</p>}
               <NeedsValidationTable rows={pendingTableRows} now={now} empty={filteredEmpty} linkState={returnFiltersState(filters)} />
-              {!filtering && resolved.rows.length > 0 && <p className={styles.scope}>{t("validation.scope", { count: resolved.rows.length })}</p>}
+              {!filtering && !resolved.filteredByService && resolved.rows.length > 0 && (
+                <p className={styles.scope}>{t("validation.scope", { count: resolved.rows.length })}</p>
+              )}
               {validationTable.hasMore && (
                 <LoadMore label={t("validation.loadMore")} loading={validationTable.loadingMore} onClick={validationTable.loadMore} />
               )}
@@ -185,14 +207,14 @@ export function OperationsPage() {
         <>
           <OperationsSummary
             variant="active"
-            total={open.rows.length}
-            more={open.hasMore}
-            critical={open.rows.filter((row) => row.incident.severity === "Critical").length}
-            high={open.rows.filter((row) => row.incident.severity === "High").length}
-            analyzing={open.rows.filter((row) => row.diagnosis.kind === "absent").length}
+            total={openSummary?.total ?? open.rows.length}
+            more={openSummary ? false : open.hasMore}
+            critical={openSummary?.bySeverity.Critical ?? open.rows.filter((row) => row.incident.severity === "Critical").length}
+            high={openSummary?.bySeverity.High ?? open.rows.filter((row) => row.incident.severity === "High").length}
+            analyzing={openSummary?.byDiagnosis.ABSENT ?? open.rows.filter((row) => row.diagnosis.kind === "absent").length}
             loadedAt={open.loadedAt}
-            onRefresh={refresh(open, openFiltered)}
-            loading={open.status === "loading"}
+            onRefresh={refresh(open, openFiltered, openCounts)}
+            loading={open.status === "loading" || countsLoading(openCounts)}
             unavailable={open.status === "error"}
           />
           <IncidentFilterBar

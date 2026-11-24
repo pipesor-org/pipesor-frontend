@@ -6,6 +6,7 @@ export {
   fetchExecution,
   fetchIncident,
   fetchIncidentQueue,
+  fetchIncidentSummary,
   fetchIncidentRuns,
   githubCommitUrl,
   githubRunUrl,
@@ -13,7 +14,16 @@ export {
   incidentLabel,
   MAX_PAGE_SIZE,
 } from "./model/api";
-export type { Execution, IncidentPage, IncidentQueueState, IncidentRecord, IncidentRun } from "./model/api";
+export type {
+  DiagnosisCriterion,
+  Execution,
+  IncidentPage,
+  IncidentQueueState,
+  IncidentRecord,
+  IncidentRun,
+  IncidentSummary,
+  QueueQuery,
+} from "./model/api";
 export {
   FILTER_PARAMS,
   NO_INCIDENT_FILTERS,

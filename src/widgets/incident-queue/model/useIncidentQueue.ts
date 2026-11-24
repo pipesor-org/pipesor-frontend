@@ -7,6 +7,7 @@ import {
   fetchIncidentQueue,
   hasIncidentFilters,
   matchesIncidentFilters,
+  type DiagnosisCriterion,
   type IncidentFilters,
   type IncidentQueueState,
   type IncidentRecord,
@@ -58,6 +59,10 @@ export type QueueScope =
 
 export interface IncidentQueue {
   status: "idle" | "loading" | "ready" | "error";
+  /** Exact number of incidents in the queue (with its criteria) when Pipeline reports it. */
+  total: number | null;
+  /** Pipeline applied the queue's criteria (filters and the defining diagnosis) before paging. */
+  filteredByService: boolean;
   /** Rows to show: the loaded queue, or the matching rows when filtering here. */
   rows: QueueRow[];
   scope: QueueScope;
@@ -72,6 +77,12 @@ export interface IncidentQueue {
 
 interface QueueOptions {
   filters?: IncidentFilters;
+  /**
+   * Diagnosis criterion that defines the queue itself (Needs Validation:
+   * `PENDING`). Sent to Pipeline; when the service ignores it, the caller
+   * still selects rows by their diagnosis, as before.
+   */
+  diagnosis?: readonly DiagnosisCriterion[];
   /** `false` keeps the queue idle (no requests), e.g. while the view shows another source. */
   enabled?: boolean;
 }
@@ -109,8 +120,19 @@ const IDLE: QueueData = {
  */
 let serviceFiltering: boolean | null = null;
 
+/** Rows start from what Pipeline already provides with each incident; the rest is read per row. */
 function toRows(items: IncidentRecord[]): QueueRow[] {
-  return items.map((incident) => ({ incident, pipeline: { kind: "loading" }, diagnosis: { kind: "loading" } }));
+  return items.map((incident) => ({
+    incident,
+    pipeline: incident.repository
+      ? { kind: "ready", repositoryId: incident.repository.repositoryId, fullName: incident.repository.fullName, workflow: incident.repository.workflow }
+      : { kind: "loading" },
+    diagnosis: incident.diagnosis === undefined
+      ? { kind: "loading" }
+      : incident.diagnosis === null
+        ? { kind: "absent" }
+        : { kind: "ready", probableCause: incident.diagnosis.probableCause ?? "", status: incident.diagnosis.status, createdAt: incident.diagnosis.createdAt },
+  }));
 }
 
 function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
@@ -136,7 +158,10 @@ function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
  * `404 diagnosis_absent` is the "Analyzing…" state. A reload discards results
  * of the previous generation.
  */
-export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCIDENT_FILTERS, enabled = true }: QueueOptions = {}): IncidentQueue {
+export function useIncidentQueue(
+  state: IncidentQueueState,
+  { filters = NO_INCIDENT_FILTERS, diagnosis, enabled = true }: QueueOptions = {},
+): IncidentQueue {
   const [data, setData] = useState<QueueData>(IDLE);
   // Latest committed data, read synchronously when deciding how to load.
   const dataRef = useRef(data);
@@ -144,9 +169,11 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
   const generation = useRef(0);
   const requestedDiagnoses = useRef(new Set<string>());
   const active = hasIncidentFilters(filters);
-  const filtersKey = JSON.stringify(filters);
+  const filtersKey = JSON.stringify([filters, diagnosis ?? []]);
   const criteria = useRef(filters);
   criteria.current = filters;
+  const base = useRef(diagnosis);
+  base.current = diagnosis;
 
   const patchRows = useCallback((gen: number, match: (row: QueueRow) => boolean, patch: (row: QueueRow) => Partial<QueueRow>) => {
     if (generation.current !== gen) return;
@@ -155,7 +182,8 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
 
   const enrichPipelines = useCallback(
     (incidents: IncidentRecord[], gen: number) => {
-      for (const pipelineId of new Set(incidents.map((incident) => incident.pipelineId))) {
+      const unknown = incidents.filter((incident) => !incident.repository);
+      for (const pipelineId of new Set(unknown.map((incident) => incident.pipelineId))) {
         getPipeline(pipelineId).then(
           (pipeline) =>
             patchRows(gen, (row) => row.incident.pipelineId === pipelineId, () => ({
@@ -166,7 +194,10 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
                 workflow: pipelineWorkflowLabel(pipeline),
               },
             })),
-          () => patchRows(gen, (row) => row.incident.pipelineId === pipelineId, () => ({ pipeline: { kind: "error" } })),
+          () =>
+            patchRows(gen, (row) => row.incident.pipelineId === pipelineId && row.pipeline.kind === "loading", () => ({
+              pipeline: { kind: "error" },
+            })),
         );
       }
     },
@@ -216,13 +247,18 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
 
   const loadPage = useCallback(
     async (pageToken: string | null, gen: number, filtered: boolean) => {
-      const page = await fetchIncidentQueue(state, pageToken, filtered ? { filters: criteria.current } : {});
+      const userFilters = hasIncidentFilters(criteria.current);
+      const page = await fetchIncidentQueue(state, pageToken, filtered ? { filters: criteria.current, diagnosis: base.current } : {});
       if (generation.current !== gen) return;
       if (filtered && !page.filteredByService) {
-        // The service ignored the criteria: filter here over the whole queue instead.
         serviceFiltering = false;
-        await loadForBrowser(gen);
-        return;
+        if (userFilters) {
+          // The service ignored the criteria: filter here over the whole queue instead.
+          await loadForBrowser(gen);
+          return;
+        }
+        // Only the defining criterion was ignored: this is the plain queue page; the caller selects rows.
+        filtered = false;
       }
       if (filtered) serviceFiltering = true;
       const rows = toRows(page.items);
@@ -246,6 +282,7 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
   const load = useCallback(
     (refetch: boolean) => {
       const filtered = hasIncidentFilters(criteria.current);
+      const defined = Boolean(base.current?.length);
       const current = dataRef.current;
       // Browser mode already holds the whole queue: new criteria only re-filter
       // it (the view recomputes), and in-flight enrichment stays valid.
@@ -253,7 +290,9 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
       const gen = ++generation.current;
       setData({ ...IDLE, status: "loading" });
       requestedDiagnoses.current = new Set();
-      const run = filtered && serviceFiltering === false ? loadForBrowser(gen) : loadPage(null, gen, filtered);
+      const run = filtered && serviceFiltering === false
+        ? loadForBrowser(gen)
+        : loadPage(null, gen, (filtered || defined) && serviceFiltering !== false);
       run.catch((error: unknown) => {
         if (generation.current === gen) setData({ ...IDLE, status: "error", error });
       });
@@ -302,7 +341,10 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
   // Diagnoses are read only for rows that are shown.
   useEffect(() => {
     if (!enabled || data.status !== "ready") return;
-    const missing = view.rows.filter((row) => !requestedDiagnoses.current.has(row.incident.id)).map((row) => row.incident);
+    // Rows that already carry their diagnosis (from Pipeline) need no read.
+    const missing = view.rows
+      .filter((row) => row.diagnosis.kind === "loading" && !requestedDiagnoses.current.has(row.incident.id))
+      .map((row) => row.incident);
     if (missing.length) enrichDiagnoses(missing, generation.current);
   }, [enabled, data.status, view.rows, enrichDiagnoses]);
 
@@ -315,6 +357,8 @@ export function useIncidentQueue(state: IncidentQueueState, { filters = NO_INCID
 
   return {
     status: enabled ? data.status : "idle",
+    total: data.mode === "service" ? data.total : null,
+    filteredByService: data.mode === "service",
     rows: view.rows,
     scope,
     hasMore: data.mode !== "browser" && data.nextPageToken !== null,
