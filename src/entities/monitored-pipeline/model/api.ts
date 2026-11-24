@@ -97,6 +97,48 @@ const activitySchema = z.object({
 
 export type PipelineActivity = z.infer<typeof activitySchema>;
 
+const registrationsSchema = z.object({
+  items: z.array(
+    z.object({
+      pipelineId: z.string().min(1),
+      githubWorkflowId: z.string().regex(/^[1-9][0-9]*$/),
+      accessible: z.boolean(),
+    }),
+  ),
+});
+
+/** A monitored workflow of a repository, whoever registered it. */
+export interface WorkflowRegistration {
+  pipelineId: string;
+  /** The caller can already see the pipeline (grant + current GitHub read). */
+  accessible: boolean;
+}
+
+/**
+ * `GET /api/v1/pipelines/registrations?repositoryId=` (ADR-028): which
+ * workflows of a repository the caller can read are monitored, by GitHub
+ * workflow id — existence only, no operational data, no grant needed. `null`
+ * when the service does not provide it (an older deployment) or it cannot be
+ * read; the caller then marks only the pipelines it can see.
+ */
+export async function fetchRepositoryRegistrations(
+  repositoryId: string,
+  signal?: AbortSignal,
+): Promise<ReadonlyMap<string, WorkflowRegistration> | null> {
+  try {
+    const page = await apiRequest("pipeline", {
+      path: "/api/v1/pipelines/registrations",
+      query: { repositoryId },
+      schema: registrationsSchema,
+      signal,
+    });
+    return new Map(page.items.map((item) => [item.githubWorkflowId, { pipelineId: item.pipelineId, accessible: item.accessible }]));
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    return null;
+  }
+}
+
 /** Most recent configuration activity, or `null` when none is recorded. */
 export async function fetchLatestActivity(id: string, signal?: AbortSignal): Promise<PipelineActivity | null> {
   const page = await apiRequest("pipeline", {
