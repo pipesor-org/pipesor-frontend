@@ -15,7 +15,6 @@ export {
   MAX_PAGE_SIZE,
 } from "./model/api";
 export type {
-  DiagnosisCriterion,
   Execution,
   IncidentPage,
   IncidentQueueState,
@@ -23,10 +22,12 @@ export type {
   IncidentRun,
   IncidentSummary,
   QueueQuery,
+  QueueSort,
 } from "./model/api";
 export {
   FILTER_PARAMS,
   NO_INCIDENT_FILTERS,
+  DIAGNOSIS_CRITERIA,
   SEVERITY_FILTERS,
   UNCLASSIFIED_SEVERITY,
   MAX_QUERY_LENGTH,
@@ -38,7 +39,7 @@ export {
   withReturnFilters,
   writeIncidentFilters,
 } from "./model/filters";
-export type { IncidentFilters, IncidentRepositoryFacts, SeverityFilter } from "./model/filters";
+export type { DiagnosisCriterion, IncidentFilters, IncidentRepositoryFacts, SeverityFilter } from "./model/filters";
 export { INCIDENT_SEVERITY_LEVELS, INCIDENT_STAGES, UNRESOLVED_INCIDENT_STATUSES } from "./model/types";
 export type { IncidentSeverityLevel, IncidentStage, IncidentStatus } from "./model/types";
 export { IncidentSeverity } from "./ui/IncidentSeverity";

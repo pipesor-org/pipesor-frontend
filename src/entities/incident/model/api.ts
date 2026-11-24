@@ -1,7 +1,14 @@
 import { z } from "zod";
 
 import { DEFAULT_PAGE_SIZE, apiRequest, offsetPageSchema, tokenPageSchema } from "../../../shared/api";
-import { activeQuery, hasIncidentFilters, UNCLASSIFIED_SEVERITY, type IncidentFilters, type SeverityFilter } from "./filters";
+import {
+  activeQuery,
+  hasIncidentFilters,
+  UNCLASSIFIED_SEVERITY,
+  type DiagnosisCriterion,
+  type IncidentFilters,
+  type SeverityFilter,
+} from "./filters";
 import type { IncidentSeverityLevel, IncidentStage, IncidentStatus } from "./types";
 
 /**
@@ -128,11 +135,9 @@ export function incidentFilterQuery(filters: IncidentFilters): Record<string, st
   if (filters.severities.length) query.severity = filters.severities.map((value) => SEVERITY_WIRE[value]);
   if (filters.stages.length) query.stage = filters.stages.map((value) => STAGE_WIRE[value]);
   if (filters.statuses.length) query.status = filters.statuses.map((value) => STATUS_WIRE[value]);
+  if (filters.diagnoses.length) query.diagnosis = [...filters.diagnoses];
   return query;
 }
-
-/** Diagnosis criterion Pipeline accepts on incident reads (`ABSENT`: none yet). */
-export type DiagnosisCriterion = "PENDING" | "CONFIRMED" | "CORRECTED" | "REJECTED" | "ABSENT";
 
 export interface QueueQuery {
   /** The user's criteria. */
@@ -143,14 +148,23 @@ export interface QueueQuery {
 
 function queueCriteria({ filters, diagnosis }: QueueQuery): Record<string, string | string[]> | null {
   const query: Record<string, string | string[]> = filters && hasIncidentFilters(filters) ? incidentFilterQuery(filters) : {};
+  // The queue's own criterion wins: no view offers a Validation facet on a queue that defines one.
   if (diagnosis?.length) query.diagnosis = [...diagnosis];
   return Object.keys(query).length ? query : null;
 }
 
+/**
+ * Queue order other than Pipeline's default (`createdAt` descending):
+ * `resolvedAt` (RESOLVED only) for History. Not a criterion: it never makes a
+ * read "filtered". A Pipeline without it ignores the parameter, so callers
+ * keep ordering loaded pages themselves.
+ */
+export type QueueSort = "resolvedAt";
+
 export async function fetchIncidentQueue(
   state: IncidentQueueState,
   pageToken: string | null,
-  options: QueueQuery & { pageSize?: number; signal?: AbortSignal } = {},
+  options: QueueQuery & { sort?: QueueSort; pageSize?: number; signal?: AbortSignal } = {},
 ): Promise<IncidentPage> {
   const criteria = queueCriteria(options);
   const filtered = criteria !== null;
@@ -160,6 +174,8 @@ export async function fetchIncidentQueue(
       state,
       pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,
       pageToken,
+      // Page tokens are bound to the order: every read of a queue sends the same one.
+      sort: options.sort,
       ...criteria,
     },
     schema: queueSchema,

@@ -11,6 +11,7 @@ import {
   type IncidentFilters,
   type IncidentQueueState,
   type IncidentRecord,
+  type QueueSort,
 } from "../../../entities/incident";
 import { getPipeline, pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
 import { forEachWithConcurrency } from "../../../shared/lib";
@@ -83,6 +84,8 @@ interface QueueOptions {
    * still selects rows by their diagnosis, as before.
    */
   diagnosis?: readonly DiagnosisCriterion[];
+  /** Order asked of Pipeline (History: `resolvedAt`); sent with every read, never a criterion. */
+  sort?: QueueSort;
   /** `false` keeps the queue idle (no requests), e.g. while the view shows another source. */
   enabled?: boolean;
 }
@@ -135,13 +138,18 @@ function toRows(items: IncidentRecord[]): QueueRow[] {
   }));
 }
 
+/** The row's diagnosis as a criterion value; `null` while it is not known. */
+function diagnosisCriterion(diagnosis: RowDiagnosis): DiagnosisCriterion | null {
+  return diagnosis.kind === "ready" ? diagnosis.status : diagnosis.kind === "absent" ? "ABSENT" : null;
+}
+
 function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
   const repository = row.pipeline.kind === "ready"
     ? { repositoryId: row.pipeline.repositoryId, fullName: row.pipeline.fullName, workflow: row.pipeline.workflow }
     : null;
-  const match = matchesIncidentFilters(row.incident, repository, filters);
-  // A pipeline that cannot be read never matches a repository criterion.
-  return match === null && row.pipeline.kind === "error" ? false : match;
+  const match = matchesIncidentFilters(row.incident, repository, filters, diagnosisCriterion(row.diagnosis));
+  // A pipeline or diagnosis that cannot be read never matches a criterion on it.
+  return match === null && (row.pipeline.kind === "error" || row.diagnosis.kind === "error") ? false : match;
 }
 
 /**
@@ -160,7 +168,7 @@ function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
  */
 export function useIncidentQueue(
   state: IncidentQueueState,
-  { filters = NO_INCIDENT_FILTERS, diagnosis, enabled = true }: QueueOptions = {},
+  { filters = NO_INCIDENT_FILTERS, diagnosis, sort, enabled = true }: QueueOptions = {},
 ): IncidentQueue {
   const [data, setData] = useState<QueueData>(IDLE);
   // Latest committed data, read synchronously when deciding how to load.
@@ -169,11 +177,13 @@ export function useIncidentQueue(
   const generation = useRef(0);
   const requestedDiagnoses = useRef(new Set<string>());
   const active = hasIncidentFilters(filters);
-  const filtersKey = JSON.stringify([filters, diagnosis ?? []]);
+  const filtersKey = JSON.stringify([filters, diagnosis ?? [], sort ?? null]);
   const criteria = useRef(filters);
   criteria.current = filters;
   const base = useRef(diagnosis);
   base.current = diagnosis;
+  const order = useRef(sort);
+  order.current = sort;
 
   const patchRows = useCallback((gen: number, match: (row: QueueRow) => boolean, patch: (row: QueueRow) => Partial<QueueRow>) => {
     if (generation.current !== gen) return;
@@ -234,7 +244,7 @@ export function useIncidentQueue(
   const loadForBrowser = useCallback(
     async (gen: number) => {
       const whole = await readWholeQueue(
-        (token) => fetchIncidentQueue(state, token, { pageSize: MAX_PAGE_SIZE }),
+        (token) => fetchIncidentQueue(state, token, { pageSize: MAX_PAGE_SIZE, sort: order.current }),
         BROWSER_FILTER_CAP,
         () => generation.current === gen,
       );
@@ -248,7 +258,10 @@ export function useIncidentQueue(
   const loadPage = useCallback(
     async (pageToken: string | null, gen: number, filtered: boolean) => {
       const userFilters = hasIncidentFilters(criteria.current);
-      const page = await fetchIncidentQueue(state, pageToken, filtered ? { filters: criteria.current, diagnosis: base.current } : {});
+      const page = await fetchIncidentQueue(state, pageToken, {
+        ...(filtered ? { filters: criteria.current, diagnosis: base.current } : {}),
+        sort: order.current,
+      });
       if (generation.current !== gen) return;
       if (filtered && !page.filteredByService) {
         serviceFiltering = false;
@@ -325,28 +338,33 @@ export function useIncidentQueue(
   }, []);
 
   const view = useMemo(() => {
-    if (data.mode !== "browser") return { rows: data.rows, matched: data.rows.length, pending: false };
+    if (data.mode !== "browser") return { rows: data.rows, matched: data.rows.length, pending: false, undecided: [] as QueueRow[] };
     const rows: QueueRow[] = [];
+    // Rows whose match waits for their diagnosis (a Validation criterion): their diagnosis is read too.
+    const undecided: QueueRow[] = [];
     let pending = false;
     for (const row of data.rows) {
       const match = rowMatch(row, filters);
       if (match === true) rows.push(row);
-      else if (match === null) pending = true;
+      else if (match === null) {
+        pending = true;
+        if (row.pipeline.kind !== "loading") undecided.push(row);
+      }
     }
-    return { rows, matched: rows.length, pending };
+    return { rows, matched: rows.length, pending, undecided };
     // `filtersKey` stands for `filters` (a new object on every render).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.mode, data.rows, filtersKey]);
 
-  // Diagnoses are read only for rows that are shown.
+  // Diagnoses are read only for rows that are shown or that a Validation criterion waits on.
   useEffect(() => {
     if (!enabled || data.status !== "ready") return;
     // Rows that already carry their diagnosis (from Pipeline) need no read.
-    const missing = view.rows
+    const missing = [...view.rows, ...view.undecided]
       .filter((row) => row.diagnosis.kind === "loading" && !requestedDiagnoses.current.has(row.incident.id))
       .map((row) => row.incident);
     if (missing.length) enrichDiagnoses(missing, generation.current);
-  }, [enabled, data.status, view.rows, enrichDiagnoses]);
+  }, [enabled, data.status, view.rows, view.undecided, enrichDiagnoses]);
 
   const scope: QueueScope =
     data.mode === "browser"

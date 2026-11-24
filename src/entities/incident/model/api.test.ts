@@ -30,8 +30,16 @@ describe("filter parameters for Pipeline", () => {
         severities: ["Critical", "Unclassified"],
         stages: ["Quality Gate"],
         statuses: ["In remediation"],
+        diagnoses: ["CONFIRMED", "ABSENT"],
       }),
-    ).toEqual({ q: "INC-7", repositoryId: ["1001"], severity: ["CRITICAL", "UNCLASSIFIED"], stage: ["QUALITY_GATE"], status: ["IN_REMEDIATION"] });
+    ).toEqual({
+      q: "INC-7",
+      repositoryId: ["1001"],
+      severity: ["CRITICAL", "UNCLASSIFIED"],
+      stage: ["QUALITY_GATE"],
+      status: ["IN_REMEDIATION"],
+      diagnosis: ["CONFIRMED", "ABSENT"],
+    });
   });
 
   test("are sent as repeated query parameters", async () => {
@@ -105,7 +113,30 @@ describe("row facts Pipeline adds to incidents", () => {
   });
 });
 
+describe("queue order (History)", () => {
+  test("is sent with every read, including the next page, and is not a filter", async () => {
+    service = fakeFetch(() => json({ items: [], nextPageToken: null, appliedFilters: { sort: "resolvedAt" } }));
+    const page = await fetchIncidentQueue("RESOLVED", "token-2", { sort: "resolvedAt" });
+    const url = service.requests[0].url;
+    expect(url.searchParams.get("sort")).toBe("resolvedAt");
+    expect(url.searchParams.get("pageToken")).toBe("token-2");
+    expect(page.filteredByService).toBe(false);
+  });
+
+  test("is omitted by default (Pipeline's createdAt order)", async () => {
+    service = fakeFetch(() => json({ items: [], nextPageToken: null }));
+    await fetchIncidentQueue("OPEN", null);
+    expect(service.requests[0].url.searchParams.has("sort")).toBe(false);
+  });
+});
+
 describe("the queue's defining diagnosis (Needs Validation)", () => {
+  test("wins over a Validation criterion (no view offers both)", async () => {
+    service = fakeFetch(() => json({ items: [], nextPageToken: null, appliedFilters: { diagnosis: ["PENDING"] } }));
+    await fetchIncidentQueue("RESOLVED", null, { filters: { ...NO_INCIDENT_FILTERS, diagnoses: ["CONFIRMED"] }, diagnosis: ["PENDING"] });
+    expect(service.requests[0].url.searchParams.getAll("diagnosis")).toEqual(["PENDING"]);
+  });
+
   test("is sent as a criterion even without user filters", async () => {
     service = fakeFetch(() => json({ items: [], nextPageToken: null, total: 0, appliedFilters: { diagnosis: ["PENDING"] } }));
     const page = await fetchIncidentQueue("RESOLVED", null, { diagnosis: ["PENDING"] });

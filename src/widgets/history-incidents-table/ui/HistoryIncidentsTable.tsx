@@ -6,8 +6,8 @@ import { DiagnosisStatusLabel, type DiagnosisStatus } from "../../../entities/di
 import { STAGE_LABEL_KEY, type IncidentStage } from "../../../entities/incident";
 import { incidentWorkspacePath } from "../../../shared/config";
 import { useFormatters } from "../../../shared/i18n";
-import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
-import { ChevronRightIcon, HistoryIcon } from "../../../shared/ui/icons";
+import { TableEmptyRow, dataTable, type TableEmpty } from "../../../shared/ui/data-table";
+import { ChevronRightIcon, HistoryIcon, SearchIcon } from "../../../shared/ui/icons";
 
 import styles from "./HistoryIncidentsTable.module.css";
 
@@ -39,12 +39,20 @@ const COLUMNS = [
 
 const EMPTY_VALUE = "—";
 
+interface HistoryIncidentsTableProps {
+  rows: HistoryIncidentRow[];
+  /** Empty state while criteria are set (zero results, with Clear). */
+  empty?: TableEmpty;
+  /** Router state for incident links (criteria that Back restores). */
+  linkState?: unknown;
+}
+
 /**
  * History — Incidents: every operationally resolved incident (D03, including
  * those still pending review), newest resolution first. Durations are computed
  * from recorded timestamps; a missing measurement shows an em dash.
  */
-export function HistoryIncidentsTable({ rows }: { rows: HistoryIncidentRow[] }) {
+export function HistoryIncidentsTable({ rows, empty, linkState }: HistoryIncidentsTableProps) {
   const { t } = useTranslation("history");
   const { t: tOperations } = useTranslation("operations");
   const { formatPreciseDuration, formatTimestamp } = useFormatters();
@@ -73,13 +81,19 @@ export function HistoryIncidentsTable({ rows }: { rows: HistoryIncidentRow[] }) 
           </thead>
           <tbody>
             {rows.length === 0 ? (
-              <TableEmptyRow colSpan={COLUMNS.length} icon={<HistoryIcon />} text={t("empty")} />
+              empty ? (
+                <TableEmptyRow colSpan={COLUMNS.length} icon={<SearchIcon />} title={empty.title} text={empty.text} action={empty.action} />
+              ) : (
+                <TableEmptyRow colSpan={COLUMNS.length} icon={<HistoryIcon />} text={t("empty")} />
+              )
             ) : (
               rows.map((row) => (
                 <tr key={row.id} className={dataTable.interactiveRow}>
                   <td>
                     <div className={dataTable.stack}>
-                      <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "history")}>{row.label}</Link>
+                      <Link className={`${dataTable.rowLink} ${dataTable.id}`} to={incidentWorkspacePath(row.id, "history")} state={linkState}>
+                        {row.label}
+                      </Link>
                       {row.pipeline.kind === "ready" ? (
                         <>
                           <span className={dataTable.mono}>{row.pipeline.value.repository}</span>
