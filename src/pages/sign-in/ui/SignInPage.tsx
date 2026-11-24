@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 
 import { readInstallReturn, rememberInstallReturn, startGitHubSignIn, useSession } from "../../../entities/session";
 import { safeErrorCode } from "../../../shared/api";
 import {
   DEFAULT_OPERATIONS_QUEUE,
   RETURN_TO_PARAM,
+  aboutPath,
   githubAppInstallUrl,
   operationsQueuePath,
   routes,
@@ -85,6 +86,12 @@ export function SignInPage() {
           {t("signIn.manageAccess")} ↗
         </a>
       ) : null}
+
+      <nav className={styles.about} aria-label={t("signIn.about.label")}>
+        <Link to={aboutPath("how-it-works")}>{t("signIn.about.howItWorks")}</Link>
+        <Link to={aboutPath("ai")}>{t("signIn.about.ai")}</Link>
+        <Link to={aboutPath("security")}>{t("signIn.about.security")}</Link>
+      </nav>
 
       <section className={styles.preferences} aria-label={t("signIn.preferences")}>
         <LanguageSelector />

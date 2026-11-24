@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
+import { AboutPage } from "../pages/about";
 import { AddMonitoredWorkflowPage } from "../pages/add-monitored-workflow";
 import { HistoryPage } from "../pages/history";
 import { IncidentWorkspaceRoute } from "../pages/incident-workspace";
@@ -8,7 +9,7 @@ import { OperationsPage } from "../pages/operations";
 import { PipelineDetailPage } from "../pages/pipeline-detail";
 import { PipelinesPage, pipelineInventoryReturnPath } from "../pages/pipelines";
 import { AuthCompletePage, SignInPage } from "../pages/sign-in";
-import { authRoutes, operationsQueuePath, routes } from "../shared/config";
+import { aboutPath, authRoutes, operationsQueuePath, routes } from "../shared/config";
 import { RequireSession } from "./RequireSession";
 
 /** Pipelines sub-routes return to the inventory with its recognized criteria only. */
@@ -32,7 +33,7 @@ function AddMonitoredWorkflowRoute() {
  * same pattern with `?view=incidents|insights`. An unknown path renders NotFound
  * instead of silently redirecting.
  *
- * `/login` and `/auth/complete` are the only public routes; every product
+ * `/login`, `/auth/complete` and the About Pipesor area are the public routes; every product
  * screen sits under `RequireSession`, which redirects to sign-in and returns
  * to the requested path afterwards.
  */
@@ -41,6 +42,8 @@ export function App() {
     <Routes>
       <Route path={authRoutes.signIn} element={<SignInPage />} />
       <Route path={authRoutes.complete} element={<AuthCompletePage />} />
+      <Route path={routes.about} element={<Navigate to={aboutPath()} replace />} />
+      <Route path={routes.aboutView} element={<AboutPage />} />
       <Route element={<RequireSession />}>
         <Route path="/" element={<Navigate to={operationsQueuePath("active")} replace />} />
         <Route path={routes.operations} element={<OperationsPage />} />

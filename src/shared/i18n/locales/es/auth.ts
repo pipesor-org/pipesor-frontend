@@ -16,6 +16,7 @@ const auth = {
     },
     manageAccess: "Instalar la GitHub App o gestionar el acceso a repositorios",
     preferences: "Preferencias de visualización",
+    about: { label: "Acerca de Pipesor", howItWorks: "Cómo funciona", ai: "Transparencia de la IA", security: "Seguridad" },
   },
   ended: {
     expired: "Tu sesión expiró. Inicia sesión de nuevo para continuar donde lo dejaste.",
