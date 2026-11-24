@@ -6,7 +6,9 @@ export {
   PIPELINE_CAPABILITIES,
   PIPELINE_CRITICALITIES,
   PIPELINE_MONITORING_STATUSES,
+  ACTIVITY_PAGE_SIZE,
   fetchLatestActivity,
+  fetchPipelineActivities,
   fetchPipeline,
   fetchPipelineGrants,
   fetchRepositoryRegistrations,
@@ -19,6 +21,7 @@ export {
 } from "./model/api";
 export type {
   PipelineActivity,
+  PipelineActivityEntry,
   PipelineCapability,
   PipelineCriticality,
   PipelineGrant,
