@@ -1,24 +1,19 @@
 import type { DiagnosisStatus } from "../../../entities/diagnosis";
-import { INCIDENT_STAGES, type IncidentStage } from "../../../entities/incident";
+import {
+  byRecurrence,
+  byStageCount,
+  type DurationStat,
+  type IncidentInsights,
+  type IncidentStage,
+  type RecurringContext,
+} from "../../../entities/incident";
 
 /**
- * Analytical read model of History — Insights, computed in the browser over
- * the resolved incidents loaded so far (owner decision 8; no analytics API).
- *
- * Definitions:
- * - Population: loaded resolved incidents whose `resolvedAt` falls in the
- *   analysis window (the last 30 days up to "now").
- * - Mean diagnosis time (TMD): `diagnosis.createdAt − incident.detectedAt`, over
- *   incidents that have a diagnosis.
- * - MTTR: `resolvedAt − detectedAt`.
- * - Confirmation rate: `confirmed / (confirmed + rejected)`, where `CORRECTED`
- *   and `REJECTED` both count as rejected and `PENDING` is excluded (D03). It
- *   reflects human reviews, not model accuracy.
- * - Recurring contexts: incidents grouped by monitored pipeline and stage; not
- *   a root-cause taxonomy.
- *
- * Missing measurements are never coerced to zero: means are `null` without
- * samples and empty weeks stay empty.
+ * History — Insights computed in the browser over the resolved incidents
+ * loaded so far: the fallback when Pipeline does not provide
+ * `GET /api/v1/insights`. Same definitions and model as the service (see
+ * `IncidentInsights` in the incident entity); missing measurements are never
+ * coerced to zero and empty weeks stay empty.
  */
 export interface InsightsRecord {
   incidentId: string;
@@ -37,55 +32,6 @@ const DAY_MS = 86_400_000;
 export const INSIGHTS_WINDOW_DAYS = 30;
 export const INSIGHTS_BUCKET_DAYS = 7;
 
-export interface InsightsWindow {
-  start: string;
-  end: string;
-}
-
-export interface DurationStat {
-  meanMs: number | null;
-  sampleSize: number;
-}
-
-export interface InsightsSummary {
-  resolvedIncidents: number;
-  confirmed: number;
-  rejected: number;
-  pending: number;
-  confirmationRate: number | null;
-  meanDiagnosis: DurationStat;
-  meanResolution: DurationStat;
-}
-
-export interface StageCount {
-  stage: IncidentStage;
-  count: number;
-}
-
-export interface RecurringContext {
-  pipelineId: string;
-  repository: string | null;
-  workflow: string | null;
-  stage: IncidentStage;
-  count: number;
-}
-
-export interface DiagnosisBucket {
-  start: string;
-  end: string;
-  incidentCount: number;
-  meanDiagnosisMs: number | null;
-}
-
-export interface InsightsModel {
-  window: InsightsWindow;
-  population: InsightsRecord[];
-  summary: InsightsSummary;
-  stages: StageCount[];
-  recurring: RecurringContext[];
-  trend: DiagnosisBucket[];
-}
-
 function mean(values: number[]): DurationStat {
   if (values.length === 0) return { meanMs: null, sampleSize: 0 };
   return { meanMs: values.reduce((sum, value) => sum + value, 0) / values.length, sampleSize: values.length };
@@ -102,11 +48,7 @@ function diagnosisMs(record: InsightsRecord): number | null {
   return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
-function stageRank(stage: IncidentStage): number {
-  return INCIDENT_STAGES.indexOf(stage);
-}
-
-export function buildInsights(records: readonly InsightsRecord[], nowMs: number): InsightsModel {
+export function buildInsights(records: readonly InsightsRecord[], nowMs: number): IncidentInsights {
   const startMs = startOfUtcDay(nowMs) - (INSIGHTS_WINDOW_DAYS - 1) * DAY_MS;
   const window = { start: new Date(startMs).toISOString(), end: new Date(nowMs).toISOString() };
   const population = records.filter((record) => {
@@ -157,7 +99,6 @@ export function buildInsights(records: readonly InsightsRecord[], nowMs: number)
   const validated = confirmed + rejected;
   return {
     window,
-    population,
     summary: {
       resolvedIncidents: population.length,
       confirmed,
@@ -167,16 +108,9 @@ export function buildInsights(records: readonly InsightsRecord[], nowMs: number)
       meanDiagnosis: mean(diagnosisSamples),
       meanResolution: mean(resolutionSamples),
     },
-    stages: [...stageCounts.entries()]
-      .map(([stage, count]) => ({ stage, count }))
-      .sort((a, b) => b.count - a.count || stageRank(a.stage) - stageRank(b.stage)),
-    recurring: [...contexts.values()].sort(
-      (a, b) =>
-        b.count - a.count ||
-        (a.repository ?? "").localeCompare(b.repository ?? "") ||
-        (a.workflow ?? "").localeCompare(b.workflow ?? "") ||
-        stageRank(a.stage) - stageRank(b.stage),
-    ),
+    stages: [...stageCounts.entries()].map(([stage, count]) => ({ stage, count })).sort(byStageCount),
+    recurring: [...contexts.values()].sort(byRecurrence),
+    recurringTruncated: false,
     trend: buckets.map((bucket) => ({
       start: new Date(bucket.start).toISOString(),
       end: new Date(bucket.end).toISOString(),

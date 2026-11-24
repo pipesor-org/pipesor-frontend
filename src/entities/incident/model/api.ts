@@ -9,6 +9,7 @@ import {
   type IncidentFilters,
   type SeverityFilter,
 } from "./filters";
+import { byRecurrence, byStageCount, type IncidentInsights } from "./insights";
 import type { IncidentSeverityLevel, IncidentStage, IncidentStatus } from "./types";
 
 /**
@@ -231,6 +232,71 @@ export async function fetchIncidentSummary(state: IncidentQueueState, query: Que
         REJECTED: diagnosis("REJECTED"),
         ABSENT: diagnosis("ABSENT"),
       },
+    };
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    return null;
+  }
+}
+
+const count = z.number().int().nonnegative();
+const meanSchema = z.object({ meanMs: z.number().nonnegative().nullable(), sampleSize: count });
+const insightsSchema = z.object({
+  window: z.object({ from: instant, to: instant }),
+  summary: z.object({
+    resolvedIncidents: count,
+    confirmed: count,
+    rejected: count,
+    pending: count,
+    confirmationRate: z.number().min(0).max(1).nullable(),
+    meanDiagnosis: meanSchema,
+    meanResolution: meanSchema,
+  }),
+  stages: z.array(z.object({ stage: enumOf(STAGE), count })),
+  recurring: z.array(
+    z.object({
+      pipelineId: z.string().min(1),
+      repository: z.object({ fullName: z.string().min(1) }).nullish(),
+      workflow: z.object({ name: z.string().min(1) }).nullish(),
+      stage: enumOf(STAGE),
+      count,
+    }),
+  ),
+  trend: z.array(z.object({ start: instant, end: instant, incidentCount: count, meanDiagnosisMs: z.number().nonnegative().nullable() })),
+});
+
+/** Recurring groups asked of Pipeline (its maximum); the view shows the first few and says when more exist. */
+export const INSIGHTS_TOP = 50;
+
+/**
+ * `GET /api/v1/insights` over Pipeline's default window (the last 30 days):
+ * figures over every resolved incident the caller may view. `null` when the
+ * service does not provide it (an older deployment) or it cannot be read; the
+ * view then computes them over the loaded incidents.
+ */
+export async function fetchIncidentInsights(signal?: AbortSignal): Promise<IncidentInsights | null> {
+  try {
+    const insights = await apiRequest("pipeline", {
+      path: "/api/v1/insights",
+      query: { top: INSIGHTS_TOP },
+      schema: insightsSchema,
+      signal,
+    });
+    return {
+      window: { start: insights.window.from, end: insights.window.to },
+      summary: insights.summary,
+      stages: insights.stages.map(({ stage, count }) => ({ stage: STAGE[stage], count })).sort(byStageCount),
+      recurring: insights.recurring
+        .map((group) => ({
+          pipelineId: group.pipelineId,
+          repository: group.repository?.fullName ?? null,
+          workflow: group.workflow?.name ?? null,
+          stage: STAGE[group.stage],
+          count: group.count,
+        }))
+        .sort(byRecurrence),
+      recurringTruncated: insights.recurring.length >= INSIGHTS_TOP,
+      trend: insights.trend,
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") throw error;

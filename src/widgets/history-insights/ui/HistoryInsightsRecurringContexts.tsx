@@ -1,11 +1,10 @@
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 
-import { STAGE_LABEL_KEY } from "../../../entities/incident";
+import { STAGE_LABEL_KEY, type RecurringContext } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 import { TableEmptyRow, dataTable } from "../../../shared/ui/data-table";
 
-import type { RecurringContext } from "../model/insights";
 import styles from "./HistoryInsightsRecurringContexts.module.css";
 
 /** The frame shows three recurring groups; the caption states how many are omitted. */
@@ -18,7 +17,11 @@ const RECURRING_GROUP_LIMIT = 3;
  * grouping, not a root-cause taxonomy. Drill-down to History (D05) is not
  * implemented, so rows are not interactive and show no chevron.
  */
-export function HistoryInsightsRecurringContexts({ groups: allGroups }: { groups: RecurringContext[] }) {
+export function HistoryInsightsRecurringContexts({ groups: allGroups, truncated = false }: {
+  groups: RecurringContext[];
+  /** The source returned only its top groups: the total is a lower bound. */
+  truncated?: boolean;
+}) {
   const { t } = useTranslation("history");
   const { t: tOperations } = useTranslation("operations");
   const { formatNumber } = useFormatters();
@@ -26,6 +29,7 @@ export function HistoryInsightsRecurringContexts({ groups: allGroups }: { groups
 
   const groups = allGroups.slice(0, RECURRING_GROUP_LIMIT);
   const isTruncated = allGroups.length > groups.length;
+  const total = `${formatNumber(allGroups.length)}${truncated ? "+" : ""}`;
 
   return (
     <section className={styles.section} aria-labelledby={titleId}>
@@ -37,7 +41,7 @@ export function HistoryInsightsRecurringContexts({ groups: allGroups }: { groups
           {isTruncated
             ? t("insights.recurring.captionTruncated", {
                 shown: formatNumber(groups.length),
-                total: formatNumber(allGroups.length),
+                total,
               })
             : t("insights.recurring.caption")}
         </p>

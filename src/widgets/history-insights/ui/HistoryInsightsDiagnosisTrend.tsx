@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 
+import type { DiagnosisBucket, InsightsWindow } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 
-import type { DiagnosisBucket, InsightsWindow } from "../model/insights";
 import styles from "./HistoryInsightsDiagnosisTrend.module.css";
 
 /**
@@ -45,7 +45,7 @@ function xPercent(index: number, count: number): number {
  * Diagnosis-time trend.
  *
  * A single-series line chart drawn with inline SVG (no chart dependency). Points
- * are weekly means of the loaded population. A bucket without a measurement is
+ * are weekly means of the population. A bucket without a measurement is
  * never bridged: the line breaks, the value lane says "No data", and the point is
  * omitted, so three empty weeks cannot read as a flat or interpolated line.
  *

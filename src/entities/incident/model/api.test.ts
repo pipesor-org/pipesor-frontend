@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { configureApiAuth } from "../../../shared/api";
 import { fakeFetch, json, problem } from "../../../test/fakeFetch";
 
-import { fetchIncidentQueue, fetchIncidentSummary, incidentFilterQuery } from "./api";
+import { INSIGHTS_TOP, fetchIncidentInsights, fetchIncidentQueue, fetchIncidentSummary, incidentFilterQuery } from "./api";
 import { NO_INCIDENT_FILTERS } from "./filters";
 
 const incident = {
@@ -173,5 +173,67 @@ describe("exact counts (summary)", () => {
   test("a response without the applied criteria is not trusted", async () => {
     service = fakeFetch(() => json({ total: 3, bySeverity: {}, byStatus: {}, byDiagnosis: {} }));
     expect(await fetchIncidentSummary("RESOLVED", { diagnosis: ["PENDING"] })).toBeNull();
+  });
+});
+
+describe("insights from Pipeline", () => {
+  const mean = (meanMs: number | null, sampleSize: number) => ({ meanMs, sampleSize });
+  const body = (recurring: unknown[] = []) => ({
+    window: { from: "2026-10-25T00:00:00Z", to: "2026-11-23T12:00:00Z" },
+    summary: {
+      resolvedIncidents: 3,
+      confirmed: 1,
+      rejected: 1,
+      pending: 1,
+      confirmationRate: 0.5,
+      meanDiagnosis: mean(120000, 2),
+      meanResolution: mean(3600000, 3),
+    },
+    outcomes: { PENDING: 1, CONFIRMED: 1, CORRECTED: 0, REJECTED: 1, ABSENT: 0 },
+    // Pipeline breaks ties in its enum order; the view uses the domain's (Testing before Build).
+    stages: [
+      { stage: "BUILD", count: 1 },
+      { stage: "TESTING", count: 1 },
+      { stage: "QUALITY_GATE", count: 2 },
+    ],
+    recurring,
+    trend: [{ start: "2026-10-25T00:00:00Z", end: "2026-11-01T00:00:00Z", incidentCount: 1, meanDiagnosisMs: null }],
+  });
+  const group = (fullName: string, count: number) => ({
+    pipelineId: `p-${fullName}`,
+    repository: { repositoryId: "1001", fullName },
+    workflow: { workflowId: "2001", name: "CI" },
+    stage: "TESTING",
+    count,
+  });
+
+  test("map onto the domain vocabulary and the view's order", async () => {
+    service = fakeFetch(() => json(body([group("acme/web", 1), group("acme/api", 1), { ...group("x", 3), repository: null, workflow: null }])));
+    const insights = await fetchIncidentInsights();
+    expect(service.requests[0].url.pathname).toBe("/api/v1/insights");
+    expect(service.requests[0].url.searchParams.get("top")).toBe(String(INSIGHTS_TOP));
+    expect(insights?.window).toEqual({ start: "2026-10-25T00:00:00Z", end: "2026-11-23T12:00:00Z" });
+    expect(insights?.summary.meanDiagnosis).toEqual({ meanMs: 120000, sampleSize: 2 });
+    expect(insights?.stages.map((entry) => entry.stage)).toEqual(["Quality Gate", "Testing", "Build"]);
+    expect(insights?.recurring.map((entry) => [entry.repository, entry.workflow, entry.count])).toEqual([
+      [null, null, 3],
+      ["acme/api", "CI", 1],
+      ["acme/web", "CI", 1],
+    ]);
+    expect(insights?.recurringTruncated).toBe(false);
+    expect(insights?.trend[0].meanDiagnosisMs).toBeNull();
+  });
+
+  test("a full top list means more groups may exist", async () => {
+    service = fakeFetch(() => json(body(Array.from({ length: INSIGHTS_TOP }, (_, index) => group(`acme/r${index}`, 1)))));
+    expect((await fetchIncidentInsights())?.recurringTruncated).toBe(true);
+  });
+
+  test("an older deployment or an unexpected shape yields null (the view computes them)", async () => {
+    service = fakeFetch(() => problem(404, "NOT_FOUND"));
+    expect(await fetchIncidentInsights()).toBeNull();
+    service.restore();
+    service = fakeFetch(() => json({ ...body(), summary: { resolvedIncidents: -1 } }));
+    expect(await fetchIncidentInsights()).toBeNull();
   });
 });

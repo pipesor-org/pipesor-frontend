@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 
+import type { InsightsSummary } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 import { Stat, StatGroup } from "../../../shared/ui/stat";
 
-import type { InsightsSummary } from "../model/insights";
 import styles from "./HistoryInsightsSummary.module.css";
 
 /**
