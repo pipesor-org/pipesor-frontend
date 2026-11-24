@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import { STAGE_LABEL_KEY } from "../../../entities/incident";
+import { STAGE_LABEL_KEY, type InsightsSummary, type StageCount } from "../../../entities/incident";
 import { useFormatters } from "../../../shared/i18n";
 
-import type { InsightsSummary, StageCount } from "../model/insights";
 import styles from "./HistoryInsightsStageOutcome.module.css";
 
 /**

@@ -5,6 +5,7 @@
 export {
   fetchExecution,
   fetchIncident,
+  fetchIncidentInsights,
   fetchIncidentQueue,
   fetchIncidentSummary,
   fetchIncidentRuns,
@@ -12,8 +13,19 @@ export {
   githubRunUrl,
   incidentFilterQuery,
   incidentLabel,
+  INSIGHTS_TOP,
   MAX_PAGE_SIZE,
 } from "./model/api";
+export { byRecurrence, byStageCount } from "./model/insights";
+export type {
+  DiagnosisBucket,
+  DurationStat,
+  IncidentInsights,
+  InsightsSummary,
+  InsightsWindow,
+  RecurringContext,
+  StageCount,
+} from "./model/insights";
 export type {
   Execution,
   IncidentPage,

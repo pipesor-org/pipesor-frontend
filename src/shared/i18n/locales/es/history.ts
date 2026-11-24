@@ -24,6 +24,8 @@ const history = {
   insights: {
     scope_one: "Últimos {{days}} días ({{range}}) · Calculado sobre {{countFormatted}} incidente resuelto de {{loaded}} cargados.",
     scope_other: "Últimos {{days}} días ({{range}}) · Calculado sobre {{countFormatted}} incidentes resueltos de {{loaded}} cargados.",
+    scopeService_one: "Últimos {{days}} días ({{range}}) · {{countFormatted}} incidente resuelto.",
+    scopeService_other: "Últimos {{days}} días ({{range}}) · {{countFormatted}} incidentes resueltos.",
     summary: {
       meanDiagnosis: "Tiempo medio de diagnóstico",
       meanResolution: "Tiempo medio de resolución (MTTR)",

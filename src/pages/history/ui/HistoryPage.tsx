@@ -4,6 +4,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import {
   DIAGNOSIS_CRITERIA,
   NO_INCIDENT_FILTERS,
+  fetchIncidentInsights,
   hasIncidentFilters,
   incidentLabel,
   returnFiltersState,
@@ -17,6 +18,7 @@ import {
   parseHistoryView,
 } from "../../../shared/config";
 import { useNow } from "../../../shared/lib";
+import { useApiQuery } from "../../../shared/api";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button } from "../../../shared/ui/button";
 import { AppSidebar } from "../../../widgets/app-sidebar";
@@ -76,9 +78,10 @@ const NO_STATUSES: readonly IncidentStatus[] = [];
 /**
  * History (`/history?view=incidents|insights`).
  *
- * Both views read Pipeline's `RESOLVED` queue (rows carry their pipeline and
- * diagnosis, or are completed per row against an older Pipeline). Insights
- * aggregates the loaded population in the browser. Incidents lists it newest
+ * Insights reads Pipeline's figures over every resolved incident
+ * (`GET /api/v1/insights`); against a Pipeline without them it aggregates the
+ * loaded `RESOLVED` queue in the browser, as before. Incidents lists that queue
+ * (rows carry their pipeline and diagnosis, or are completed per row) newest
  * resolution first (Pipeline orders by `resolvedAt`; loaded pages are also
  * sorted here for a Pipeline without that order) and offers the incident filter bar (repository, severity,
  * stage, validation); while criteria are set, the table reads its own
@@ -95,6 +98,8 @@ export function HistoryPage() {
   // Insights and the unfiltered list share the whole queue; the filtered list reads its own.
   const resolved = useIncidentQueue("RESOLVED", { sort: "resolvedAt", enabled: !filtering });
   const resolvedFiltered = useIncidentQueue("RESOLVED", { filters, sort: "resolvedAt", enabled: filtering });
+  // Insights from Pipeline over every resolved incident; `null` means compute them here over the loaded ones.
+  const serviceInsights = useApiQuery(isInsights ? "history-insights" : null, (signal) => fetchIncidentInsights(signal));
   const now = useNow();
 
   if (rawView !== null && !isHistoryView(rawView)) {
@@ -108,6 +113,7 @@ export function HistoryPage() {
     .sort((a, b) => b.resolvedAt.localeCompare(a.resolvedAt));
   const records = resolved.rows.map(toInsightsRecord).filter((record): record is InsightsRecord => record !== null);
   const settling = source.rows.some((row) => row.diagnosis.kind === "loading" || row.pipeline.kind === "loading");
+  const insights = serviceInsights.state.status === "success" ? serviceInsights.state.data : null;
   const filteredEmpty = filtering
     ? {
         title: tOperations("filters.empty.title"),
@@ -128,13 +134,17 @@ export function HistoryPage() {
           facets={{ repository: true, severity: true, stage: true, diagnoses: DIAGNOSIS_CRITERIA }}
         />
       )}
-      {source.status !== "ready" ? (
+      {isInsights && serviceInsights.state.status === "loading" ? (
+        <QueueStatus status="loading" error={null} onRetry={serviceInsights.reload} />
+      ) : isInsights && insights ? (
+        <HistoryInsights source="service" insights={insights} />
+      ) : source.status !== "ready" ? (
         <QueueStatus status={source.status} error={source.error} onRetry={source.reload} />
       ) : (
         <>
           {settling && <p className={styles.status} role="status">{t("settling")}</p>}
           {isInsights ? (
-            <HistoryInsights records={records} loaded={resolved.rows.length} nowMs={now} />
+            <HistoryInsights source="browser" records={records} loaded={resolved.rows.length} nowMs={now} />
           ) : (
             <HistoryIncidentsTable rows={rows} empty={filteredEmpty} linkState={returnFiltersState(filters)} />
           )}
