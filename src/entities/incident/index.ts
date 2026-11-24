@@ -22,6 +22,7 @@ export type {
   IncidentRun,
   IncidentSummary,
   QueueQuery,
+  QueueSort,
 } from "./model/api";
 export {
   FILTER_PARAMS,

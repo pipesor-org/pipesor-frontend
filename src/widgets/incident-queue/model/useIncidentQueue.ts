@@ -11,6 +11,7 @@ import {
   type IncidentFilters,
   type IncidentQueueState,
   type IncidentRecord,
+  type QueueSort,
 } from "../../../entities/incident";
 import { getPipeline, pipelineWorkflowLabel } from "../../../entities/monitored-pipeline";
 import { forEachWithConcurrency } from "../../../shared/lib";
@@ -83,6 +84,8 @@ interface QueueOptions {
    * still selects rows by their diagnosis, as before.
    */
   diagnosis?: readonly DiagnosisCriterion[];
+  /** Order asked of Pipeline (History: `resolvedAt`); sent with every read, never a criterion. */
+  sort?: QueueSort;
   /** `false` keeps the queue idle (no requests), e.g. while the view shows another source. */
   enabled?: boolean;
 }
@@ -165,7 +168,7 @@ function rowMatch(row: QueueRow, filters: IncidentFilters): boolean | null {
  */
 export function useIncidentQueue(
   state: IncidentQueueState,
-  { filters = NO_INCIDENT_FILTERS, diagnosis, enabled = true }: QueueOptions = {},
+  { filters = NO_INCIDENT_FILTERS, diagnosis, sort, enabled = true }: QueueOptions = {},
 ): IncidentQueue {
   const [data, setData] = useState<QueueData>(IDLE);
   // Latest committed data, read synchronously when deciding how to load.
@@ -174,11 +177,13 @@ export function useIncidentQueue(
   const generation = useRef(0);
   const requestedDiagnoses = useRef(new Set<string>());
   const active = hasIncidentFilters(filters);
-  const filtersKey = JSON.stringify([filters, diagnosis ?? []]);
+  const filtersKey = JSON.stringify([filters, diagnosis ?? [], sort ?? null]);
   const criteria = useRef(filters);
   criteria.current = filters;
   const base = useRef(diagnosis);
   base.current = diagnosis;
+  const order = useRef(sort);
+  order.current = sort;
 
   const patchRows = useCallback((gen: number, match: (row: QueueRow) => boolean, patch: (row: QueueRow) => Partial<QueueRow>) => {
     if (generation.current !== gen) return;
@@ -239,7 +244,7 @@ export function useIncidentQueue(
   const loadForBrowser = useCallback(
     async (gen: number) => {
       const whole = await readWholeQueue(
-        (token) => fetchIncidentQueue(state, token, { pageSize: MAX_PAGE_SIZE }),
+        (token) => fetchIncidentQueue(state, token, { pageSize: MAX_PAGE_SIZE, sort: order.current }),
         BROWSER_FILTER_CAP,
         () => generation.current === gen,
       );
@@ -253,7 +258,10 @@ export function useIncidentQueue(
   const loadPage = useCallback(
     async (pageToken: string | null, gen: number, filtered: boolean) => {
       const userFilters = hasIncidentFilters(criteria.current);
-      const page = await fetchIncidentQueue(state, pageToken, filtered ? { filters: criteria.current, diagnosis: base.current } : {});
+      const page = await fetchIncidentQueue(state, pageToken, {
+        ...(filtered ? { filters: criteria.current, diagnosis: base.current } : {}),
+        sort: order.current,
+      });
       if (generation.current !== gen) return;
       if (filtered && !page.filteredByService) {
         serviceFiltering = false;

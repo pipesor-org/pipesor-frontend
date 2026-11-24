@@ -79,7 +79,8 @@ const NO_STATUSES: readonly IncidentStatus[] = [];
  * Both views read Pipeline's `RESOLVED` queue (rows carry their pipeline and
  * diagnosis, or are completed per row against an older Pipeline). Insights
  * aggregates the loaded population in the browser. Incidents lists it newest
- * resolution first and offers the incident filter bar (repository, severity,
+ * resolution first (Pipeline orders by `resolvedAt`; loaded pages are also
+ * sorted here for a Pipeline without that order) and offers the incident filter bar (repository, severity,
  * stage, validation); while criteria are set, the table reads its own
  * filtered queue, applied by Pipeline before paging when it supports it.
  */
@@ -92,8 +93,8 @@ export function HistoryPage() {
   const [filters, setFilters] = useIncidentFilterParams(NO_STATUSES, DIAGNOSIS_CRITERIA);
   const filtering = !isInsights && hasIncidentFilters(filters);
   // Insights and the unfiltered list share the whole queue; the filtered list reads its own.
-  const resolved = useIncidentQueue("RESOLVED", { enabled: !filtering });
-  const resolvedFiltered = useIncidentQueue("RESOLVED", { filters, enabled: filtering });
+  const resolved = useIncidentQueue("RESOLVED", { sort: "resolvedAt", enabled: !filtering });
+  const resolvedFiltered = useIncidentQueue("RESOLVED", { filters, sort: "resolvedAt", enabled: filtering });
   const now = useNow();
 
   if (rawView !== null && !isHistoryView(rawView)) {

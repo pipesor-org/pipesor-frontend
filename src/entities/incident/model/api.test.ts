@@ -113,6 +113,23 @@ describe("row facts Pipeline adds to incidents", () => {
   });
 });
 
+describe("queue order (History)", () => {
+  test("is sent with every read, including the next page, and is not a filter", async () => {
+    service = fakeFetch(() => json({ items: [], nextPageToken: null, appliedFilters: { sort: "resolvedAt" } }));
+    const page = await fetchIncidentQueue("RESOLVED", "token-2", { sort: "resolvedAt" });
+    const url = service.requests[0].url;
+    expect(url.searchParams.get("sort")).toBe("resolvedAt");
+    expect(url.searchParams.get("pageToken")).toBe("token-2");
+    expect(page.filteredByService).toBe(false);
+  });
+
+  test("is omitted by default (Pipeline's createdAt order)", async () => {
+    service = fakeFetch(() => json({ items: [], nextPageToken: null }));
+    await fetchIncidentQueue("OPEN", null);
+    expect(service.requests[0].url.searchParams.has("sort")).toBe(false);
+  });
+});
+
 describe("the queue's defining diagnosis (Needs Validation)", () => {
   test("wins over a Validation criterion (no view offers both)", async () => {
     service = fakeFetch(() => json({ items: [], nextPageToken: null, appliedFilters: { diagnosis: ["PENDING"] } }));

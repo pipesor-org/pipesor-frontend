@@ -153,10 +153,18 @@ function queueCriteria({ filters, diagnosis }: QueueQuery): Record<string, strin
   return Object.keys(query).length ? query : null;
 }
 
+/**
+ * Queue order other than Pipeline's default (`createdAt` descending):
+ * `resolvedAt` (RESOLVED only) for History. Not a criterion: it never makes a
+ * read "filtered". A Pipeline without it ignores the parameter, so callers
+ * keep ordering loaded pages themselves.
+ */
+export type QueueSort = "resolvedAt";
+
 export async function fetchIncidentQueue(
   state: IncidentQueueState,
   pageToken: string | null,
-  options: QueueQuery & { pageSize?: number; signal?: AbortSignal } = {},
+  options: QueueQuery & { sort?: QueueSort; pageSize?: number; signal?: AbortSignal } = {},
 ): Promise<IncidentPage> {
   const criteria = queueCriteria(options);
   const filtered = criteria !== null;
@@ -166,6 +174,8 @@ export async function fetchIncidentQueue(
       state,
       pageSize: options.pageSize ?? DEFAULT_PAGE_SIZE,
       pageToken,
+      // Page tokens are bound to the order: every read of a queue sends the same one.
+      sort: options.sort,
       ...criteria,
     },
     schema: queueSchema,
