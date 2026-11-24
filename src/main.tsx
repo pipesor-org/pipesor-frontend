@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './shared/i18n'
 import { App } from './app/App'
 import { ThemeProvider, applyTheme, getPreferredTheme } from './shared/lib'
+import './app/styles/fonts.css'
 import './app/styles/global.css'
 
 applyTheme(getPreferredTheme())
