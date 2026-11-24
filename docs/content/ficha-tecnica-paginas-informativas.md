@@ -34,8 +34,8 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 
 | Aspecto | Hecho |
 |---|---|
-| Modelo de diagnóstico | **Pendiente de confirmar el despliegue real.** La decisión vigente (ADR-026) es *gpt-6-luna* (versión 2026-09-22) vía Azure OpenAI en Microsoft Foundry; algunos artefactos de configuración aún mencionan *gpt-4o 2024-11-20*. Se publicará el nombre confirmado. |
-| Modelo de embeddings | text-embedding-3-small, 1536 dimensiones, vía Azure OpenAI. |
+| Modelo de diagnóstico | **GPT-6 Luna, versión 2026-09-22**, vía Azure OpenAI en Microsoft Foundry (despliegue `pipesor-dev-diagnostics-luna`, Data Zone Standard). Confirmado en Azure el 24/11/2026 (ADR-026). |
+| Modelo de embeddings | text-embedding-3-small (versión 1), 1536 dimensiones, vía Azure OpenAI. Confirmado en Azure. |
 | Proveedor y región | Microsoft Azure (Azure OpenAI / Foundry), región **West US 3 (EE. UU.)**, modalidad *Data Zone Standard* (procesamiento dentro de la zona de datos de EE. UU.). |
 | Entrenamiento | **No se entrenan ni ajustan modelos.** Se consumen por API. |
 | Qué recibe el modelo | Extractos de log **saneados** (con su etapa) y fragmentos del corpus recuperados. |
@@ -64,6 +64,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 | Texto libre de las revisiones (comentario, causa real; ≤ 1500 caracteres) | Servicio de recomendación (base de datos) | Validación del diagnóstico | Quien puede ver el pipeline |
 | Nombre del repositorio y workflow, rama, commit, ejecuciones | Servicio de pipelines (base de datos) | Operación | Quien puede ver el pipeline |
 | Extractos de log saneados (≤ 40 líneas) | Servicios de evidencias y recomendación | Evidencia del diagnóstico | Quien puede ver el pipeline |
+| Dirección IP, fecha, ruta y navegador de cada visita al dashboard | Registros técnicos del servidor del dashboard (Azure Log Analytics, 30 días) | Operación técnica y diagnóstico de fallos | Operación técnica |
 
 **No se guarda el correo electrónico** de nadie; los correos dentro de los logs se enmascaran. **Advertencia:** los extractos pueden contener nombres de personas o usuarios (p. ej., autor de un commit o rutas): el saneamiento **no detecta nombres**.
 
@@ -79,7 +80,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 - **Microsoft Azure** (alojamiento, base de datos, mensajería, bóveda de secretos, modelos de IA): región **West US 3, Estados Unidos**. Implica **transferencia internacional** de datos desde Perú.
 - **GitHub** (identidad, logs originales, instalación de la App).
 - **Google** (fuentes tipográficas, ver arriba).
-- La retención de datos del lado de Azure OpenAI (monitorización de abuso) **no está documentada** — pendiente de confirmar.
+- **Azure OpenAI:** la monitorización de abuso está en la **configuración por defecto de Microsoft, no modificada** (no se solicitó la exención). Según la política de Microsoft, puede conservar entradas y salidas durante un periodo limitado para detectar abusos; que el Redactor cite la política vigente de Microsoft sin afirmar plazos que no pueda verificar.
 
 ### 4.4 Conservación
 
@@ -90,6 +91,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 | Mensajes internos | 14 días | Aplicado |
 | Logs técnicos de contenedores | 30 días | Aplicado |
 | Copias de seguridad de la base de datos | 7 días de restauración, sin réplica geográfica | Aplicado |
+| Registros de acceso del dashboard (IP, fecha, ruta, navegador) | 30 días en Azure Log Analytics | Aplicado |
 | Logs originales en GitHub | 90 días por defecto (política de GitHub) | Fuera de Pipesor |
 
 ### 4.5 Derechos de las personas
@@ -131,7 +133,7 @@ Validar el diagnóstico y resolver el incidente son **procesos independientes**.
 ## 8. Decisiones pendientes del responsable (antes de publicar)
 
 1. **Responsable del tratamiento y contacto** (`[RESPONSABLE]`, `[CORREO DE CONTACTO]`) y canal para ejercer derechos.
-2. **Modelo de diagnóstico desplegado** (sección 3): confirmar con el backend.
+2. ~~Modelo de diagnóstico desplegado~~ — resuelto: GPT-6 Luna 2026-09-22.
 3. **Google Fonts:** declararlo en la política o alojar las fuentes en Pipesor (recomendado: elimina un tercero y la transferencia de la IP).
 4. **Retención:** publicar la política como "documentada, aún no aplicada" o aplicar la purga antes de publicarla.
 5. **Visibilidad de la autoría de revisiones:** hoy quien puede ver el pipeline ve el identificador y el texto de quien revisa; declararlo o restringirlo.

@@ -212,7 +212,7 @@ const about = {
     },
     model: {
       title: "El modelo",
-      text: "Los diagnósticos los genera un modelo de lenguaje servido por Azure OpenAI en Microsoft Foundry, dentro de la zona de datos de EE. UU. de Microsoft (West US 3). Los embeddings para la recuperación usan text-embedding-3-small. Los modelos se usan mediante su API; ninguno se entrena ni se modifica. Cada diagnóstico registra el despliegue del modelo, su versión y la versión de las instrucciones.",
+      text: "Los diagnósticos los genera GPT-6 Luna (versión 2026-09-22), un modelo de lenguaje servido por Azure OpenAI en Microsoft Foundry, dentro de la zona de datos de EE. UU. de Microsoft (West US 3). Los embeddings para la recuperación usan text-embedding-3-small. Los modelos se usan mediante su API; ninguno se entrena ni se modifica. Cada diagnóstico registra el despliegue del modelo, su versión y la versión de las instrucciones.",
     },
     inputs: {
       title: "Qué recibe el modelo",
