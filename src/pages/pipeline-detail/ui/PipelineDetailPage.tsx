@@ -6,22 +6,19 @@ import { fetchSelfPrincipalRef } from "../../../entities/github-access";
 import {
   CriticalityBadge,
   MonitoringBadge,
-  PIPELINE_CAPABILITIES,
   environmentLabel,
   fetchLatestActivity,
   fetchPipeline,
   fetchPipelineGrants,
   pipelineGithubLinks,
   pipelineWorkflowLabel,
-  type PipelineCapability,
 } from "../../../entities/monitored-pipeline";
-import { GrantSelfOperate } from "../../../features/grant-pipeline-access";
+import { GrantSelfOperate, PipelinePeople } from "../../../features/grant-pipeline-access";
 import { FailedRuns } from "../../../features/request-run-analysis";
 import { isApiError, useApiQuery } from "../../../shared/api";
 import { useFormatters } from "../../../shared/i18n";
 import { AppLayout } from "../../../shared/ui/app-layout";
 import { Button } from "../../../shared/ui/button";
-import { dataTable } from "../../../shared/ui/data-table";
 import { Skeleton } from "../../../shared/ui/skeleton";
 import { ChevronLeftIcon } from "../../../shared/ui/icons";
 import { PageHeader } from "../../../shared/ui/page-header";
@@ -103,12 +100,6 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
         const links = pipelineGithubLinks(pipeline);
         const external = (href: string | null, text: string) =>
           href ? <a href={href} target="_blank" rel="noreferrer noopener">{text} ↗<span className={styles.srOnly}> {t("opensInNewTab")}</span></a> : null;
-        const people = new Map<string, Set<PipelineCapability>>();
-        for (const grant of grants ?? []) {
-          const set = people.get(grant.principalRef) ?? new Set<PipelineCapability>();
-          set.add(grant.capability);
-          people.set(grant.principalRef, set);
-        }
         const caps = pipeline.effectiveCapabilities;
 
         return (
@@ -145,30 +136,14 @@ export function PipelineDetailPage({ backTo }: { backTo: string }) {
               <h2 id="pipeline-access">{t("access.title")}</h2>
               <p className={styles.note}>{t("access.yours", { capabilities: caps.map((cap) => t(`access.capability.${cap}`)).join(" · ") || "—" })}</p>
               {caps.includes("CONFIGURE") && !caps.includes("OPERATE") && <GrantSelfOperate pipelineId={pipeline.id} onGranted={detail.reload} />}
-              {grants === null ? (
-                <p className={styles.note}>{t("access.unavailable")}</p>
-              ) : (
-                <div className={dataTable.frame} role="region" tabIndex={0} aria-labelledby="pipeline-access">
-                  <table className={`${dataTable.table} ${styles.accessTable}`}>
-                    <colgroup><col className={styles.colPerson} /><col className={styles.colCapabilities} /><col /></colgroup>
-                    <thead><tr>
-                      <th scope="col">{t("access.person")}</th>
-                      <th scope="col">{t("access.capabilities")}</th>
-                      <th scope="col">{t("access.description")}</th>
-                    </tr></thead>
-                    <tbody>{[...people.entries()].map(([ref, set]) => {
-                      const held = PIPELINE_CAPABILITIES.filter((cap) => set.has(cap));
-                      return (
-                        <tr key={ref}>
-                          <th scope="row"><span className={styles.mono} title={ref}>{shortRef(ref)}</span>{ref === selfRef && <span className={styles.you}> {t("access.you")}</span>}</th>
-                          <td>{held.map((cap) => t(`access.capability.${cap}`)).join(" · ")}</td>
-                          <td><span className={dataTable.muted}>{held.map((cap) => t(`access.capabilityDescription.${cap}`)).join(" ")}</span></td>
-                        </tr>
-                      );
-                    })}</tbody>
-                  </table>
-                </div>
-              )}
+              <PipelinePeople
+                pipelineId={pipeline.id}
+                repositoryId={pipeline.githubRepositoryId}
+                grants={grants}
+                canConfigure={caps.includes("CONFIGURE")}
+                selfRef={selfRef}
+                onChanged={detail.reload}
+              />
               <p className={styles.note}>{t("access.note")}</p>
             </section>
 

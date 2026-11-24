@@ -3,7 +3,16 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { configureApiAuth, resetRequestCaches } from "../../../shared/api";
 import { fakeFetch, json, problem } from "../../../test/fakeFetch";
 
-import { DISCOVERY_CAP, DISCOVERY_LIMIT, DISCOVERY_PAGE_SIZE, fetchRepositories, fetchSelfPrincipalRef, fetchWorkflows } from "./api";
+import {
+  COLLABORATORS_CAP,
+  DISCOVERY_CAP,
+  DISCOVERY_LIMIT,
+  DISCOVERY_PAGE_SIZE,
+  fetchCollaborators,
+  fetchRepositories,
+  fetchSelfPrincipalRef,
+  fetchWorkflows,
+} from "./api";
 
 const REPOSITORIES = [
   { repositoryId: "101", fullName: "acme/api", defaultBranch: "main" },
@@ -147,5 +156,50 @@ describe("workflow discovery", () => {
     expect(workflows.map((workflow) => workflow.name)).toEqual(["CI"]);
     expect(service.requests[0].url.pathname).toBe("/api/v1/github/repositories/101/workflows");
     expect(service.requests[0].url.searchParams.get("pageSize")).toBe(String(DISCOVERY_PAGE_SIZE));
+  });
+});
+
+describe("repository collaborators (People)", () => {
+  const collaborator = (index: number) => ({
+    githubUserId: String(500 + index),
+    login: `person-${index}`,
+    avatarUrl: `https://avatars.githubusercontent.com/u/${500 + index}?v=4`,
+    role: index === 0 ? "ADMIN" : "WRITE",
+    principalRef: `tenant-1:object-${index}`,
+    pipesorConnection: index % 2 ? "NONE" : "ACTIVE",
+  });
+
+  function collaborators(total: number) {
+    return fakeFetch(({ url }) => {
+      if (url.pathname !== "/api/v1/github/repositories/101/collaborators") return problem(404, "NOT_FOUND");
+      const size = Number(url.searchParams.get("pageSize"));
+      const start = Number(url.searchParams.get("pageToken") ?? 0);
+      const items = Array.from({ length: Math.max(0, Math.min(size, total - start)) }, (_, i) => collaborator(start + i));
+      return json({ repository: { repositoryId: "101", fullName: "acme/api" }, items, nextPageToken: start + size < total ? String(start + size) : null });
+    });
+  }
+
+  test("reads every page and says the list is complete", async () => {
+    service.restore();
+    service = collaborators(150);
+    const list = await fetchCollaborators("101");
+    expect(list.collaborators).toHaveLength(150);
+    expect(list.complete).toBe(true);
+    expect(list.collaborators[0]).toMatchObject({ login: "person-0", role: "ADMIN", principalRef: "tenant-1:object-0", pipesorConnection: "ACTIVE" });
+    expect(service.requests.map((request) => request.url.searchParams.get("pageSize"))).toEqual(["100", "100"]);
+  });
+
+  test("stops at the cap: absence then proves nothing", async () => {
+    service.restore();
+    service = collaborators(COLLABORATORS_CAP + 50);
+    const list = await fetchCollaborators("101");
+    expect(list.collaborators).toHaveLength(COLLABORATORS_CAP);
+    expect(list.complete).toBe(false);
+  });
+
+  test("a non-administrator is refused by the service", async () => {
+    service.restore();
+    service = fakeFetch(() => problem(403, "DENIED"));
+    await expect(fetchCollaborators("101")).rejects.toMatchObject({ status: 403, code: "DENIED" });
   });
 });

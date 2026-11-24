@@ -68,7 +68,7 @@ The file reports Sora and JetBrains Mono and an empty token collection. Represen
 | Connected badge | `GitHub Actions · Connected` from `GET /github/connection`, plus Reconnect | Agreed |
 | Operational policy editor (criticality select, Active/Paused) | Read-only values | Configuration saves are not an approved capability yet |
 | Pipeline owners, Edit ownership | Responsible team only | No owners contract |
-| Access by team/role | Grants per person (`tid:oid`), "(you)" marker and "Grant me Operate" | Agreed (decision 9); CONFIGURE does not imply OPERATE |
+| Access by team/role | "People": grants per person shown as GitHub @login, chosen from the repository's GitHub collaborators, one access level per person; "(you)" marker and "Grant me Operate" | Agreed (decision 9; owner 2026-11-24, ADR-028); CONFIGURE does not imply OPERATE; teams deferred (named sets of these people, later) |
 | Last configuration update / View configuration history | Latest activity (action, time, actor ref); no history link | Full history out of scope |
 | — | Recent failed runs → Analyze → Open incident | Agreed (decision 11) |
 | Add workflow: named owners, required team | Optional free-text responsible team; no owners | No owners contract |

@@ -112,24 +112,6 @@
   text-decoration: underline;
 }
 
-/* Grants: the shared table system inside the section. */
-.accessTable {
-  min-width: 700px;
-}
-
-.colPerson {
-  width: 260px;
-}
-
-.colCapabilities {
-  width: 160px;
-}
-
-.you {
-  color: var(--color-text-secondary);
-  font-size: var(--text-xs);
-}
-
 .srOnly {
   position: absolute;
   width: 1px;
